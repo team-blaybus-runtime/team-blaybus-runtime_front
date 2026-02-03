@@ -1,7 +1,7 @@
 "use client";
 
 import styled from "styled-components";
-import { Div, ITagProps } from "@/styles/BaseStyledTags";
+import { Div, ITagProps } from "@/styles/base/BaseStyledTags";
 
 const Column = styled(Div)<ITagProps>`
   display: flex;

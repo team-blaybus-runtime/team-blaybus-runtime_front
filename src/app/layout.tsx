@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
-import StyledComponentsRegistry from "@/lib/styled-components-registry";
+import { Layout } from "@/component/common/Layout";
+import { Providers } from "@/providers/Providers";
+import StyledComponentsRegistry from "@/providers/StyledComponentsRegistry";
 
 export const metadata: Metadata = {
   title: "runtime-front",
@@ -15,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <StyledComponentsRegistry>
+          <Providers>
+            <Layout>{children}</Layout>
+          </Providers>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

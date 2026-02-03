@@ -23,8 +23,8 @@ import {
   typography,
   variant,
 } from "styled-system";
-import type { TypoProps } from "./FontVariants";
-import { typoConfig } from "./FontVariants";
+import type { TypoProps } from "@/styles/typo/fontVariants";
+import { typoConfig } from "@/styles/typo/fontVariants";
 
 const styles = compose(
   color,
