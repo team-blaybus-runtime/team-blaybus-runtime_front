@@ -36,6 +36,7 @@ const colors = {
   blue_100: "#D6F0FF",
   blue_50: "#EDF9FF",
 
+  // 피그마 상 숫자만 적혀있는 부분은 neutral 로 지정
   neutral_1100: "#000000",
   neutral_1000: "#17191A",
   neutral_900: "#2F3133",

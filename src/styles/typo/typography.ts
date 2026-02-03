@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { Noto_Sans_KR } from "next/font/google";
 import { Div } from "@/styles/base/BaseStyledTags";
 import colors from "@/styles/constant/colors";
+import { fontFamily, letterSpacing } from "./fontVariants";
 
 const Default = styled(Div)`
   white-space: pre-line;
@@ -9,17 +9,14 @@ const Default = styled(Div)`
   word-break: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  letter-spacing: -0.1px;
+  font-family: ${fontFamily.base};
+  letter-spacing: ${letterSpacing.default};
 `;
 
 const Font = styled(Default)<{ $color?: string }>`
   color: ${({ $color }) => $color || colors.black};
 `;
 
-export const noto_kr = Noto_Sans_KR({
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  subsets: ["latin"],
-});
-const fonts = { noto_kr };
+const fonts = { ...fontFamily };
 
 export { Font, fonts };
