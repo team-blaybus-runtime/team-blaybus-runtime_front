@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Noto_Sans_KR } from "next/font/google";
-import colors from "@/styles/constant/colors";
 import { Div } from "@/styles/base/BaseStyledTags";
+import colors from "@/styles/constant/colors";
 
 const Default = styled(Div)`
   white-space: pre-line;
@@ -12,9 +12,8 @@ const Default = styled(Div)`
   letter-spacing: -0.1px;
 `;
 
-const Font = styled(Default)<{ $active?: boolean; $color?: string }>`
-  color: ${({ $color, $active }) =>
-    $color || ($active ? colors.blue_500 : colors.gray_300)};
+const Font = styled(Default)<{ $color?: string }>`
+  color: ${({ $color }) => $color || colors.black};
 `;
 
 export const noto_kr = Noto_Sans_KR({

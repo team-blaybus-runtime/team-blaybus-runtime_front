@@ -1,3 +1,5 @@
+// todo: 디자인 typo font 반영 필요
+
 export const typoVariants = {
   m01_bold_m: {
     fontFamily: "Nunito-Extra, sans-serif",
