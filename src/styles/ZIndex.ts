@@ -1,5 +1,5 @@
 /**
- * Z-Index 관리 - 애플리케이션 전체에서 사용되는 z-index 값들을  관리합니다.
+ * Z-Index 관리 - 애플리케이션 전체에서 사용되는 z-index 값들을 관리합니다.
  */
 
 export const zIndex = {

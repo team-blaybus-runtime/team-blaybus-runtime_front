@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Div } from "@/styles/BaseStyledTags";
 import { Noto_Sans_KR } from "next/font/google";
-import colors from "./Colors";
+import colors from "@/styles/Colors";
 
 const Default = styled(Div)`
   white-space: pre-line;
