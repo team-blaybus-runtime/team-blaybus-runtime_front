@@ -17,6 +17,10 @@ export const fontSizes = {
   md: "18px",
   lg: "20px",
   xl: "24px",
+  size_22: "22px",
+  size_28: "28px",
+  size_32: "32px",
+  size_40: "40px",
   "2xl": "36px",
   "3xl": "48px",
   "4xl": "56px",
@@ -41,8 +45,20 @@ export const letterSpacing = {
   default: "0px",
 } as const;
 
-const responsiveSize = (desktop: string, tablet: string, mobile: string) =>
-  [desktop, tablet, mobile] as const;
+type ResponsiveFontSize = readonly [string, string, string];
+type TypoVariantValue = {
+  fontFamily: string;
+  fontWeight: number;
+  fontSize: string | ResponsiveFontSize;
+  lineHeight: string;
+  letterSpacing: string;
+};
+
+const responsiveSize = (
+  desktop: string,
+  tablet: string,
+  mobile: string,
+): ResponsiveFontSize => [desktop, tablet, mobile] as const;
 
 export const typoVariants = {
   hero: {
@@ -70,28 +86,28 @@ export const typoVariants = {
   headline_m: {
     fontFamily: fontFamily.base,
     fontWeight: fontWeights.bold,
-    fontSize: responsiveSize(fontSizes["4xl"], "40px", "32px"),
+    fontSize: responsiveSize(fontSizes["4xl"], fontSizes.size_40, fontSizes.size_32),
     lineHeight: lineHeights.pct_125,
     letterSpacing: letterSpacing.default,
   },
   headline_s: {
     fontFamily: fontFamily.base,
     fontWeight: fontWeights.bold,
-    fontSize: responsiveSize(fontSizes["3xl"], fontSizes["2xl"], "28px"),
+    fontSize: responsiveSize(fontSizes["3xl"], fontSizes["2xl"], fontSizes.size_28),
     lineHeight: lineHeights.pct_125,
     letterSpacing: letterSpacing.default,
   },
   title_1: {
     fontFamily: fontFamily.base,
     fontWeight: fontWeights.bold,
-    fontSize: responsiveSize(fontSizes["2xl"], "28px", fontSizes.xl),
+    fontSize: responsiveSize(fontSizes["2xl"], fontSizes.size_28, fontSizes.xl),
     lineHeight: lineHeights.pct_140,
     letterSpacing: letterSpacing.default,
   },
   title_2: {
     fontFamily: fontFamily.base,
     fontWeight: fontWeights.bold,
-    fontSize: responsiveSize(fontSizes.xl, "22px", fontSizes.lg),
+    fontSize: responsiveSize(fontSizes.xl, fontSizes.size_22, fontSizes.lg),
     lineHeight: lineHeights.pct_140,
     letterSpacing: letterSpacing.default,
   },
@@ -179,7 +195,7 @@ export const typoVariants = {
     lineHeight: lineHeights.s,
     letterSpacing: letterSpacing.default,
   },
-} as const;
+} as const satisfies Record<string, TypoVariantValue>;
 
 export type TypoVariant = keyof typeof typoVariants;
 
