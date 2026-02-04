@@ -1,9 +1,12 @@
+import { CenterColumn } from "@/styles/base/BaseComponents";
+import HomeInfo from "@/component/home/HomeInfo";
+import StudyBtn from "@/component/home/StudyBtn";
+
 export default function Home() {
   return (
-    <>
-      <div>
-        <h1>runtime-front</h1>
-      </div>
-    </>
+    <CenterColumn width="100%" height="100%" p="289px 360px">
+      <HomeInfo />
+      <StudyBtn />
+    </CenterColumn>
   );
 }
