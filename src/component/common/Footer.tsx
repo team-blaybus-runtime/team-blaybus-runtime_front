@@ -1,7 +1,6 @@
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
-import React from "react";
 
 const FOOTER_SECTIONS = [
   {
@@ -22,6 +21,7 @@ export default function Footer() {
       bg="neutral_1100"
       p="48px 360px"
       gridGap="24px"
+      minWidth="1280px"
     >
       <Row width="100%" justifyContent="space-between">
         <Img

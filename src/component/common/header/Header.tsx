@@ -28,7 +28,13 @@ export default function Header() {
   ];
 
   return (
-    <CenterRow width="100%" height="68px" bg="neutral_1100" p="16px 350px">
+    <CenterRow
+      width="100%"
+      height="68px"
+      bg="neutral_1100"
+      p="16px 350px"
+      minWidth="1280px"
+    >
       <Img
         src="/icons/common/Logo.svg"
         alt="logo"
@@ -45,7 +51,7 @@ export default function Header() {
               width="69px"
               textAlign="center"
               onClick={() => router.push(menu.href)}
-              style={{ cursor: "pointer" }}
+              style={{ cursor: "pointer", whiteSpace: "nowrap" }}
             >
               {menu.name}
             </Font>

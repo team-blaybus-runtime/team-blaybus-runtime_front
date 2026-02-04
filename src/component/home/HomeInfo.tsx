@@ -3,7 +3,7 @@ import { Img } from "@/styles/base/BaseStyledTags";
 
 export default function HomeInfo() {
   return (
-    <CenterColumn width="1200px" height="208px" gridGap="25px">
+    <CenterColumn width="1200px" gridGap="25px">
       <Img
         src="/icons/home/homeLogo.svg"
         alt="home-info"
