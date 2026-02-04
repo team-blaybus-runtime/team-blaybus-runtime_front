@@ -23,7 +23,7 @@ jobs:
         with:
           source-directory: "."
           destination-github-username: "kelly6226"
-          destination-repository-name: "balybus-runtime-front"
+          destination-repository-name: "blaybus-runtime-front"
           user-email: ${{ secrets.EMAIL }}
           commit-message: "Sync main from organization repo: ${{ github.sha }}"
           target-branch: main
