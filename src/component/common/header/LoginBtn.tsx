@@ -14,6 +14,7 @@ export default function LoginBtn() {
         typo="button_3"
         color="blue_700"
         textAlign="center"
+        bg="neutral_0"
         style={{ cursor: "pointer" }}
       >
         로그인/회원가입

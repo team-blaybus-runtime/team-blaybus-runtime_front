@@ -3,15 +3,15 @@ import React from "react";
 import styled from "styled-components";
 import Header from "./header/Header";
 import { Column } from "@/styles/base/BaseComponents";
-
-// 공통 레이아웃을 작성할 부분입니다.
-// ex. Header, Footer, Sidebar 등
+import Footer from "@/component/common/Footer";
+import colors from "@/styles/constant/colors";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <LayoutRoot>
       <Header />
       <Content>{children}</Content>
+      <Footer />
     </LayoutRoot>
   );
 }
@@ -28,4 +28,5 @@ const Content = styled.main`
   height: 100%;
   display: flex;
   min-width: 1280px;
+  background-color: ${colors.neutral_1100};
 `;
