@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import Header from "./Header";
+import Header from "./header/Header";
 import { Column } from "@/styles/base/BaseComponents";
 
 // 공통 레이아웃을 작성할 부분입니다.
