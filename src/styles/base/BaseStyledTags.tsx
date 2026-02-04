@@ -36,10 +36,11 @@ const styles = compose(
   space,
   typography,
   background,
-  variant(typoConfig)
+  variant(typoConfig),
 );
 export interface ITagProps
-  extends ColorProps,
+  extends
+    ColorProps,
     FlexboxProps,
     LayoutProps,
     BorderProps,

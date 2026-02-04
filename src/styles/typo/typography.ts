@@ -13,8 +13,8 @@ const Default = styled(Div)`
   letter-spacing: ${letterSpacing.default};
 `;
 
-const Font = styled(Default)<{ $color?: string }>`
-  color: ${({ $color }) => $color || colors.black};
+const Font = styled(Default)<{ color?: string }>`
+  color: ${({ color }) => color || colors.black};
 `;
 
 const fonts = { ...fontFamily };

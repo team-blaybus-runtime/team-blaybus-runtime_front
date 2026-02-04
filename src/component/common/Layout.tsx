@@ -1,9 +1,31 @@
 "use client";
 import React from "react";
+import styled from "styled-components";
+import Header from "./Header";
+import { Column } from "@/styles/base/BaseComponents";
 
 // 공통 레이아웃을 작성할 부분입니다.
 // ex. Header, Footer, Sidebar 등
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <LayoutRoot>
+      <Header />
+      <Content>{children}</Content>
+    </LayoutRoot>
+  );
 }
+
+const LayoutRoot = styled(Column)`
+  width: 100%;
+  height: 100dvh;
+  overflow-x: auto;
+`;
+
+const Content = styled.main`
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  min-width: 1280px;
+`;
