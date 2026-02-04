@@ -14,6 +14,7 @@ export default function WorkflowPage() {
         <CenterColumn width="auto" height="100px" bg="red_50" px="20px">
           <Font typo="headline_s" color="red_600">
             Font 컴포넌트 사용하는 방식 예시입니다.
+            커밋용 예시입니다.
           </Font>
         </CenterColumn>
       </Row>
