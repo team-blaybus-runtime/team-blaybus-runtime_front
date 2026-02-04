@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import "@xyflow/react/dist/style.css";
 import { Layout } from "@/component/common/Layout";
 import { Providers } from "@/providers/Providers";
 import StyledComponentsRegistry from "@/providers/StyledComponentsRegistry";
