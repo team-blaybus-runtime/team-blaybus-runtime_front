@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import Header from "./header/Header";
+import Header from "@/component/common/header/Header";
 import { Column } from "@/styles/base/BaseComponents";
 import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
@@ -20,6 +20,7 @@ const LayoutRoot = styled(Column)`
   width: 100%;
   height: 100dvh;
   overflow-x: auto;
+  overflow-y: auto;
 `;
 
 const Content = styled.main`
@@ -27,6 +28,7 @@ const Content = styled.main`
   min-height: 0;
   height: 100%;
   display: flex;
-  min-width: 1280px;
   background-color: ${colors.neutral_1100};
+  min-width: 1280px;
+  min-height: 800px;
 `;
