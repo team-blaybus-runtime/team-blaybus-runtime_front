@@ -18,10 +18,8 @@ export default function Footer() {
     <Column
       width="100%"
       height="284px"
-      bg="neutral_1100"
-      p="48px 320px"
+      py="48px"
       gridGap="24px"
-      minWidth="1280px"
     >
       <Row width="100%" justifyContent="space-between">
         <Img
