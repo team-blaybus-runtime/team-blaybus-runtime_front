@@ -9,17 +9,17 @@ export default function UserSummary() {
   ] as const;
 
   return (
-    <CenterRow width="100%" height="140px" py="30px" >
+    <CenterRow width="100%" height="140px" py="30px" flexShrink="0">
       <CenterRow
         width="100%"
-        height="100%"
+        height="80px"
         px="80px"
         bg="neutral_900"
         borderRadius="20px"
         justifyContent="space-between"
       >
         {/* 학생 정보 관련 부분 */}
-        <Row width="100%" height="100%" gridGap="30px" alignItems="center">
+        <Row width="100%" gridGap="30px" alignItems="center">
           {summaryItems.map(({ label, value }) => (
             <CenterRow key={label} gridGap="10px">
               <Font typo="title_2" color="neutral_0">
