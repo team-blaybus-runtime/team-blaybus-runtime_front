@@ -83,8 +83,8 @@ const Overlay = styled(Column)`
 `;
 
 const Modal = styled(Column)`
-  width: 1200px;
-  min-width: 1200px;
+  width: 80%;
+  max-width: 1200px;
   height: 700px;
   max-height: calc(100% - 48px);
   background-color: ${colors.neutral_900};
