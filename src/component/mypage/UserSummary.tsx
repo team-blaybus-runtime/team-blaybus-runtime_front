@@ -25,7 +25,7 @@ export default function UserSummary() {
               <Font typo="title_2" color="neutral_0">
                 {label}
               </Font>
-              <Font typo="label_m" color="neutral_0">
+              <Font typo="body_1" color="neutral_0">
                 {value}
               </Font>
             </CenterRow>
