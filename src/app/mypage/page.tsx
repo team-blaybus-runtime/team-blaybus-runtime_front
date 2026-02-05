@@ -2,6 +2,7 @@ import { CenterColumn, Row } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
 import UserSummary from "@/component/mypage/UserSummary";
 import UserMemo from "@/component/mypage/UserMemo";
+import { Suspense } from "react";
 
 export default function Mypage() {
   return (
@@ -12,7 +13,9 @@ export default function Mypage() {
         </Font>
       </Row>
       <UserSummary />
-      <UserMemo />
+      <Suspense fallback={null}>
+        <UserMemo />
+      </Suspense>
     </CenterColumn>
   );
 }
