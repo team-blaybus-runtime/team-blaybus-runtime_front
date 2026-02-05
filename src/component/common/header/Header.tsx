@@ -31,9 +31,7 @@ export default function Header() {
     <CenterRow
       width="100%"
       height="68px"
-      bg="neutral_1100"
-      p="16px 350px"
-      minWidth="1280px"
+      py="16px"
     >
       <Img
         src="/icons/common/Logo.svg"

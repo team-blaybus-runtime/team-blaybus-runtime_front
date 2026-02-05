@@ -9,9 +9,19 @@ import colors from "@/styles/constant/colors";
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <LayoutRoot>
-      <Header />
-      <Content>{children}</Content>
-      <Footer />
+      <HeaderWrapper>
+        <PageContainer>
+          <Header />
+        </PageContainer>
+      </HeaderWrapper>
+      <Content>
+        <PageContainer>{children}</PageContainer>
+      </Content>
+      <FooterWrapper>
+        <PageContainer>
+          <Footer />
+        </PageContainer>
+      </FooterWrapper>
     </LayoutRoot>
   );
 }
@@ -24,11 +34,29 @@ const LayoutRoot = styled(Column)`
 `;
 
 const Content = styled.main`
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
+  flex: 1 0 auto;
   display: flex;
+  width: 100%;
   background-color: ${colors.neutral_1100};
   min-width: 1280px;
   min-height: 800px;
+`;
+
+const PageContainer = styled.div`
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+`;
+
+const HeaderWrapper = styled.header`
+  width: 100%;
+  background-color: ${colors.neutral_1100};
+  min-width: 1280px;
+`;
+
+const FooterWrapper = styled.footer`
+  width: 100%;
+  background-color: ${colors.neutral_1100};
+  min-width: 1280px;
 `;

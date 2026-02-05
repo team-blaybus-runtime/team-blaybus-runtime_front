@@ -17,6 +17,15 @@ const Font = styled(Default)<{ color?: string }>`
   color: ${({ color }) => color || colors.black};
 `;
 
+const FontLine = styled(Font)<{ line?: number }>`
+  word-break: break-all;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: ${(props) => props.line ?? 0};
+  overflow: hidden;
+`;
+
 const fonts = { ...fontFamily };
 
-export { Font, fonts };
+export { Font, FontLine, fonts };
