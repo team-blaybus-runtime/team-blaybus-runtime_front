@@ -32,7 +32,7 @@ export default function Header() {
       width="100%"
       height="68px"
       bg="neutral_1100"
-      p="16px 350px"
+      p="16px 320px"
       minWidth="1280px"
     >
       <Img

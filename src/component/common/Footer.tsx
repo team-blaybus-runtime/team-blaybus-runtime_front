@@ -19,7 +19,7 @@ export default function Footer() {
       width="100%"
       height="284px"
       bg="neutral_1100"
-      p="48px 360px"
+      p="48px 320px"
       gridGap="24px"
       minWidth="1280px"
     >
