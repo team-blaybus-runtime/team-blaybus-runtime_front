@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Img } from "@/styles/base/BaseStyledTags";
@@ -22,6 +23,7 @@ const DOMAINS = [
 ];
 
 export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
+  const router = useRouter();
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const cardRowRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -88,6 +90,7 @@ export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
     if (!selectedDomain) return;
     // TODO: /workflow 페이지로 이동 또는 학습 시작 로직
     onClose();
+    router.push(`/study/${selectedDomain}`);
   };
 
   return (

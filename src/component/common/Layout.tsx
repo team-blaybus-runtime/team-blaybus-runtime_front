@@ -1,12 +1,19 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
+import { usePathname } from "next/navigation";
 import Header from "@/component/common/header/Header";
 import { Column } from "@/styles/base/BaseComponents";
 import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/study")) {
+    return <LayoutRoot>{children}</LayoutRoot>;
+  }
+
   return (
     <LayoutRoot>
       <HeaderWrapper>
