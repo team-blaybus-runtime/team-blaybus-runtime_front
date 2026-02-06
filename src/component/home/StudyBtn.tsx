@@ -9,7 +9,7 @@ export default function StudyBtn() {
       bg="blue_700"
       borderRadius="8px"
       gridGap="4px"
-      width="104px"
+      width="auto"
       height="40px"
       style={{
         cursor: "pointer",
