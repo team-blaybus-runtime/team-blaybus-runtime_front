@@ -11,7 +11,7 @@ export default function Header() {
   const menuList = [
     {
       name: "Home",
-      href: "/",
+      href: "/main",
     },
     {
       name: "My Page",
