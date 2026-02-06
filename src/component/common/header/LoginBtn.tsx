@@ -5,7 +5,7 @@ export default function LoginBtn() {
   return (
     <Button
       bg="neutral_0"
-      width="106px"
+      width="auto"
       height="32px"
       borderRadius="8px"
       p="6px 8px"
