@@ -8,6 +8,7 @@ import colors from "@/styles/constant/colors";
 import MainInfo from "@/component/main/MainInfo";
 import StudyCard from "@/component/main/StudyCard";
 import NewStudyBtn from "@/component/main/NewStudyBtn";
+import NewStudyModal from "@/component/main/NewStudyModal";
 import Pagination from "@/component/common/Pagination";
 
 const ITEMS_PER_PAGE = 20;
@@ -21,6 +22,7 @@ const mockCards = Array.from({ length: 100 }, (_, i) => ({
 
 export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [studyModalOpen, setStudyModalOpen] = useState(false);
   const lastPage = Math.ceil(mockCards.length / ITEMS_PER_PAGE);
 
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -34,7 +36,7 @@ export default function HomePage() {
           <Font typo="title_3" color={colors.neutral_0}>
             학습 내역
           </Font>
-          <NewStudyBtn />
+          <NewStudyBtn onClick={() => setStudyModalOpen(true)} />
         </Row>
         <CardGrid>
           {currentCards.map((card) => (
@@ -52,6 +54,10 @@ export default function HomePage() {
           onPageChange={setCurrentPage}
         />
       </Column>
+      <NewStudyModal
+        open={studyModalOpen}
+        onClose={() => setStudyModalOpen(false)}
+      />
     </Column>
   );
 }

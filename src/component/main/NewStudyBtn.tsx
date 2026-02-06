@@ -4,9 +4,13 @@ import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 
-export default function NewStudyBtn() {
+interface NewStudyBtnProps {
+  onClick?: () => void;
+}
+
+export default function NewStudyBtn({ onClick }: NewStudyBtnProps) {
   return (
-    <StyledButton>
+    <StyledButton onClick={onClick}>
       <Font typo="button_2" color={colors.neutral_0}>
         새로 학습하기
       </Font>

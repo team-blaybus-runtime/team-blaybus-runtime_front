@@ -1,11 +1,12 @@
 "use client";
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
-import { Div } from "@/styles/base/BaseStyledTags";
+import { Div, Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 
 interface StudyCardProps {
+  thumbnail?: string;
   domain: string;
   title: string;
   date: string;
@@ -13,6 +14,7 @@ interface StudyCardProps {
 }
 
 export default function StudyCard({
+  thumbnail,
   domain,
   title,
   date,
@@ -20,7 +22,9 @@ export default function StudyCard({
 }: StudyCardProps) {
   return (
     <CardWrapper onClick={onClick}>
-      <Thumbnail />
+      <ThumbnailWrapper>
+        {thumbnail && <ThumbnailImg src={thumbnail} alt={title} />}
+      </ThumbnailWrapper>
       <Column p="16px" gridGap="8px">
         <Badge>
           <Font typo="caption_s" color={colors.neutral_200}>
@@ -48,12 +52,19 @@ const CardWrapper = styled(Column)`
   box-sizing: border-box;
 `;
 
-const Thumbnail = styled(Div)`
+const ThumbnailWrapper = styled(Div)`
   width: 100%;
   aspect-ratio: 380 / 253;
   background-color: ${colors.neutral_800};
   border-radius: 8px;
   flex-shrink: 0;
+  overflow: hidden;
+`;
+
+const ThumbnailImg = styled(Img)`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 const Badge = styled(Div)`
