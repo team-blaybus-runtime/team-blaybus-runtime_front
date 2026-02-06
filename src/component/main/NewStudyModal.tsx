@@ -16,10 +16,13 @@ interface NewStudyModalProps {
 }
 
 const DOMAINS = [
-  { id: "drone", name: "Drone" },
-  { id: "machine-vice", name: "Machine Vice" },
-  { id: "suspension", name: "Suspension" },
-  { id: "robot-arm", name: "Robot Arm" },
+  { id: "drone", name: "Drone", image: "/3D Asset/Drone/조립도1.png" },
+  { id: "machine-vice", name: "Machine Vice", image: "/3D Asset/Machine Vice/공작 기계 바이스2.png" },
+  { id: "suspension", name: "Suspension", image: "/3D Asset/Suspension/서스펜션 조립도.png" },
+  { id: "robot-arm", name: "Robot Arm", image: "/3D Asset/Robot Arm/로보팔 조립도.png" },
+  { id: "robot-gripper", name: "Robot Gripper", image: "/3D Asset/Robot Gripper/로봇집게 조립도.png" },
+  { id: "leaf-spring", name: "Leaf Spring", image: "/3D Asset/Leaf Spring/판스프링 조립도.png" },
+  { id: "v4-engine", name: "V4 Engine", image: "/3D Asset/V4_Engine/V4실린더 엔진 조립도.png" },
 ];
 
 export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
@@ -121,6 +124,7 @@ export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
             <DomainCard
               key={domain.id}
               name={domain.name}
+              image={domain.image}
               state={getCardState(domain.id)}
               onClick={() => handleCardClick(domain.id)}
             />

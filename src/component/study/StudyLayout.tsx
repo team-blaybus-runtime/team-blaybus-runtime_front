@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
@@ -9,12 +10,22 @@ import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/StudyAIChat";
+import {
+  fetchStudyObject,
+  StudyObjectDetail,
+} from "@/apis/studyApi";
 
 interface StudyLayoutProps {
   id: string;
 }
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
+  const [data, setData] = useState<StudyObjectDetail | null>(null);
+
+  useEffect(() => {
+    fetchStudyObject(id).then(setData);
+  }, [id]);
+
   return (
     <LayoutRoot>
       <StudyHeader />
@@ -25,7 +36,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             <HeaderLeft>
               <FileNameContainer>
                 <Font typo="label_m" color="#ffffff">
-                  파일이름
+                  {data?.object.objectName ?? "로딩 중..."}
                 </Font>
                 <Img
                   src="/icons/study/edit.svg"
@@ -49,7 +60,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
               <TabCenter>
                 <StudyTabBar />
               </TabCenter>
-              <StudyViewer />
+              <StudyViewer components={data?.components ?? []} />
             </ViewerColumn>
             <StudyAIChat />
           </ContentRow>
