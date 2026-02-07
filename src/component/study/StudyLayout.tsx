@@ -11,7 +11,7 @@ import StudyTabBar from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/StudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
-import StudyMemo from "./StudyMemo";
+import StudyMemo from "./memo/StudyMemo";
 
 interface StudyLayoutProps {
   id: string;

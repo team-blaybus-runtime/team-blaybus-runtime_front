@@ -6,3 +6,10 @@ export type MemoItem = {
   createdAt: string;
   items: string[];
 };
+
+export type StudyMemo = {
+  id: number;
+  title: string;
+  content: string;
+  updatedAt: string;
+};
