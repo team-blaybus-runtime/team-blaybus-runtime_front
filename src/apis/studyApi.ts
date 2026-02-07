@@ -1,6 +1,31 @@
 import { Api } from "@/apis/baseApi";
 
-// 백엔드 DB 구조에 맞는 타입 정의
+// ===== API 응답 타입 =====
+
+export interface ViewInfo {
+  partId: number;
+  position: [number, number, number];
+  geometry: [number, number, number];
+  color: string;
+  roughnessMultiplier: number;
+  metalnessMultiplier: number;
+  envMapMultiplier: number;
+  roughness: number;
+  metalness: number;
+  envMapIntensity: number;
+}
+
+export interface UserStudyHistory {
+  userStudyHisId: number;
+  title: string;
+  updatedAt: string;
+  viewInfo: ViewInfo;
+  ProductTypeDesc: string;
+  productImageUrl: string;
+}
+
+// ===== 기존 프론트 타입 (Mock 용) =====
+
 export interface StudyObject {
   objectId: string;
   objectName: string;
@@ -144,7 +169,35 @@ const MOCK_DATA: Record<string, StudyObjectDetail> = {
   },
 };
 
+// ===== API 요청 타입 =====
+
+export interface CreateStudyHistoryRequest {
+  productType: string;
+  title: string;
+  viewInfo: ViewInfo;
+}
+
 // ===== API 함수 =====
+
+/**
+ * 사용자 학습 이력 조회
+ * GET /user-study-histories
+ */
+export async function fetchUserStudyHistories(): Promise<UserStudyHistory[]> {
+  const { data } = await Api.get<UserStudyHistory[]>("/user-study-histories");
+  return data;
+}
+
+/**
+ * 사용자 학습 이력 생성
+ * POST /user-study-histories
+ */
+export async function createUserStudyHistory(
+  body: CreateStudyHistoryRequest,
+): Promise<UserStudyHistory> {
+  const { data } = await Api.post<UserStudyHistory>("/user-study-histories", body);
+  return data;
+}
 
 /**
  * 오브젝트 상세 정보 + 컴포넌트 목록 조회
