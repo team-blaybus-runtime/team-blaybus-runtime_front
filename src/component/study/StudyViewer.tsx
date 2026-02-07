@@ -13,10 +13,11 @@ const ThreeCanvas = dynamic(
 );
 
 interface StudyViewerProps {
+  objectName: string;
   components: StudyComponent[];
 }
 
-export default function StudyViewer({ components }: StudyViewerProps) {
+export default function StudyViewer({ objectName, components }: StudyViewerProps) {
   const [modalOpen, setModalOpen] = useState(true);
 
   return (
@@ -26,6 +27,8 @@ export default function StudyViewer({ components }: StudyViewerProps) {
         <StudyContentModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
+          objectName={objectName}
+          components={components}
         />
       </OverlayContent>
     </ViewerContainer>
@@ -50,6 +53,7 @@ const OverlayContent = styled(Column)`
   align-items: flex-end;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 
   & > * {
     pointer-events: auto;

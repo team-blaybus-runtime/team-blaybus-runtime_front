@@ -65,7 +65,10 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
               <TabCenter>
                 <StudyTabBar />
               </TabCenter>
-              <StudyViewer components={data?.components ?? []} />
+              <StudyViewer
+                objectName={data?.object.objectName ?? ""}
+                components={data?.components ?? []}
+              />
             </ViewerColumn>
             {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
           </ContentRow>
