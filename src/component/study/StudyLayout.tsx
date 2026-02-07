@@ -11,6 +11,7 @@ import StudyTabBar from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/StudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
+import StudyMemo from "./StudyMemo";
 
 interface StudyLayoutProps {
   id: string;
@@ -66,7 +67,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
               </TabCenter>
               <StudyViewer components={data?.components ?? []} />
             </ViewerColumn>
-            <StudyAIChat />
+            {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
           </ContentRow>
         </MainContent>
       </Section>
