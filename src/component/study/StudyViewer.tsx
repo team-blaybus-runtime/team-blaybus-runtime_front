@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import StudyContentModal from "@/component/study/StudyContentModal";
 import AssemblyControls from "@/component/study/AssemblyControls";
+import EditToolbar from "@/component/study/EditToolbar";
 import { StudyComponent, UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
 import { StudyTab } from "@/component/study/StudyTabBar";
 
@@ -122,12 +123,20 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
           <AssemblyControls />
         </OverlayBottom>
       )}
+
+      {/* 편집 탭: 하단 중앙 편집 툴바 */}
+      {activeTab === "편집" && (
+        <OverlayBottom>
+          <EditToolbar />
+        </OverlayBottom>
+      )}
     </ViewerContainer>
   );
 }
 
 const ViewerContainer = styled(Column)`
   flex: 1;
+  min-height: 0;
   position: relative;
   background-color: #2b2b2b;
   border-radius: 16px;

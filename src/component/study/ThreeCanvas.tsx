@@ -128,9 +128,6 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
 }
 
 const CanvasContainer = styled.div`
-  width: 100%;
-  height: 100%;
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
 `;
