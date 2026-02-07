@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import StudyContentModal from "@/component/study/StudyContentModal";
-import { StudyComponent } from "@/apis/studyApi";
+import { StudyComponent, UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
 
 const ThreeCanvas = dynamic(
   () => import("@/component/study/ThreeCanvas"),
@@ -19,6 +19,13 @@ interface StudyViewerProps {
 
 export default function StudyViewer({ objectName, components }: StudyViewerProps) {
   const [modalOpen, setModalOpen] = useState(true);
+  const [histories, setHistories] = useState<UserStudyHistory[]>([]);
+
+  useEffect(() => {
+    fetchUserStudyHistories()
+      .then(setHistories)
+      .catch(() => setHistories([]));
+  }, []);
 
   return (
     <ViewerContainer>
@@ -28,7 +35,7 @@ export default function StudyViewer({ objectName, components }: StudyViewerProps
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           objectName={objectName}
-          components={components}
+          histories={histories}
         />
       </OverlayContent>
     </ViewerContainer>

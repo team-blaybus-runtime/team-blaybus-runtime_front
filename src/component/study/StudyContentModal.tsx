@@ -2,23 +2,23 @@
 
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
-import { Button, Img } from "@/styles/base/BaseStyledTags";
+import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
-import { StudyComponent } from "@/apis/studyApi";
+import { UserStudyHistory } from "@/apis/studyApi";
 
 interface StudyContentModalProps {
   open: boolean;
   onClose: () => void;
   objectName: string;
-  components: StudyComponent[];
+  histories: UserStudyHistory[];
 }
 
 export default function StudyContentModal({
   open,
   onClose,
   objectName,
-  components,
+  histories,
 }: StudyContentModalProps) {
   if (!open) return null;
 
@@ -34,23 +34,14 @@ export default function StudyContentModal({
       </ModalHeader>
 
       <ThumbnailGrid>
-        {components.map((comp) => (
-          <ThumbnailCard key={comp.componentId}>
-            {comp.thumbnailUrl ? (
-              <Img
-                src={comp.thumbnailUrl}
-                alt={comp.componentName}
-                width="100%"
-                height="100%"
-                style={{ objectFit: "contain" }}
-              />
-            ) : (
-              <PlaceholderIcon>
-                <Font typo="caption_s" color={colors.neutral_700}>
-                  {comp.componentName.charAt(0)}
-                </Font>
-              </PlaceholderIcon>
-            )}
+        {histories.map((h) => (
+          <ThumbnailCard key={h.userStudyHisId}>
+            <PartPreview
+              $color={h.viewInfo.color}
+              $width={h.viewInfo.geometry[0]}
+              $height={h.viewInfo.geometry[1]}
+              $depth={h.viewInfo.geometry[2]}
+            />
           </ThumbnailCard>
         ))}
       </ThumbnailGrid>
@@ -58,39 +49,24 @@ export default function StudyContentModal({
       <Divider />
 
       <DescriptionList>
-        {components.map((comp) => (
-          <DescriptionItem key={comp.componentId}>
+        {histories.map((h) => (
+          <DescriptionItem key={h.userStudyHisId}>
             <Font typo="label_s" color={colors.neutral_0}>
-              {comp.componentName}
-              {comp.description && getKoreanName(comp.componentName) && (
-                <> ({getKoreanName(comp.componentName)})</>
-              )}
+              {h.title}
             </Font>
-            {comp.description && (
+            <PartMeta>
               <Font typo="caption_m" color={colors.neutral_500}>
-                {comp.description}
+                Part {h.viewInfo.partId}
               </Font>
-            )}
+              <Font typo="caption_m" color={colors.neutral_500}>
+                {new Date(h.updatedAt).toLocaleDateString("ko-KR")}
+              </Font>
+            </PartMeta>
           </DescriptionItem>
         ))}
       </DescriptionList>
     </ModalContainer>
   );
-}
-
-const KOREAN_NAMES: Record<string, string> = {
-  Base: "베이스",
-  "Base Joint": "베이스 관절",
-  "Shoulder Joint": "어깨 관절",
-  "Upper Arm Link": "상부 링크",
-  "Elbow Joint": "팔꿈치 관절",
-  "Forearm Link": "하부 링크",
-  "Wrist Joint": "손목 관절",
-  "End Effector Mount": "엔드 이펙터 마운트",
-};
-
-function getKoreanName(name: string): string | null {
-  return KOREAN_NAMES[name] ?? null;
 }
 
 function CloseIcon() {
@@ -104,6 +80,37 @@ function CloseIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/** viewInfo.geometry 비율로 3D-느낌 박스 렌더 */
+function PartPreview({
+  $color,
+  $width,
+  $height,
+  $depth,
+}: {
+  $color: string;
+  $width: number;
+  $height: number;
+  $depth: number;
+}) {
+  const maxDim = Math.max($width, $height, $depth);
+  const w = ($width / maxDim) * 60;
+  const h = ($height / maxDim) * 60;
+
+  return (
+    <PreviewBox>
+      <PreviewShape
+        style={{
+          width: `${w}%`,
+          height: `${h}%`,
+          backgroundColor: $color,
+          borderRadius: "4px",
+          boxShadow: `4px 4px 0px 0px ${$color}66`,
+        }}
+      />
+    </PreviewBox>
   );
 }
 
@@ -168,13 +175,16 @@ const ThumbnailCard = styled.div`
   }
 `;
 
-const PlaceholderIcon = styled.div`
+const PreviewBox = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${colors.neutral_900};
+`;
+
+const PreviewShape = styled.div`
+  transition: transform 0.2s;
 `;
 
 const Divider = styled.div`
@@ -204,5 +214,9 @@ const DescriptionList = styled(Column)`
 `;
 
 const DescriptionItem = styled(Column)`
-  gap: 8px;
+  gap: 6px;
+`;
+
+const PartMeta = styled(Row)`
+  gap: 12px;
 `;
