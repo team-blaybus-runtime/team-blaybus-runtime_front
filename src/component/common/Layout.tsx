@@ -1,14 +1,24 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { usePathname } from "next/navigation";
 import Header from "@/component/common/header/Header";
 import { Column } from "@/styles/base/BaseComponents";
 import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
+import ProfileSetupModal from "@/component/common/modal/ProfileSetupModal";
+import { ProfileSetupValues } from "@/type/user";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [profileSetupOpen, setProfileSetupOpen] = useState(true);
+
+  const handleProfileSubmit = (_values: ProfileSetupValues) => {
+    setProfileSetupOpen(false);
+  };
+  const handleProfileClose = () => {
+    setProfileSetupOpen(false);
+  };
 
   const isWideScreen = pathname === "/";
 
@@ -31,6 +41,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Footer />
         </PageContainer>
       </FooterWrapper>
+      <ProfileSetupModal
+        open={profileSetupOpen}
+        onSubmit={handleProfileSubmit}
+        onClose={handleProfileClose}
+      />
     </LayoutRoot>
   );
 }
