@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <CenterColumn width="100%" height="100%">
       <Img src="/icons/landing/landing.svg" alt="landing-img" />
-      <Div
+      {/* <Div
         position="absolute"
         bottom="0"
         left="5%"
@@ -15,7 +15,7 @@ export default function Home() {
         width="80%"
       >
         <StudyBtn />
-      </Div>
+      </Div> */}
     </CenterColumn>
   );
 }
