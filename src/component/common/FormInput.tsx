@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import { Input } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
+import type { TypoVariant } from "@/styles/typo/fontVariants";
 import colors from "@/styles/constant/colors";
 
 type FormInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -22,7 +23,7 @@ export default function FormInput({
   const hasError = Boolean(errorMessage);
 
   return (
-    <Column width="100%" gridGap="4px" py="10px">
+    <Column width="100%" gridGap="4px" py={errorMessage ? "0px" : "10px"}>
       <Font typo="label_s" color={colors.neutral_500}>
         {label}
       </Font>
