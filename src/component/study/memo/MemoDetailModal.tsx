@@ -64,7 +64,7 @@ const Card = styled(Column)`
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background-color: ${colors.neutral_900};
+  background-color: ${colors.neutral_1000};
   border-radius: 12px;
   padding: 20px 19px;
   gap: 19px;
