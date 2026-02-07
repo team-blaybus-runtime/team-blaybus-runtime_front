@@ -37,7 +37,7 @@ const Pagination = ({
   return (
     <CenterRow gridGap="8px">
       <ArrowButton disabled={noPrevPages} onClick={prevPageGroup}>
-        <Img width="20px" height="20px" src="/icons/home/pageLeft.svg" />
+        <Img width="20px" height="20px" src="/icons/common/pageLeft.svg" />
       </ArrowButton>
       <CenterRow gridGap="8px">
         {pageNumbers.map((number, idx) => (
@@ -53,7 +53,7 @@ const Pagination = ({
         ))}
       </CenterRow>
       <ArrowButton disabled={noNextPages} onClick={nextPageGroup}>
-        <Img width="20px" height="20px" src="/icons/home/pageRight.svg" />
+        <Img width="20px" height="20px" src="/icons/common/pageRight.svg" />
       </ArrowButton>
     </CenterRow>
   );

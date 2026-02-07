@@ -10,6 +10,8 @@ import colors from "@/styles/constant/colors";
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  const isWideScreen = pathname === "/";
+
   if (pathname.startsWith("/study")) {
     return <LayoutRoot>{children}</LayoutRoot>;
   }
@@ -21,7 +23,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Header />
         </PageContainer>
       </HeaderWrapper>
-      <Content>
+      <Content isWideScreen={isWideScreen}>
         <PageContainer>{children}</PageContainer>
       </Content>
       <FooterWrapper>
@@ -40,12 +42,12 @@ const LayoutRoot = styled(Column)`
   overflow-y: auto;
 `;
 
-const Content = styled.main`
+const Content = styled.main<{ isWideScreen: boolean }>`
   flex: 1 0 auto;
   display: flex;
   width: 100%;
   background-color: ${colors.neutral_1100};
-  min-width: 1280px;
+  min-width: ${({ isWideScreen }) => (isWideScreen ? "100vw" : "1280px")};
   min-height: 800px;
 `;
 
