@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import StudyContentModal from "@/component/study/StudyContentModal";
+import AssemblyControls from "@/component/study/AssemblyControls";
 import { StudyComponent, UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
+import { StudyTab } from "@/component/study/StudyTabBar";
 
 const ThreeCanvas = dynamic(
   () => import("@/component/study/ThreeCanvas"),
@@ -83,9 +85,10 @@ const MOCK_DRONE_HISTORIES: UserStudyHistory[] = [
 interface StudyViewerProps {
   objectName: string;
   components: StudyComponent[];
+  activeTab: StudyTab;
 }
 
-export default function StudyViewer({ objectName, components }: StudyViewerProps) {
+export default function StudyViewer({ objectName, components, activeTab }: StudyViewerProps) {
   const [modalOpen, setModalOpen] = useState(true);
   const [histories, setHistories] = useState<UserStudyHistory[]>(MOCK_DRONE_HISTORIES);
 
@@ -94,22 +97,31 @@ export default function StudyViewer({ objectName, components }: StudyViewerProps
       .then((data) => {
         if (data.length > 0) setHistories(data);
       })
-      .catch(() => {
-        // API 실패 시 하드코딩 데이터 유지
-      });
+      .catch(() => {});
   }, []);
 
   return (
     <ViewerContainer>
       <ThreeCanvas components={components} />
-      <OverlayContent>
-        <StudyContentModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          objectName={objectName}
-          histories={histories}
-        />
-      </OverlayContent>
+
+      {/* 단일 부품 탭: 오른쪽 모달 */}
+      {activeTab === "단일 부품" && (
+        <OverlayRight>
+          <StudyContentModal
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            objectName={objectName}
+            histories={histories}
+          />
+        </OverlayRight>
+      )}
+
+      {/* 조립도 탭: 하단 중앙 컨트롤 */}
+      {activeTab === "조립도" && (
+        <OverlayBottom>
+          <AssemblyControls />
+        </OverlayBottom>
+      )}
     </ViewerContainer>
   );
 }
@@ -123,7 +135,7 @@ const ViewerContainer = styled(Column)`
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
 `;
 
-const OverlayContent = styled(Column)`
+const OverlayRight = styled(Column)`
   position: absolute;
   top: 0;
   right: 0;
@@ -133,6 +145,19 @@ const OverlayContent = styled(Column)`
   pointer-events: none;
   z-index: 1;
   overflow: hidden;
+
+  & > * {
+    pointer-events: auto;
+  }
+`;
+
+const OverlayBottom = styled(Column)`
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
 
   & > * {
     pointer-events: auto;
