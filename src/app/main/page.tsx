@@ -47,24 +47,36 @@ export default function HomePage() {
           </Font>
           <NewStudyBtn onClick={() => setStudyModalOpen(true)} />
         </Row>
-        <CardGrid>
-          {currentCards.map((h) => (
-            <StudyCard
-              key={h.userStudyHisId}
-              thumbnail={h.productImageUrl}
-              domain={h.ProductTypeDesc}
-              title={h.title}
-              date={new Date(h.updatedAt).toLocaleDateString("ko-KR")}
-              onClick={() => router.push(`/study/${h.ProductTypeDesc.toLowerCase()}`)}
+        {histories.length === 0 ? (
+          <EmptyState>
+            <EmptyIcon />
+            <Font typo="label_m" color={colors.neutral_600}>
+              아직 학습 내역이 없습니다
+            </Font>
+            <Font typo="caption_m" color={colors.neutral_700}>
+              새로 학습하기 버튼을 눌러 첫 학습을 시작해보세요
+            </Font>
+          </EmptyState>
+        ) : (
+          <>
+            <CardGrid>
+              {currentCards.map((h) => (
+                <StudyCard
+                  key={h.userStudyHisId}
+                  thumbnail={h.productImageUrl}
+                  domain={h.ProductTypeDesc}
+                  title={h.title}
+                  date={new Date(h.updatedAt).toLocaleDateString("ko-KR")}
+                  onClick={() => router.push(`/study/${h.ProductTypeDesc.toLowerCase()}`)}
+                />
+              ))}
+            </CardGrid>
+            <Pagination
+              currentPage={currentPage}
+              lastPage={lastPage}
+              onPageChange={setCurrentPage}
             />
-          ))}
-        </CardGrid>
-        {histories.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            lastPage={lastPage}
-            onPageChange={setCurrentPage}
-          />
+          </>
         )}
       </Column>
       <NewStudyModal
@@ -81,3 +93,47 @@ const CardGrid = styled(Grid)`
   gap: 24px;
   row-gap: 40px;
 `;
+
+const EmptyState = styled(Column)`
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 120px 0;
+`;
+
+function EmptyIcon() {
+  return (
+    <svg
+      width="64"
+      height="64"
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        x="8"
+        y="12"
+        width="48"
+        height="40"
+        rx="4"
+        stroke={colors.neutral_800}
+        strokeWidth="2"
+      />
+      <path
+        d="M8 22H56"
+        stroke={colors.neutral_800}
+        strokeWidth="2"
+      />
+      <circle cx="16" cy="17" r="2" fill={colors.neutral_700} />
+      <circle cx="22" cy="17" r="2" fill={colors.neutral_700} />
+      <circle cx="28" cy="17" r="2" fill={colors.neutral_700} />
+      <path
+        d="M24 36L30 30L36 36L44 28"
+        stroke={colors.neutral_700}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
