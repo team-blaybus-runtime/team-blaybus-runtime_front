@@ -21,6 +21,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const isWideScreen = pathname === "/";
+  const noFooterScreen =
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register");
 
   if (pathname.startsWith("/study")) {
     return <LayoutRoot>{children}</LayoutRoot>;
@@ -36,16 +40,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Content isWideScreen={isWideScreen}>
         <PageContainer>{children}</PageContainer>
       </Content>
-      <FooterWrapper>
-        <PageContainer>
-          <Footer />
-        </PageContainer>
-      </FooterWrapper>
-      <ProfileSetupModal
+      {!noFooterScreen && (
+        <FooterWrapper>
+          <PageContainer>
+            <Footer />
+          </PageContainer>
+        </FooterWrapper>
+      )}
+      {/* <ProfileSetupModal
         open={profileSetupOpen}
         onSubmit={handleProfileSubmit}
         onClose={handleProfileClose}
-      />
+      /> */}
     </LayoutRoot>
   );
 }
