@@ -1,6 +1,5 @@
-import { CenterColumn } from "@/styles/base/BaseComponents";
-import HomeInfo from "@/component/landing/HomeInfo";
 import StudyBtn from "@/component/landing/StudyBtn";
+import { CenterColumn } from "@/styles/base/BaseComponents";
 import { Div, Img } from "@/styles/base/BaseStyledTags";
 
 export default function Home() {
@@ -10,12 +9,13 @@ export default function Home() {
       <Div
         position="absolute"
         bottom="0"
-        left="0"
+        left="5%"
         right="0"
         height="100px"
-        bg="red_700"
-        width="100px"
-      ></Div>
+        width="80%"
+      >
+        <StudyBtn />
+      </Div>
     </CenterColumn>
   );
 }
