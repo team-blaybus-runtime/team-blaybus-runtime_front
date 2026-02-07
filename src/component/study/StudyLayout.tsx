@@ -10,10 +10,8 @@ import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/StudyAIChat";
-import {
-  fetchStudyObject,
-  StudyObjectDetail,
-} from "@/apis/studyApi";
+import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
+import StudyMemo from "./memo/StudyMemo";
 
 interface StudyLayoutProps {
   id: string;
@@ -21,6 +19,10 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [data, setData] = useState<StudyObjectDetail | null>(null);
+
+  const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
+    "aiChat",
+  );
 
   useEffect(() => {
     fetchStudyObject(id).then(setData);
@@ -30,7 +32,10 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
     <LayoutRoot>
       <StudyHeader />
       <Section>
-        <StudySidebar />
+        <StudySidebar
+          sideBarContent={sideBarContent}
+          setSideBarContent={setSideBarContent}
+        />
         <MainContent>
           <PageHeader>
             <HeaderLeft>
@@ -62,7 +67,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
               </TabCenter>
               <StudyViewer components={data?.components ?? []} />
             </ViewerColumn>
-            <StudyAIChat />
+            {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
           </ContentRow>
         </MainContent>
       </Section>

@@ -1,14 +1,30 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { usePathname } from "next/navigation";
 import Header from "@/component/common/header/Header";
 import { Column } from "@/styles/base/BaseComponents";
 import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
+import ProfileSetupModal from "@/component/common/modal/ProfileSetupModal";
+import { ProfileSetupValues } from "@/type/user";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [profileSetupOpen, setProfileSetupOpen] = useState(true);
+
+  const handleProfileSubmit = (_values: ProfileSetupValues) => {
+    setProfileSetupOpen(false);
+  };
+  const handleProfileClose = () => {
+    setProfileSetupOpen(false);
+  };
+
+  const isWideScreen = pathname === "/";
+  const noFooterScreen =
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register");
 
   if (pathname.startsWith("/study")) {
     return <LayoutRoot>{children}</LayoutRoot>;
@@ -21,14 +37,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Header />
         </PageContainer>
       </HeaderWrapper>
-      <Content>
+      <Content isWideScreen={isWideScreen}>
         <PageContainer>{children}</PageContainer>
       </Content>
-      <FooterWrapper>
-        <PageContainer>
-          <Footer />
-        </PageContainer>
-      </FooterWrapper>
+      {!noFooterScreen && (
+        <FooterWrapper>
+          <PageContainer>
+            <Footer />
+          </PageContainer>
+        </FooterWrapper>
+      )}
+      {/* <ProfileSetupModal
+        open={profileSetupOpen}
+        onSubmit={handleProfileSubmit}
+        onClose={handleProfileClose}
+      /> */}
     </LayoutRoot>
   );
 }
@@ -40,12 +63,12 @@ const LayoutRoot = styled(Column)`
   overflow-y: auto;
 `;
 
-const Content = styled.main`
+const Content = styled.main<{ isWideScreen: boolean }>`
   flex: 1 0 auto;
   display: flex;
   width: 100%;
   background-color: ${colors.neutral_1100};
-  min-width: 1280px;
+  min-width: ${({ isWideScreen }) => (isWideScreen ? "100vw" : "1280px")};
   min-height: 800px;
 `;
 

@@ -3,8 +3,10 @@
 import styled from "styled-components";
 import { Row } from "@/styles/base/BaseComponents";
 import { Img } from "@/styles/base/BaseStyledTags";
+import { useRouter } from "next/navigation";
 
 export default function StudyHeader() {
+  const router = useRouter();
   return (
     <HeaderContainer>
       <Container>
@@ -13,6 +15,8 @@ export default function StudyHeader() {
           alt="logo"
           width="120px"
           height="20px"
+          onClick={() => router.push("/main")}
+          style={{ cursor: "pointer" }}
         />
       </Container>
     </HeaderContainer>

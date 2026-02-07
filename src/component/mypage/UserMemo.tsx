@@ -8,6 +8,7 @@ import MemoModal from "@/component/mypage/MemoModal";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MemoItem } from "@/type/memo";
+import EmptyMemo from "@/component/mypage/EmptyMemo";
 
 export default function UserMemo() {
   const router = useRouter();
@@ -153,25 +154,29 @@ export default function UserMemo() {
           Memo
         </Font>
       </Row>
-      <Column width="100%" justifyContent="center" pb="43px" gridGap="30px">
-        <Grid gridTemplateColumns="repeat(2, 1fr)" gridGap="30px">
-          {memos.map((memo) => (
-            <MemoCard
-              key={memo.id}
-              title={memo.title}
-              tag={memo.tag}
-              preview={memo.preview}
-              createdAt={memo.createdAt}
-              onClick={() => setSelectedMemo(memo)}
-            />
-          ))}
-        </Grid>
-        <Pagination
-          currentPage={currentPage}
-          lastPage={lastPage}
-          onPageChange={handlePageChange}
-        />
-      </Column>
+      {memos.length === 0 ? (
+        <EmptyMemo />
+      ) : (
+        <Column width="100%" justifyContent="center" pb="43px" gridGap="30px">
+          <Grid gridTemplateColumns="repeat(2, 1fr)" gridGap="30px">
+            {memos.map((memo) => (
+              <MemoCard
+                key={memo.id}
+                title={memo.title}
+                tag={memo.tag}
+                preview={memo.preview}
+                createdAt={memo.createdAt}
+                onClick={() => setSelectedMemo(memo)}
+              />
+            ))}
+          </Grid>
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            onPageChange={handlePageChange}
+          />
+        </Column>
+      )}
       <MemoModal
         open={Boolean(selectedMemo)}
         onClose={() => setSelectedMemo(null)}
