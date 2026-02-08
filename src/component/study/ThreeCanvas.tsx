@@ -68,11 +68,20 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
 function SimulatorSync() {
   const { currentTime, duration, isPlaying } = useSimulatorStore();
   const { setExplodeLevel } = useModelStore();
+  const wasPlayingRef = useRef(false);
 
   useFrame(() => {
-    if (!isPlaying && currentTime === 0) return;
     const progress = duration > 0 ? currentTime / duration : 0;
-    setExplodeLevel(progress);
+
+    if (isPlaying) {
+      // 재생 중: 매 프레임 동기화
+      setExplodeLevel(progress);
+      wasPlayingRef.current = true;
+    } else if (wasPlayingRef.current) {
+      // 방금 멈춤/리셋: 한 번만 동기화 후 수동 조작 허용
+      setExplodeLevel(progress);
+      wasPlayingRef.current = false;
+    }
   });
 
   return null;

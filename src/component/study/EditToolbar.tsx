@@ -1,19 +1,20 @@
 "use client";
 
+import Image from "next/image";
 import styled from "styled-components";
 import { Row } from "@/styles/base/BaseComponents";
 import colors from "@/styles/constant/colors";
 import { useEditStore, EditTool } from "@/store/useEditStore";
 import { Font } from "@/styles/typo/typography";
 
-const TOOLS: { id: EditTool; icon: React.ReactNode }[] = [
-  { id: "select", icon: <SelectIcon /> },
-  { id: "transform", icon: <TransformIcon /> },
-  { id: "zoomIn", icon: <ZoomInIcon /> },
-  { id: "zoomOut", icon: <ZoomOutIcon /> },
-  { id: "focus", icon: <FocusIcon /> },
-  { id: "undo", icon: <UndoIcon /> },
-  { id: "redo", icon: <RedoIcon /> },
+const TOOLS: { id: EditTool; icon: string }[] = [
+  { id: "select", icon: "/icons/study/Select.svg" },
+  { id: "transform", icon: "/icons/study/Transform.svg" },
+  { id: "zoomIn", icon: "/icons/study/ZoomIn.svg" },
+  { id: "zoomOut", icon: "/icons/study/ZoomOut.svg" },
+  { id: "focus", icon: "/icons/study/Focus.svg" },
+  { id: "undo", icon: "/icons/study/Undo.svg" },
+  { id: "redo", icon: "/icons/study/Redo.svg" },
 ];
 
 const PERSISTENT_TOOLS: EditTool[] = ["select", "transform"];
@@ -31,7 +32,7 @@ export default function EditToolbar() {
             $active={isActive}
             onClick={() => setActiveTool(tool.id)}
           >
-            {tool.icon}
+            <Image src={tool.icon} alt={tool.id} width={20} height={20} />
             {tool.id === "transform" && isActive && (
               <ModeBadge>
                 <Font typo="caption_m" color={colors.neutral_0}>
@@ -43,81 +44,6 @@ export default function EditToolbar() {
         );
       })}
     </ToolbarContainer>
-  );
-}
-
-function SelectIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M4 2L4 15L8 11L12 18L14 17L10 10L15 10L4 2Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function TransformIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M10 2L13 5H7L10 2Z" fill="currentColor" />
-      <path d="M10 18L7 15H13L10 18Z" fill="currentColor" />
-      <path d="M2 10L5 7V13L2 10Z" fill="currentColor" />
-      <path d="M18 10L15 13V7L18 10Z" fill="currentColor" />
-      <path d="M10 5V15M5 10H15" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function PanIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M10 2V6M10 14V18M2 10H6M14 10H18M10 2L8 4M10 2L12 4M10 18L8 16M10 18L12 16M2 10L4 8M2 10L4 12M18 10L16 8M18 10L16 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ZoomInIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M13.5 13.5L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9 6.5V11.5M6.5 9H11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ZoomOutIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M13.5 13.5L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M6.5 9H11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function FocusIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M10 2V5M10 15V18M2 10H5M15 10H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function UndoIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M4 8H13C15.2091 8 17 9.79086 17 12C17 14.2091 15.2091 16 13 16H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 5L4 8L7 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function RedoIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M16 8H7C4.79086 8 3 9.79086 3 12C3 14.2091 4.79086 16 7 16H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M13 5L16 8L13 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 
@@ -149,13 +75,11 @@ const ToolButton = styled.button<{ $active: boolean }>`
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  color: ${({ $active }) => ($active ? colors.neutral_0 : colors.neutral_400)};
   background-color: ${({ $active }) => ($active ? colors.blue_700 : colors.neutral_900)};
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s;
 
   &:hover {
     background-color: ${({ $active }) =>
       $active ? colors.blue_700 : colors.neutral_800};
-    color: ${colors.neutral_0};
   }
 `;
