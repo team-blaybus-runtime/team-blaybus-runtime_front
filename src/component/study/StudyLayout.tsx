@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
+import { C } from "@/constant";
 import StudyHeader from "@/component/study/StudyHeader";
 import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
-import StudyAIChat from "@/component/study/StudyAIChat";
+import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
+import useStudyAIChat from "@/providers/useStudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
 import StudyMemo from "./memo/StudyMemo";
+import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
+import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
 
 interface StudyLayoutProps {
   id: string;
@@ -19,15 +23,41 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [data, setData] = useState<StudyObjectDetail | null>(null);
+  const { data: memoData } = useFetchUserMemosQuery();
 
   const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
     "aiChat",
   );
   const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
+  const viewerRef = useRef<HTMLDivElement | null>(null);
+  const aiChat = useStudyAIChat({
+    productType: data?.object.objectName ?? id,
+    chatHistoryId: 1,
+  });
+  const { exportPdf, isExporting } = useStudyPdfExport({
+    viewerRef,
+    memos: memoData ?? [],
+    messages: aiChat.messages,
+    title: data?.object.objectName ?? "학습 정리",
+  });
 
   useEffect(() => {
     fetchStudyObject(id).then(setData);
   }, [id]);
+
+  // 새로고침 시 페이지별 사이드바 선택된 옵션을 유지하기 위해 로컬스토리지 사용
+  useEffect(() => {
+    const storageKey = `${C.STUDY_SIDEBAR_CONTENT_KEY_PREFIX}${id}`;
+    const stored = window.localStorage.getItem(storageKey);
+    if (stored === "memo" || stored === "aiChat") {
+      setSideBarContent(stored);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const storageKey = `${C.STUDY_SIDEBAR_CONTENT_KEY_PREFIX}${id}`;
+    window.localStorage.setItem(storageKey, sideBarContent);
+  }, [id, sideBarContent]);
 
   return (
     <LayoutRoot>
@@ -36,6 +66,8 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         <StudySidebar
           sideBarContent={sideBarContent}
           setSideBarContent={setSideBarContent}
+          onPdfExport={exportPdf}
+          isPdfExporting={isExporting}
         />
         <MainContent>
           <PageHeader>
@@ -70,9 +102,17 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
                 objectName={data?.object.objectName ?? ""}
                 components={data?.components ?? []}
                 activeTab={activeTab}
+                viewerRef={viewerRef}
               />
             </ViewerColumn>
-            {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
+            {sideBarContent === "aiChat" ? (
+              <StudyAIChat chat={aiChat ?? []} />
+            ) : (
+              <StudyMemo
+                memos={memoData ?? []}
+                productType={data?.object.objectName ?? id}
+              />
+            )}
           </ContentRow>
         </MainContent>
       </Section>

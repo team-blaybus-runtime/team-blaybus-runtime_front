@@ -8,7 +8,7 @@ import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
 import ProfileSetupModal from "@/component/common/modal/ProfileSetupModal";
 import { ProfileSetup } from "@/type/user";
-import { useAuthPageRedirect } from "@/hooks/useAuthPageRedirect";
+import { useAuthPageRedirect } from "@/hooks/auth/useAuthPageRedirect";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -13,16 +13,16 @@ interface MemoModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  tag: string;
-  items: string[];
+  productTypeDesc: string;
+  content: string;
 }
 
 export default function MemoModal({
   open,
   onClose,
   title,
-  tag,
-  items,
+  productTypeDesc,
+  content,
 }: MemoModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -43,7 +43,7 @@ export default function MemoModal({
             <Font typo="title_2" color="neutral_0">
               {title}
             </Font>
-            <CardTag tag={tag} />
+            <CardTag productTypeDesc={productTypeDesc} />
           </Row>
           <Img
             src="/icons/mypage/modalCancel.svg"
@@ -58,11 +58,9 @@ export default function MemoModal({
         <Divider />
 
         <Body px="60px" pt="20px">
-          {items.map((text, index) => (
-            <Font typo="body_1" color="neutral_0" key={`${index}-${text}`}>
-              • {text}
-            </Font>
-          ))}
+          <Font typo="body_1" color="neutral_0">
+            {content}
+          </Font>
         </Body>
       </Modal>
     </Overlay>

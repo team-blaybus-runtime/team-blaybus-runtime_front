@@ -5,7 +5,7 @@ import { Font } from "@/styles/typo/typography";
 import { Button } from "@/styles/base/BaseStyledTags";
 import AlreadyAccount from "@/component/register/AlreadyAccount";
 import RegisterInfo from "@/component/register/RegisterInfo";
-import { useRegisterForm } from "@/hooks/useRegisterForm";
+import { useRegisterForm } from "@/hooks/auth/useRegisterForm";
 import colors from "@/styles/constant/colors";
 
 export default function Register() {

@@ -1,15 +1,8 @@
 export type MemoItem = {
-  id: string;
-  title: string;
-  tag: string;
-  preview: string;
-  createdAt: string;
-  items: string[];
-};
-
-export type StudyMemo = {
-  id: number;
+  memoId: string;
   title: string;
   content: string;
   updatedAt: string;
+  productType?: string;
+  productTypeDesc?: string;
 };
