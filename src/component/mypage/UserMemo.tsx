@@ -18,16 +18,6 @@ export default function UserMemo() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
   const lastPage = 7;
-  // const memos: MemoItem[] = [
-  //   {
-  //     memoId: "memo-1",
-  //     title: "머신 바이스 체결할때 헷갈린점",
-  //     productType: "Machine Vice",
-  //     content:
-  //       "・죠(jaw) 간격 조절 시 나사 피치 중요 ・체결 시 미끄럼 방지용 톱니 구조 확인",
-  //     updatedAt: "2026.02.03",
-  //   },
-  // ];
 
   const { data: memos } = useFetchUserMemosQuery();
 
@@ -68,7 +58,7 @@ export default function UserMemo() {
               <MemoCard
                 key={memo.memoId}
                 title={memo.title}
-                productType={memo.productType}
+                productTypeDesc={memo.productTypeDesc ?? ""}
                 content={memo.content}
                 updatedAt={memo.updatedAt}
                 onClick={() => setSelectedMemo(memo)}
@@ -86,7 +76,7 @@ export default function UserMemo() {
         open={Boolean(selectedMemo)}
         onClose={() => setSelectedMemo(null)}
         title={selectedMemo?.title ?? ""}
-        productType={selectedMemo?.productType ?? ""}
+        productTypeDesc={selectedMemo?.productTypeDesc ?? ""}
         content={selectedMemo?.content ?? ""}
       />
     </Column>

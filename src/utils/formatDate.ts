@@ -21,3 +21,16 @@ export const formatDate = (value: string) => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 };
+
+export const formatDateOnly = (value: string) => {
+  const trimmed = value.trim();
+  const hasTimezone = /([zZ]|[+-]\d{2}:?\d{2})$/.test(trimmed);
+  const normalized = hasTimezone ? trimmed : `${trimmed}Z`;
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
+};

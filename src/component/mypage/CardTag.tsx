@@ -2,10 +2,10 @@ import { CenterRow } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
 
 interface CardTagProps {
-  productType: string;
+  productTypeDesc: string;
 }
 
-export default function CardTag({ productType }: CardTagProps) {
+export default function CardTag({ productTypeDesc }: CardTagProps) {
   return (
     <CenterRow
       width="fit-content"
@@ -15,7 +15,7 @@ export default function CardTag({ productType }: CardTagProps) {
       borderRadius="5px"
     >
       <Font typo="label_s" color="neutral_0">
-        {productType}
+        {productTypeDesc ?? "타입 없음"}
       </Font>
     </CenterRow>
   );

@@ -3,5 +3,6 @@ export type MemoItem = {
   title: string;
   content: string;
   updatedAt: string;
-  productType: string;
+  productType?: string;
+  productTypeDesc?: string;
 };

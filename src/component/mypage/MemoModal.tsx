@@ -13,7 +13,7 @@ interface MemoModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  productType: string;
+  productTypeDesc: string;
   content: string;
 }
 
@@ -21,7 +21,7 @@ export default function MemoModal({
   open,
   onClose,
   title,
-  productType,
+  productTypeDesc,
   content,
 }: MemoModalProps) {
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function MemoModal({
             <Font typo="title_2" color="neutral_0">
               {title}
             </Font>
-            <CardTag productType={productType} />
+            <CardTag productTypeDesc={productTypeDesc} />
           </Row>
           <Img
             src="/icons/mypage/modalCancel.svg"
