@@ -15,10 +15,6 @@ export default function Header({ userInfo }: { userInfo?: UserInfo }) {
       href: "/main",
     },
     {
-      name: "My Page",
-      href: "/mypage",
-    },
-    {
       name: "Settings",
       href: "/settings",
     },
@@ -46,7 +42,7 @@ export default function Header({ userInfo }: { userInfo?: UserInfo }) {
                 key={menu.name}
                 typo="button_2"
                 color="neutral_200"
-                width="69px"
+                px="12px"
                 onClick={() => router.push(menu.href)}
                 style={{
                   cursor: "pointer",
