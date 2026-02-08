@@ -1,7 +1,10 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
-import React from "react";
+import { clearTokens } from "@/utils/authTokens";
 
 const ACCOUNT_MENU_ITEMS = [
   "비밀번호 변경",
@@ -13,6 +16,7 @@ const ACCOUNT_MENU_ITEMS = [
 const SUPPORT_MENU_ITEMS = ["알림 설정", "FAQ", "피드백"];
 
 export default function MenuCard({ type }: { type: "account" | "support" }) {
+  const router = useRouter();
   const title = type === "account" ? "계정 설정" : "지원";
   const icon =
     type === "account"
@@ -20,6 +24,13 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
       : "/icons/settings/settingSupport.svg";
   const menuItems =
     type === "account" ? ACCOUNT_MENU_ITEMS : SUPPORT_MENU_ITEMS;
+
+  const handleMenuClick = (label: string) => {
+    if (label !== "로그아웃") return;
+
+    clearTokens();
+    router.push("/login");
+  };
 
   return (
     <Column
@@ -43,6 +54,7 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
             height="29px"
             gridGap="4px"
             style={{ cursor: "pointer" }}
+            onClick={() => handleMenuClick(label)}
           >
             <Img
               src="/icons/settings/arrowRightGrey.svg"
