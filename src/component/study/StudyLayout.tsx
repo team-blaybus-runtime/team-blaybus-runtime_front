@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
+import { C } from "@/constant";
 import StudyHeader from "@/component/study/StudyHeader";
 import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
@@ -43,6 +44,20 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   useEffect(() => {
     fetchStudyObject(id).then(setData);
   }, [id]);
+
+  // 새로고침 시 페이지별 사이드바 선택된 옵션을 유지하기 위해 로컬스토리지 사용
+  useEffect(() => {
+    const storageKey = `${C.STUDY_SIDEBAR_CONTENT_KEY_PREFIX}${id}`;
+    const stored = window.localStorage.getItem(storageKey);
+    if (stored === "memo" || stored === "aiChat") {
+      setSideBarContent(stored);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const storageKey = `${C.STUDY_SIDEBAR_CONTENT_KEY_PREFIX}${id}`;
+    window.localStorage.setItem(storageKey, sideBarContent);
+  }, [id, sideBarContent]);
 
   return (
     <LayoutRoot>
