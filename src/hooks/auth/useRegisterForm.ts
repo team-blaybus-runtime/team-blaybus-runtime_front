@@ -27,13 +27,14 @@ const mapRegisterErrors = (
 ) => {
   const fieldErrors = payload?.fieldErrors ?? {};
   const nextErrorFields = Object.keys(fieldErrors) as RegisterField[];
+  const hasFieldErrors = nextErrorFields.length > 0;
   const submit = nextErrorFields.length ? "" : fallbackMessage;
 
   return {
     errorFields: nextErrorFields,
     errors: {
       ...INITIAL_ERRORS,
-      email: fieldErrors.email ?? "",
+      email: fieldErrors.email ?? (!hasFieldErrors ? fallbackMessage : ""),
       password: fieldErrors.password ?? "",
       confirmPassword: fieldErrors.confirmPassword ?? "",
       submit,
