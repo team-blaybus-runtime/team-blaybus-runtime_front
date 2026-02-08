@@ -5,10 +5,3 @@ export type MemoItem = {
   updatedAt: string;
   productType: string;
 };
-
-export type StudyMemo = {
-  id: number;
-  title: string;
-  content: string;
-  updatedAt: string;
-};

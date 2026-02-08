@@ -8,29 +8,16 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import MemoCardItem from "./MemoCardItem";
 import MemoDetailModal from "./MemoDetailModal";
-import type { StudyMemo } from "@/type/memo";
+import type { MemoItem } from "@/type/memo";
 
-const INITIAL_MEMOS: StudyMemo[] = [
-  {
-    id: 1,
-    title: "어떤 부품에 대한 생각",
-    content: "내 생각은 이래 이래생각 생각",
-    updatedAt: "2026-02-07",
-  },
-  {
-    id: 2,
-    title: "이거 확인해 줘",
-    content: "이거 확인해 줘",
-    updatedAt: "2026-02-07",
-  },
-];
+interface StudyMemoProps {
+  memos: MemoItem[];
+}
 
-export default function StudyMemo() {
-  const [memos, setMemos] = useState<StudyMemo[]>(INITIAL_MEMOS);
-  const [input, setInput] = useState("");
-  const [activeMemoId, setActiveMemoId] = useState<number | null>(null);
+export default function StudyMemo({ memos }: StudyMemoProps) {
+  const [activeMemoId, setActiveMemoId] = useState<string | null>(null);
 
-  const handleMemoOpen = useCallback((id: number) => {
+  const handleMemoOpen = useCallback((id: string) => {
     setActiveMemoId(id);
   }, []);
 
@@ -38,7 +25,7 @@ export default function StudyMemo() {
     setActiveMemoId(null);
   }, []);
 
-  const activeMemo = memos.find((memo) => memo.id === activeMemoId) ?? null;
+  const activeMemo = memos.find((memo) => memo.memoId === activeMemoId) ?? null;
 
   return (
     <ChatContainer>
@@ -48,7 +35,11 @@ export default function StudyMemo() {
       <MemoAreaWrapper>
         <MemoArea>
           {memos.map((memo) => (
-            <MemoCardItem key={memo.id} memo={memo} onOpen={handleMemoOpen} />
+            <MemoCardItem
+              key={memo.memoId}
+              memo={memo}
+              onOpen={() => handleMemoOpen(memo.memoId)}
+            />
           ))}
         </MemoArea>
         {activeMemo && (
@@ -57,16 +48,14 @@ export default function StudyMemo() {
       </MemoAreaWrapper>
       <InputWrapper>
         <StyledTextArea
-          value={input}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setInput(e.target.value)
-          }
+          value=""
+          onChange={() => {}}
           onKeyDown={() => {}}
           placeholder="여기에 메모를 입력하세요..."
           rows={1}
         />
         <SendRow>
-          <SendButton onClick={() => {}} disabled={!input.trim()}>
+          <SendButton onClick={() => {}} disabled={false}>
             <Img
               src="/icons/study/memoSend.svg"
               alt="send"

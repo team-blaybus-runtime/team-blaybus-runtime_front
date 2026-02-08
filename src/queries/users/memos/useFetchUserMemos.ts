@@ -6,6 +6,6 @@ export const useFetchUserMemosQuery = () => {
   return useQuery({
     queryKey: ["fetchUserMemos"],
     queryFn: fetchUserMemos,
-    staleTime: 1000 * 60 * 1,
+    staleTime: 1000 * 60 * 1000, // 10분 캐시
   });
 };

@@ -1,20 +1,29 @@
 "use client";
 
 import styled from "styled-components";
+import type { KeyboardEvent, RefObject } from "react";
 import { Column } from "@/styles/base/BaseComponents";
 import MessageList from "@/component/study/aiChat/MessageList";
 import ChatInput from "@/component/study/aiChat/ChatInput";
-import useStudyAIChat from "@/component/study/aiChat/useStudyAIChat";
+import type { Message } from "@/type/aiChat";
+
+type StudyAIChatState = {
+  messages: Message[];
+  input: string;
+  showThinking: boolean;
+  isInputDisabled: boolean;
+  messageAreaRef: RefObject<HTMLDivElement | null>;
+  setInput: (value: string) => void;
+  handleSend: () => void;
+  handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleScroll: () => void;
+};
 
 interface StudyAIChatProps {
-  productType?: string;
-  chatHistoryId?: number;
+  chat: StudyAIChatState;
 }
 
-export default function StudyAIChat({
-  productType = "Drone",
-  chatHistoryId = 1,
-}: StudyAIChatProps) {
+export default function StudyAIChat({ chat }: StudyAIChatProps) {
   const {
     messages,
     input,
@@ -25,8 +34,7 @@ export default function StudyAIChat({
     handleSend,
     handleKeyDown,
     handleScroll,
-  } = useStudyAIChat({ productType, chatHistoryId });
-
+  } = chat;
   return (
     <ChatContainer>
       <MessageList

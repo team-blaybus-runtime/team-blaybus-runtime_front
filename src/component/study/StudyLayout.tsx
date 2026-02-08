@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
@@ -10,8 +10,11 @@ import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
+import useStudyAIChat from "@/component/study/aiChat/useStudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
 import StudyMemo from "./memo/StudyMemo";
+import useStudyPdfExport from "@/hooks/useStudyPdfExport";
+import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
 
 interface StudyLayoutProps {
   id: string;
@@ -19,18 +22,27 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [data, setData] = useState<StudyObjectDetail | null>(null);
+  const { data: memoData } = useFetchUserMemosQuery();
 
   const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
     "aiChat",
   );
   const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
+  const viewerRef = useRef<HTMLDivElement | null>(null);
+  const aiChat = useStudyAIChat({
+    productType: data?.object.objectName ?? id,
+    chatHistoryId: 2,
+  });
+  const { exportPdf, isExporting } = useStudyPdfExport({
+    viewerRef,
+    memos: memoData ?? [],
+    messages: aiChat.messages,
+    title: data?.object.objectName ?? "학습 정리",
+  });
 
   useEffect(() => {
     fetchStudyObject(id).then(setData);
   }, [id]);
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   return (
     <LayoutRoot>
@@ -39,6 +51,8 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         <StudySidebar
           sideBarContent={sideBarContent}
           setSideBarContent={setSideBarContent}
+          onPdfExport={exportPdf}
+          isPdfExporting={isExporting}
         />
         <MainContent>
           <PageHeader>
@@ -73,12 +87,13 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
                 objectName={data?.object.objectName ?? ""}
                 components={data?.components ?? []}
                 activeTab={activeTab}
+                viewerRef={viewerRef}
               />
             </ViewerColumn>
             {sideBarContent === "aiChat" ? (
-              <StudyAIChat productType={data?.object.objectName ?? id} />
+              <StudyAIChat chat={aiChat ?? []} />
             ) : (
-              <StudyMemo />
+              <StudyMemo memos={memoData ?? []} />
             )}
           </ContentRow>
         </MainContent>
