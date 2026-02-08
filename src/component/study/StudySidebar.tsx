@@ -3,6 +3,7 @@
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
+import { useRouter } from "next/navigation";
 
 export default function StudySidebar({
   sideBarContent,
@@ -10,11 +11,13 @@ export default function StudySidebar({
   onPdfExport,
   isPdfExporting = false,
 }: {
-  sideBarContent: "memo" | "aiChat";
-  setSideBarContent: (sideBarContent: "memo" | "aiChat") => void;
+  sideBarContent: "memo" | "aiChat" | "quiz";
+  setSideBarContent: (sideBarContent: "memo" | "aiChat" | "quiz") => void;
   onPdfExport?: () => void;
   isPdfExporting?: boolean;
 }) {
+  const router = useRouter();
+
   return (
     <SidebarContainer>
       <MenuContainer>
@@ -44,12 +47,27 @@ export default function StudySidebar({
             style={{ cursor: "pointer" }}
           />
           <Img
+            src={
+              sideBarContent === "quiz"
+                ? "/icons/study/activeQuiz.svg"
+                : "/icons/study/quiz.svg"
+            }
+            alt="quiz"
+            width="32px"
+            height="32px"
+            onClick={() => setSideBarContent("quiz")}
+            style={{ cursor: "pointer" }}
+          />
+          <Img
             src={"/icons/study/pdf.svg"}
             alt="memo"
             width="40px"
             height="40px"
             onClick={isPdfExporting ? undefined : onPdfExport}
-            style={{ cursor: isPdfExporting ? "not-allowed" : "pointer", opacity: isPdfExporting ? 0.5 : 1 }}
+            style={{
+              cursor: isPdfExporting ? "not-allowed" : "pointer",
+              opacity: isPdfExporting ? 0.5 : 1,
+            }}
           />
         </PrimaryMenu>
       </MenuContainer>
@@ -60,14 +78,26 @@ export default function StudySidebar({
             alt="info"
             width="24px"
             height="24px"
+            onClick={() => router.push("/mypage")}
           />
         </MenuButton>
+
         <MenuButton>
           <Img
             src="/icons/study/settings.svg"
             alt="settings"
             width="24px"
             height="24px"
+            onClick={() => router.push("/settings")}
+          />
+        </MenuButton>
+        <MenuButton>
+          <Img
+            src="/icons/study/workflow.svg"
+            alt="workflow"
+            width="24px"
+            height="24px"
+            onClick={() => router.push("/workflow")}
           />
         </MenuButton>
       </FooterMenu>
@@ -91,7 +121,7 @@ const MenuContainer = styled(Column)`
 
 const PrimaryMenu = styled(Column)`
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
 `;
 

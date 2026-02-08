@@ -53,13 +53,15 @@ export default function StudyMemo({ memos, productType }: StudyMemoProps) {
     );
   }, [content, isSendDisabled, productType, title]);
 
+  const isModalOpen = Boolean(activeMemo);
+
   return (
     <ChatContainer>
       <Font typo="title_3" color="neutral_0" py="6px">
         MEMO
       </Font>
-      <MemoAreaWrapper>
-        <MemoArea>
+      <MemoAreaWrapper $isModalOpen={isModalOpen}>
+        <MemoArea $isModalOpen={isModalOpen}>
           {memos.map((memo) => (
             <MemoCardItem
               key={memo.memoId}
@@ -80,17 +82,27 @@ export default function StudyMemo({ memos, productType }: StudyMemoProps) {
         <InputWrapper>
           <TitleInput
             value={title}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => setTitle(event.target.value.slice(0, 25))}
             placeholder="제목을 입력하세요..."
+            maxLength={25}
           />
+          <InputCountRow>
+            <Font typo="caption_s" color="neutral_500">
+              {title.length}/25
+            </Font>
+          </InputCountRow>
           <StyledTextArea
             value={content}
-            onChange={(event) => setContent(event.target.value)}
+            onChange={(event) => setContent(event.target.value.slice(0, 230))}
             onKeyDown={() => {}}
             placeholder="내용을 입력하세요..."
             rows={3}
+            maxLength={230}
           />
           <SendRow>
+            <Font typo="caption_s" color="neutral_500">
+              {content.length}/230
+            </Font>
             <SendButton onClick={handleSend} disabled={isSendDisabled}>
               <Img
                 src="/icons/study/memoSend.svg"
@@ -113,18 +125,19 @@ const ChatContainer = styled(Column)`
   grid-gap: 24px;
 `;
 
-const MemoAreaWrapper = styled.div`
+const MemoAreaWrapper = styled.div<{ $isModalOpen: boolean }>`
   position: relative;
   flex: 1;
+  overflow-y: ${({ $isModalOpen }) => ($isModalOpen ? "hidden" : "auto")};
   min-height: 0;
 `;
 
-const MemoArea = styled(Grid)`
+const MemoArea = styled(Grid)<{ $isModalOpen: boolean }>`
   grid-template-columns: repeat(2, 1fr);
   grid-gap: 12px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: ${({ $isModalOpen }) => ($isModalOpen ? "hidden" : "auto")};
   align-content: start;
   grid-auto-rows: max-content;
 `;
@@ -172,7 +185,15 @@ const StyledTextArea = styled(TextArea)`
 
 const SendRow = styled(Row)`
   justify-content: flex-end;
+  align-items: center;
   width: 100%;
+  gap: 8px;
+`;
+
+const InputCountRow = styled(Row)`
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
 `;
 
 const SendButton = styled(Button)`

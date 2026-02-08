@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
@@ -13,7 +13,8 @@ import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
 import useStudyAIChat from "@/providers/useStudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
-import StudyMemo from "./memo/StudyMemo";
+import StudyMemo from "@/component/study/memo/StudyMemo";
+import StudyQuiz from "@/component/study/quiz/StudyQuiz";
 import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
 import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
 
@@ -23,9 +24,11 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [data, setData] = useState<StudyObjectDetail | null>(null);
-  const { data: memoData } = useFetchUserMemosQuery();
+  const { data: memoData } = useFetchUserMemosQuery(data?.object.objectName);
 
-  const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
+  const [sideBarContent, setSideBarContent] = useState<
+    "memo" | "aiChat" | "quiz"
+  >(
     "aiChat",
   );
   const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
@@ -49,7 +52,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   useEffect(() => {
     const storageKey = `${C.STUDY_SIDEBAR_CONTENT_KEY_PREFIX}${id}`;
     const stored = window.localStorage.getItem(storageKey);
-    if (stored === "memo" || stored === "aiChat") {
+    if (stored === "memo" || stored === "aiChat" || stored === "quiz") {
       setSideBarContent(stored);
     }
   }, [id]);
@@ -107,10 +110,15 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             </ViewerColumn>
             {sideBarContent === "aiChat" ? (
               <StudyAIChat chat={aiChat ?? []} />
-            ) : (
+            ) : sideBarContent === "memo" ? (
               <StudyMemo
                 memos={memoData ?? []}
                 productType={data?.object.objectName ?? id}
+              />
+            ) : (
+              <StudyQuiz
+                objectId={id}
+                objectName={data?.object.objectName ?? id}
               />
             )}
           </ContentRow>

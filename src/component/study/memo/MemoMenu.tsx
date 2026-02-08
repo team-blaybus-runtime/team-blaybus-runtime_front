@@ -84,7 +84,7 @@ const MenuDropdown = styled(Column)`
   min-width: 177px;
   position: absolute;
   right: 0;
-  bottom: -9.5px;
+  bottom: 120px;
   transform: translateY(100%);
   background: ${colors.neutral_700};
   border-radius: 4px;
