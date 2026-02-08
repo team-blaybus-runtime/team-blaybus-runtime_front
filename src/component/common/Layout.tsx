@@ -8,14 +8,14 @@ import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
 import ProfileSetupModal from "@/component/common/modal/ProfileSetupModal";
 import { ProfileSetup } from "@/type/user";
-import { useFetchUserInfoQuery } from "@/queries/users/useFetchUserInfoQuery";
+import { useAuthPageRedirect } from "@/hooks/useAuthPageRedirect";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
-  const { data: userInfo } = useFetchUserInfoQuery(!isAuthPage);
+  const { userInfo } = useAuthPageRedirect(isAuthPage);
 
   const [profileSetupOpen, setProfileSetupOpen] = useState(true);
 
