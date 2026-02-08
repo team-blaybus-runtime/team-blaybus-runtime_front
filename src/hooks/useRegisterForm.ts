@@ -4,11 +4,11 @@ import { usePostSignUpMutation } from "@/queries/auth/usePostSignUpMutation";
 import type {
   RegisterErrors,
   RegisterField,
-  RegisterValues,
+  RegisterForm,
   SignUpErrorResponse,
 } from "@/type/user";
 
-const INITIAL_VALUES: RegisterValues = {
+const INITIAL_VALUES: RegisterForm = {
   email: "",
   password: "",
   confirmPassword: "",
@@ -61,11 +61,11 @@ export function useRegisterForm() {
       setErrors(errors);
     },
   });
-  const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES);
+  const [values, setValues] = useState<RegisterForm>(INITIAL_VALUES);
   const [errors, setErrors] = useState<RegisterErrors>(INITIAL_ERRORS);
   const [errorFields, setErrorFields] = useState<RegisterField[]>([]);
   const [lastSubmitValues, setLastSubmitValues] =
-    useState<RegisterValues>(INITIAL_VALUES);
+    useState<RegisterForm>(INITIAL_VALUES);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

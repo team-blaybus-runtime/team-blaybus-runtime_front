@@ -10,8 +10,6 @@ import { useFetchUserInfoQuery } from "@/queries/users/useFetchUserInfoQuery";
 export default function Mypage() {
   const { data: userInfo } = useFetchUserInfoQuery();
 
-  console.log(userInfo);
-
   return (
     <CenterColumn width="100%" flexShrink="0">
       <Row width="100%" height="130px" pt="80px" flexShrink="0">

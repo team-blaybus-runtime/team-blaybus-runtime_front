@@ -3,11 +3,11 @@ import { Api } from "@/apis/baseApi";
 import type {
   AuthTokenResponse,
   SignInRequest,
-  SignUpRequest,
+  RegisterForm,
 } from "@/type/user";
 
 // 회원가입 API
-export const postSignUp = async (data: SignUpRequest) => {
+export const postSignUp = async (data: RegisterForm) => {
   const response = await Api.post<AuthTokenResponse>("/auth/sign-up", data);
   return response.data;
 };

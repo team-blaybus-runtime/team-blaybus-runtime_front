@@ -1,10 +1,10 @@
 import React from "react";
 import { CenterColumn } from "@/styles/base/BaseComponents";
 import FormInput from "@/component/common/FormInput";
-import type { RegisterErrors, RegisterValues } from "@/type/user";
+import type { RegisterErrors, RegisterForm } from "@/type/user";
 
 interface RegisterInfoProps {
-  values: RegisterValues;
+  values: RegisterForm;
   errors: Pick<RegisterErrors, "email" | "password" | "confirmPassword">;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

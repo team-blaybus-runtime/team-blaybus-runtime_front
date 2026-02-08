@@ -6,16 +6,18 @@ export default function Home() {
   return (
     <CenterColumn width="100%" height="100%">
       <Img src="/icons/landing/landing.svg" alt="landing-img" />
-      {/* <Div
+      <Div
         position="absolute"
-        bottom="0"
-        left="5%"
+        bottom="40px"
+        left="0"
         right="0"
         height="100px"
-        width="80%"
+        width="100%"
+        display="flex"
+        justifyContent="center"
       >
         <StudyBtn />
-      </Div> */}
+      </Div>
     </CenterColumn>
   );
 }
