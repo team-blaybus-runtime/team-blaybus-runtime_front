@@ -134,19 +134,19 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
         </OverlayBottom>
       )}
 
-      {/* 시뮬레이터 탭: 좌측 상단 설정 패널 + 하단 중앙 타임라인 */}
+      {/* 좌측 상단 설정 패널: 항상 표시 */}
+      <OverlayTopLeft>
+        <SimulatorSettingsPanel
+          activePanel={simPanel}
+          onPanelChange={setSimPanel}
+        />
+      </OverlayTopLeft>
+
+      {/* 시뮬레이터 탭: 하단 중앙 타임라인 */}
       {activeTab === "시뮬레이터" && (
-        <>
-          <OverlayTopLeft>
-            <SimulatorSettingsPanel
-              activePanel={simPanel}
-              onPanelChange={setSimPanel}
-            />
-          </OverlayTopLeft>
-          <OverlayBottom>
-            <SimulatorControls />
-          </OverlayBottom>
-        </>
+        <OverlayBottom>
+          <SimulatorControls />
+        </OverlayBottom>
       )}
     </ViewerContainer>
   );
