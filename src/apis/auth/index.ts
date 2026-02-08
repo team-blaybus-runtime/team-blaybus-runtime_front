@@ -25,3 +25,18 @@ export const postRefreshToken = async (refreshToken: string) => {
   });
   return response.data;
 };
+
+// 비밀번호 변경 API
+export const putPassword = async (payload: {
+  oldPassword: string;
+  newPassword: string;
+}) => {
+  const response = await Api.put("/auth/password", payload);
+  return response.data;
+};
+
+// 회원 탈퇴 API
+export const deleteUser = async () => {
+  const response = await Api.delete("/users");
+  return response.data;
+};
