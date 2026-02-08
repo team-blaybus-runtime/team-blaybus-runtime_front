@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import styled from "styled-components";
 import { Row } from "@/styles/base/BaseComponents";
 import colors from "@/styles/constant/colors";
-
-type EditTool = "select" | "pan" | "zoomIn" | "zoomOut" | "focus" | "undo" | "redo";
+import { useEditStore, EditTool } from "@/store/useEditStore";
 
 const TOOLS: { id: EditTool; icon: React.ReactNode }[] = [
   { id: "select", icon: <SelectIcon /> },
@@ -17,15 +15,17 @@ const TOOLS: { id: EditTool; icon: React.ReactNode }[] = [
   { id: "redo", icon: <RedoIcon /> },
 ];
 
+const PERSISTENT_TOOLS: EditTool[] = ["select", "pan"];
+
 export default function EditToolbar() {
-  const [activeTool, setActiveTool] = useState<EditTool>("select");
+  const { activeTool, setActiveTool } = useEditStore();
 
   return (
     <ToolbarContainer>
       {TOOLS.map((tool) => (
         <ToolButton
           key={tool.id}
-          $active={activeTool === tool.id}
+          $active={PERSISTENT_TOOLS.includes(tool.id) && activeTool === tool.id}
           onClick={() => setActiveTool(tool.id)}
         >
           {tool.icon}
