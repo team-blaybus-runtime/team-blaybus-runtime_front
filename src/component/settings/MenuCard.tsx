@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Img } from "@/styles/base/BaseStyledTags";
@@ -21,6 +22,7 @@ const SUPPORT_MENU_ITEMS = ["알림 설정", "FAQ", "피드백"];
 
 export default function MenuCard({ type }: { type: "account" | "support" }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { mutate: deleteUser, isPending: isDeleting } =
@@ -45,6 +47,7 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
     if (label !== "로그아웃") return;
 
     clearTokens();
+    queryClient.removeQueries({ queryKey: ["fetchUserInfo"] });
     router.push("/");
   };
 

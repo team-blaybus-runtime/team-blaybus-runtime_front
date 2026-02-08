@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { deleteUser } from "@/apis/auth";
@@ -7,12 +7,14 @@ import { toast } from "sonner";
 
 export const useDeleteUserMutation = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: ["deleteUser"],
     mutationFn: () => deleteUser(),
     onSuccess: () => {
       clearTokens();
+      queryClient.removeQueries({ queryKey: ["fetchUserInfo"] });
       toast.success("탈퇴가 완료되었습니다.");
       router.push("/");
     },

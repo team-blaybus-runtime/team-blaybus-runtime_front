@@ -15,7 +15,7 @@ export const useAuthPageRedirect = (
 ): UseAuthPageRedirectResult => {
   const router = useRouter();
   const accessToken = getAccessToken();
-  const shouldFetchUserInfo = !isAuthPage || Boolean(accessToken);
+  const shouldFetchUserInfo = Boolean(accessToken);
   const { data: userInfo } = useFetchUserInfoQuery(shouldFetchUserInfo);
 
   useEffect(() => {
