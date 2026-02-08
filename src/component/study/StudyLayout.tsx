@@ -10,10 +10,10 @@ import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
-import useStudyAIChat from "@/component/study/aiChat/useStudyAIChat";
+import useStudyAIChat from "@/providers/useStudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
 import StudyMemo from "./memo/StudyMemo";
-import useStudyPdfExport from "@/hooks/useStudyPdfExport";
+import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
 import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
 
 interface StudyLayoutProps {
@@ -93,7 +93,10 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             {sideBarContent === "aiChat" ? (
               <StudyAIChat chat={aiChat ?? []} />
             ) : (
-              <StudyMemo memos={memoData ?? []} />
+              <StudyMemo
+                memos={memoData ?? []}
+                productType={data?.object.objectName ?? id}
+              />
             )}
           </ContentRow>
         </MainContent>

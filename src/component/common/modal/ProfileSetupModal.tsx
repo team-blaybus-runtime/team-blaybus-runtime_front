@@ -9,7 +9,7 @@ import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import FormInput from "@/component/common/FormInput";
 import { ProfileSetup } from "@/type/user";
-import { useProfileSetupForm } from "@/hooks/useProfileSetupForm";
+import { useProfileSetupForm } from "@/hooks/auth/useProfileSetupForm";
 
 interface ProfileSetupModalProps {
   open: boolean;

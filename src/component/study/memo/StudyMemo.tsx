@@ -3,19 +3,25 @@
 import { useCallback, useState } from "react";
 import styled from "styled-components";
 import { Column, Grid, Row } from "@/styles/base/BaseComponents";
-import { Button, Img, TextArea } from "@/styles/base/BaseStyledTags";
+import { Button, Img, Input, TextArea } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import MemoCardItem from "./MemoCardItem";
 import MemoDetailModal from "./MemoDetailModal";
 import type { MemoItem } from "@/type/memo";
+import { useCreateUserMemoMutation } from "@/queries/users/memos/useCreateUserMemoMutation";
 
 interface StudyMemoProps {
   memos: MemoItem[];
+  productType: string;
 }
 
-export default function StudyMemo({ memos }: StudyMemoProps) {
+export default function StudyMemo({ memos, productType }: StudyMemoProps) {
   const [activeMemoId, setActiveMemoId] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const { mutate: createMemo, isPending } = useCreateUserMemoMutation();
 
   const handleMemoOpen = useCallback((id: string) => {
     setActiveMemoId(id);
@@ -23,9 +29,29 @@ export default function StudyMemo({ memos }: StudyMemoProps) {
 
   const handleMemoClose = useCallback(() => {
     setActiveMemoId(null);
+    setIsEditingMemo(false);
   }, []);
 
   const activeMemo = memos.find((memo) => memo.memoId === activeMemoId) ?? null;
+  const isSendDisabled = !title.trim() || !content.trim() || isPending;
+
+  const handleSend = useCallback(() => {
+    if (isSendDisabled) return;
+
+    createMemo(
+      {
+        productType,
+        title: title.trim(),
+        content: content.trim(),
+      },
+      {
+        onSuccess: () => {
+          setTitle("");
+          setContent("");
+        },
+      },
+    );
+  }, [content, isSendDisabled, productType, title]);
 
   return (
     <ChatContainer>
@@ -43,28 +69,39 @@ export default function StudyMemo({ memos }: StudyMemoProps) {
           ))}
         </MemoArea>
         {activeMemo && (
-          <MemoDetailModal memo={activeMemo} onClose={handleMemoClose} />
+          <MemoDetailModal
+            memo={activeMemo}
+            onClose={handleMemoClose}
+            onEditingChange={setIsEditingMemo}
+          />
         )}
       </MemoAreaWrapper>
-      <InputWrapper>
-        <StyledTextArea
-          value=""
-          onChange={() => {}}
-          onKeyDown={() => {}}
-          placeholder="여기에 메모를 입력하세요..."
-          rows={1}
-        />
-        <SendRow>
-          <SendButton onClick={() => {}} disabled={false}>
-            <Img
-              src="/icons/study/memoSend.svg"
-              alt="send"
-              width="20px"
-              height="20px"
-            />
-          </SendButton>
-        </SendRow>
-      </InputWrapper>
+      {!isEditingMemo && (
+        <InputWrapper>
+          <TitleInput
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="제목을 입력하세요..."
+          />
+          <StyledTextArea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            onKeyDown={() => {}}
+            placeholder="내용을 입력하세요..."
+            rows={3}
+          />
+          <SendRow>
+            <SendButton onClick={handleSend} disabled={isSendDisabled}>
+              <Img
+                src="/icons/study/memoSend.svg"
+                alt="send"
+                width="20px"
+                height="20px"
+              />
+            </SendButton>
+          </SendRow>
+        </InputWrapper>
+      )}
     </ChatContainer>
   );
 }
@@ -96,15 +133,30 @@ const InputWrapper = styled(Column)`
   background-color: #2b2b2b;
   border-radius: 16px;
   padding: 12px;
-  gap: 2px;
+  gap: 8px;
   align-items: flex-end;
   flex-shrink: 0;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
+const TitleInput = styled(Input)`
+  width: 100%;
+  height: 36px;
+  background: transparent;
+  color: #d4d4d4;
+  font-family: Pretendard, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 4px 0;
+
+  &::placeholder {
+    color: #5f5f5f;
+  }
+`;
+
 const StyledTextArea = styled(TextArea)`
   width: 100%;
-  height: 40px;
+  min-height: 72px;
   background: transparent;
   resize: none;
   color: #d4d4d4;

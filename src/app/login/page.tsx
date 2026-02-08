@@ -6,7 +6,7 @@ import LoginInfo from "@/component/login/LoginInfo";
 import { Button } from "@/styles/base/BaseStyledTags";
 import NoAccount from "@/component/login/NoAccount";
 import colors from "@/styles/constant/colors";
-import { useLoginForm } from "@/hooks/useLoginForm";
+import { useLoginForm } from "@/hooks/auth/useLoginForm";
 
 export default function Login() {
   const { values, errors, isSubmitDisabled, handleChange, handleSubmit } =
