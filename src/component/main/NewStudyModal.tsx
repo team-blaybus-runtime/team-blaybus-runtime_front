@@ -9,10 +9,12 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import DomainCard from "@/component/main/DomainCard";
+import { createUserStudyHistory } from "@/apis/studyApi";
 
 interface NewStudyModalProps {
   open: boolean;
   onClose: () => void;
+  onCreated?: () => void;
 }
 
 const DOMAINS = [
@@ -25,7 +27,7 @@ const DOMAINS = [
   { id: "v4-engine", name: "V4 Engine", image: "/3D Asset/V4_Engine/V4실린더 엔진 조립도.png" },
 ];
 
-export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
+export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModalProps) {
   const router = useRouter();
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const cardRowRef = useRef<HTMLDivElement>(null);
@@ -89,9 +91,30 @@ export default function NewStudyModal({ open, onClose }: NewStudyModalProps) {
     setSelectedDomain((prev) => (prev === domainId ? null : domainId));
   };
 
-  const handleStudy = () => {
+  const handleStudy = async () => {
     if (!selectedDomain) return;
-    // TODO: /workflow 페이지로 이동 또는 학습 시작 로직
+    const domain = DOMAINS.find((d) => d.id === selectedDomain);
+    try {
+      await createUserStudyHistory({
+        productType: domain?.name ?? selectedDomain,
+        title: `${domain?.name ?? selectedDomain} 구조 학습`,
+        viewInfo: {
+          partId: 1,
+          position: [0, 0, 0],
+          geometry: [1, 1, 1],
+          color: "#6366f1",
+          roughnessMultiplier: 1,
+          metalnessMultiplier: 1,
+          envMapMultiplier: 1,
+          roughness: 0.4,
+          metalness: 0.6,
+          envMapIntensity: 1,
+        },
+      });
+      onCreated?.();
+    } catch {
+      // API 실패해도 페이지 이동은 허용
+    }
     onClose();
     router.push(`/study/${selectedDomain}`);
   };

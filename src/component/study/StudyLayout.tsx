@@ -7,7 +7,7 @@ import { Button, Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import StudyHeader from "@/component/study/StudyHeader";
 import StudySidebar from "@/component/study/StudySidebar";
-import StudyTabBar from "@/component/study/StudyTabBar";
+import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/StudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
@@ -23,6 +23,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
     "aiChat",
   );
+  const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
 
   useEffect(() => {
     fetchStudyObject(id).then(setData);
@@ -63,9 +64,13 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
           <ContentRow>
             <ViewerColumn>
               <TabCenter>
-                <StudyTabBar />
+                <StudyTabBar activeTab={activeTab} onTabChange={setActiveTab} />
               </TabCenter>
-              <StudyViewer components={data?.components ?? []} />
+              <StudyViewer
+                objectName={data?.object.objectName ?? ""}
+                components={data?.components ?? []}
+                activeTab={activeTab}
+              />
             </ViewerColumn>
             {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
           </ContentRow>

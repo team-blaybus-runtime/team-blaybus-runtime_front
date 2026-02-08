@@ -1,24 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import styled from "styled-components";
 import { Row } from "@/styles/base/BaseComponents";
 import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 
-const TABS = ["단일 부품", "조립도", "편집", "시뮬레이터"] as const;
+export const STUDY_TABS = ["단일 부품", "조립도", "편집", "시뮬레이터"] as const;
+export type StudyTab = (typeof STUDY_TABS)[number];
 
-export default function StudyTabBar() {
-  const [activeTab, setActiveTab] = useState<string>(TABS[0]);
+interface StudyTabBarProps {
+  activeTab: StudyTab;
+  onTabChange: (tab: StudyTab) => void;
+}
 
+export default function StudyTabBar({ activeTab, onTabChange }: StudyTabBarProps) {
   return (
     <TabContainer>
-      {TABS.map((tab) => (
+      {STUDY_TABS.map((tab) => (
         <TabButton
           key={tab}
           $active={activeTab === tab}
-          onClick={() => setActiveTab(tab)}
+          onClick={() => onTabChange(tab)}
         >
           <Font
             typo="button_2"

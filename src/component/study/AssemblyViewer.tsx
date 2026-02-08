@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useEffect, useCallback } from "react";
+import { useFrame, ThreeEvent } from "@react-three/fiber";
 import { useGLTF, Center } from "@react-three/drei";
 import {
   Group,
@@ -10,8 +10,10 @@ import {
   Object3D,
   Mesh,
   MeshStandardMaterial,
+  Color,
 } from "three";
 import { useModelStore } from "@/store/useModelStore";
+import { useEditStore } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/studyApi";
 
 interface AssemblyViewerProps {
@@ -24,8 +26,23 @@ interface PartData {
   explodeDirection: Vector3;
 }
 
-function ComponentModel({ glbUrl }: { glbUrl: string }) {
+// 선택 하이라이트 색상
+const HIGHLIGHT_EMISSIVE = new Color("#006FFF");
+const DEFAULT_EMISSIVE = new Color("#000000");
+
+function ComponentModel({
+  glbUrl,
+  index,
+  isSelected,
+  onSelect,
+}: {
+  glbUrl: string;
+  index: number;
+  isSelected: boolean;
+  onSelect: (index: number) => void;
+}) {
   const { scene } = useGLTF(glbUrl);
+  const groupRef = useRef<Group>(null);
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
@@ -49,15 +66,54 @@ function ComponentModel({ glbUrl }: { glbUrl: string }) {
     return clone;
   }, [scene]);
 
-  return <primitive object={clonedScene} />;
+  // 선택 상태에 따른 하이라이트 업데이트
+  useEffect(() => {
+    clonedScene.traverse((child: Object3D) => {
+      if (child instanceof Mesh && child.material instanceof MeshStandardMaterial) {
+        child.material.emissive = isSelected ? HIGHLIGHT_EMISSIVE : DEFAULT_EMISSIVE;
+        child.material.emissiveIntensity = isSelected ? 0.3 : 0;
+      }
+    });
+  }, [isSelected, clonedScene]);
+
+  const handleClick = useCallback(
+    (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation();
+      onSelect(index);
+    },
+    [index, onSelect]
+  );
+
+  return (
+    <group ref={groupRef} onClick={handleClick}>
+      <primitive object={clonedScene} />
+    </group>
+  );
 }
 
 export default function AssemblyViewer({ components }: AssemblyViewerProps) {
   const groupRef = useRef<Group>(null);
   const { explodeLevel, setIsLoading } = useModelStore();
+  const { activeTool, selectedPartIndex, setSelectedPartIndex } = useEditStore();
   const partsRef = useRef<PartData[]>([]);
   const centerRef = useRef<Vector3>(new Vector3());
   const isInitialized = useRef(false);
+
+  // 클릭 핸들러 - select 모드일 때만 파트 선택
+  const handlePartSelect = useCallback(
+    (index: number) => {
+      if (activeTool !== "select") return;
+      setSelectedPartIndex(selectedPartIndex === index ? null : index);
+    },
+    [activeTool, selectedPartIndex, setSelectedPartIndex]
+  );
+
+  // 배경 클릭 시 선택 해제
+  const handleMissClick = useCallback(() => {
+    if (activeTool === "select") {
+      setSelectedPartIndex(null);
+    }
+  }, [activeTool, setSelectedPartIndex]);
 
   // 모든 컴포넌트 GLB preload
   useEffect(() => {
@@ -137,9 +193,15 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
 
   return (
     <Center>
-      <group ref={groupRef}>
-        {components.map((comp) => (
-          <ComponentModel key={comp.componentId} glbUrl={comp.glbUrl} />
+      <group ref={groupRef} onPointerMissed={handleMissClick}>
+        {components.map((comp, i) => (
+          <ComponentModel
+            key={comp.componentId}
+            glbUrl={comp.glbUrl}
+            index={i}
+            isSelected={selectedPartIndex === i}
+            onSelect={handlePartSelect}
+          />
         ))}
       </group>
     </Center>

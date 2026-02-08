@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(dir /s /b \"%USERPROFILE%\\\\.claude\")",
+      "Bash(findstr:*)",
+      "mcp__figma-desktop__get_screenshot",
+      "mcp__figma-desktop__get_design_context",
+      "Bash(python:*)",
+      "Bash(del \"C:\\\\side\\\\진행 중\\\\front\\\\src\\\\component\\\\main\\\\HomeInfo.tsx\")",
+      "mcp__figma-desktop__get_metadata",
+      "Bash(del \"C:\\\\side\\\\진행 중\\\\front\\\\public\\\\images\\\\domain\\\\drone.png\")",
+      "Bash(npx next build:*)",
+      "Bash(ls \"C:\\\\side\\\\진행 중\\\\test_three_js\\\\types\"*)",
+      "Bash(ls \"C:\\\\side\\\\진행 중\\\\test_three_js\"types*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}
