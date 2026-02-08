@@ -4,17 +4,17 @@ import CardTag from "@/component/mypage/CardTag";
 
 interface MemoCardProps {
   title: string;
-  tag: string;
-  preview: string;
-  createdAt: string;
+  productType: string;
+  content: string;
+  updatedAt: string;
   onClick?: () => void;
 }
 
 export default function MemoCard({
   title,
-  tag,
-  preview,
-  createdAt,
+  productType,
+  content,
+  updatedAt,
   onClick,
 }: MemoCardProps) {
   return (
@@ -30,18 +30,18 @@ export default function MemoCard({
         <Font typo="title_2" color="neutral_0">
           {title}
         </Font>
-        <CardTag tag={tag} />
+        <CardTag productType={productType} />
       </Row>
 
       <Row width="100%" height="auto">
         <FontLine typo="body_2" color="neutral_0" line={1}>
-          {preview}
+          {content}
         </FontLine>
       </Row>
 
       <Row width="100%" height="auto" py="9px">
         <Font typo="caption_s" color="neutral_500">
-          작성일 {createdAt}
+          작성일 {updatedAt}
         </Font>
       </Row>
     </Column>

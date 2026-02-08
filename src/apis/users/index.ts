@@ -1,4 +1,5 @@
 import { Api } from "@/apis/baseApi";
+import { MemoItem } from "@/type/memo";
 
 import type { UserInfo, ProfileSetup } from "@/type/user";
 
@@ -11,5 +12,11 @@ export const fetchUserInfo = async () => {
 // 유저 프로필 수정 API
 export const updateUserProfile = async (profile: ProfileSetup) => {
   const response = await Api.put<ProfileSetup>("/users/profiles", profile);
+  return response.data;
+};
+
+// 메모 조회 API
+export const fetchUserMemos = async () => {
+  const response = await Api.get<MemoItem[]>("/users/memos");
   return response.data;
 };
