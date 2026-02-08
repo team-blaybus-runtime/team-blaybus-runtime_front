@@ -7,6 +7,8 @@ import { Column } from "@/styles/base/BaseComponents";
 import StudyContentModal from "@/component/study/StudyContentModal";
 import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
+import SimulatorControls from "@/component/study/SimulatorControls";
+import SimulatorSettingsPanel from "@/component/study/SimulatorSettingsPanel";
 import { StudyComponent, UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
 import { StudyTab } from "@/component/study/StudyTabBar";
 
@@ -92,6 +94,7 @@ interface StudyViewerProps {
 export default function StudyViewer({ objectName, components, activeTab }: StudyViewerProps) {
   const [modalOpen, setModalOpen] = useState(true);
   const [histories, setHistories] = useState<UserStudyHistory[]>(MOCK_DRONE_HISTORIES);
+  const [simPanel, setSimPanel] = useState<"쉐이더 설정" | "메쉬 목록" | "에셋 업로드" | null>(null);
 
   useEffect(() => {
     fetchUserStudyHistories()
@@ -130,6 +133,21 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
           <EditToolbar />
         </OverlayBottom>
       )}
+
+      {/* 시뮬레이터 탭: 좌측 상단 설정 패널 + 하단 중앙 타임라인 */}
+      {activeTab === "시뮬레이터" && (
+        <>
+          <OverlayTopLeft>
+            <SimulatorSettingsPanel
+              activePanel={simPanel}
+              onPanelChange={setSimPanel}
+            />
+          </OverlayTopLeft>
+          <OverlayBottom>
+            <SimulatorControls />
+          </OverlayBottom>
+        </>
+      )}
     </ViewerContainer>
   );
 }
@@ -154,6 +172,18 @@ const OverlayRight = styled(Column)`
   pointer-events: none;
   z-index: 1;
   overflow: hidden;
+
+  & > * {
+    pointer-events: auto;
+  }
+`;
+
+const OverlayTopLeft = styled(Column)`
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  pointer-events: none;
+  z-index: 1;
 
   & > * {
     pointer-events: auto;
