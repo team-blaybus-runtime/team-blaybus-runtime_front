@@ -20,3 +20,31 @@ export const fetchUserMemos = async () => {
   const response = await Api.get<MemoItem[]>("/users/memos");
   return response.data;
 };
+
+// 메모 생성 API
+export const createUserMemo = async (payload: {
+  productType: string;
+  title: string;
+  content: string;
+}) => {
+  const response = await Api.post<MemoItem>("/users/memos", payload);
+  return response.data;
+};
+
+// 메모 수정 API
+export const updateUserMemo = async (
+  memoId: number,
+  payload: {
+    title: string;
+    content: string;
+  },
+) => {
+  const response = await Api.put<MemoItem>(`/users/memos/${memoId}`, payload);
+  return response.data;
+};
+
+// 메모 삭제 API
+export const deleteUserMemo = async (memoId: number) => {
+  const response = await Api.delete(`/users/memos/${memoId}`);
+  return response.data;
+};
