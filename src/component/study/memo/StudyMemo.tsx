@@ -53,13 +53,15 @@ export default function StudyMemo({ memos, productType }: StudyMemoProps) {
     );
   }, [content, isSendDisabled, productType, title]);
 
+  const isModalOpen = Boolean(activeMemo);
+
   return (
     <ChatContainer>
       <Font typo="title_3" color="neutral_0" py="6px">
         MEMO
       </Font>
-      <MemoAreaWrapper>
-        <MemoArea>
+      <MemoAreaWrapper $isModalOpen={isModalOpen}>
+        <MemoArea $isModalOpen={isModalOpen}>
           {memos.map((memo) => (
             <MemoCardItem
               key={memo.memoId}
@@ -113,18 +115,19 @@ const ChatContainer = styled(Column)`
   grid-gap: 24px;
 `;
 
-const MemoAreaWrapper = styled.div`
+const MemoAreaWrapper = styled.div<{ $isModalOpen: boolean }>`
   position: relative;
   flex: 1;
+  overflow-y: ${({ $isModalOpen }) => ($isModalOpen ? "hidden" : "auto")};
   min-height: 0;
 `;
 
-const MemoArea = styled(Grid)`
+const MemoArea = styled(Grid)<{ $isModalOpen: boolean }>`
   grid-template-columns: repeat(2, 1fr);
   grid-gap: 12px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: ${({ $isModalOpen }) => ($isModalOpen ? "hidden" : "auto")};
   align-content: start;
   grid-auto-rows: max-content;
 `;
