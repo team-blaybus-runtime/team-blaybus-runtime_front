@@ -21,7 +21,6 @@ export type AuthTokenResponse = {
   tokenType: string;
 };
 
-// 회원가입 폼 상태
 export type RegisterValues = {
   email: string;
   password: string;
@@ -47,4 +46,16 @@ export type SignUpErrorResponse = {
   reason: string;
   message: string;
   fieldErrors?: Partial<Record<SignUpField, string>>;
+};
+
+// 유저 정보 타입
+export type UserInfo = {
+  userId: number;
+  nickname: string;
+  username: string;
+  password: string;
+  major: string;
+  grade: number;
+  goal: string;
+  role: string;
 };
