@@ -1,23 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { CenterRow, Row } from "@/styles/base/BaseComponents";
 import { TextArea } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
+import { UserInfo } from "@/type/user";
 
-export default function UserSummary() {
+export default function UserSummary({ userInfo }: { userInfo?: UserInfo }) {
   const summaryItems = [
-    { label: "전공", value: "기계공학과" },
-    { label: "학년", value: "2학년" },
-    { label: "목표", value: "분해도 이해하기" },
+    { label: "이름", value: userInfo?.nickname ?? "" },
+    { label: "전공", value: userInfo?.major ?? "" },
+    { label: "학년", value: userInfo?.grade ? String(userInfo.grade) : "" },
+    { label: "목표", value: userInfo?.goal ?? "" },
   ] as const;
 
   const [isEditing, setIsEditing] = useState(false);
   const [summaryValues, setSummaryValues] = useState<Record<string, string>>(
     summaryItems.reduce(
-      (acc, item) => ({ ...acc, [item.label]: item.value }),
+      (acc, item) => ({ ...acc, [item.label]: String(item.value ?? "") }),
       {} as Record<string, string>,
     ),
   );

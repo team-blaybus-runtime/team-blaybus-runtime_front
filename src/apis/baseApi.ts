@@ -5,6 +5,7 @@ import {
   getRefreshToken,
   setAccessToken,
   setRefreshToken,
+  clearTokens,
 } from "@/utils/authTokens";
 import { postRefreshToken } from "@/apis/auth";
 
@@ -24,21 +25,36 @@ const requestRefreshToken = async (): Promise<string | null> => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
-  const data = await postRefreshToken(refreshToken);
+  try {
+    const data = await postRefreshToken(refreshToken);
 
-  if (data?.accessToken) {
-    setAccessToken(data.accessToken);
-  }
-  if (data?.refreshToken) {
-    setRefreshToken(data.refreshToken);
-  }
+    if (data?.accessToken) {
+      setAccessToken(data.accessToken);
+    }
+    if (data?.refreshToken) {
+      setRefreshToken(data.refreshToken);
+    }
 
-  return data?.accessToken ?? null;
+    return data?.accessToken ?? null;
+  } catch {
+    return null;
+  }
 };
 
-const ensureAccessToken = async (): Promise<string | null> => {
-  const existingToken = getAccessToken();
-  if (existingToken) return existingToken;
+const redirectToLogin = () => {
+  clearTokens();
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+};
+
+const ensureAccessToken = async (
+  forceRefresh = false,
+): Promise<string | null> => {
+  if (!forceRefresh) {
+    const existingToken = getAccessToken();
+    if (existingToken) return existingToken;
+  }
 
   if (!refreshPromise) {
     refreshPromise = requestRefreshToken().finally(() => {
@@ -75,17 +91,23 @@ const applyInterceptors = (axiosInstance: AxiosInstance) => {
       const originalRequest = error.config;
       const status = error?.response?.status;
 
+      if (status === 401 && shouldSkipAuth(originalRequest?.url)) {
+        redirectToLogin();
+        return Promise.reject(error);
+      }
+
       if (
         status === 401 &&
         !originalRequest?._retry &&
         !shouldSkipAuth(originalRequest?.url)
       ) {
         originalRequest._retry = true;
-        const newToken = await ensureAccessToken();
+        const newToken = await ensureAccessToken(true);
         if (newToken) {
           attachAccessToken(originalRequest, newToken);
           return axiosInstance(originalRequest);
         }
+        redirectToLogin();
       }
 
       return Promise.reject(error);
