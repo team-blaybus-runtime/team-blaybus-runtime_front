@@ -142,7 +142,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
 
         <Suspense fallback={<LoadingFallback />}>
           {components.length > 0 && (
-            <Bounds fit clip observe margin={1.5}>
+            <Bounds fit clip margin={1.5}>
               <AssemblyViewer components={components} />
             </Bounds>
           )}
