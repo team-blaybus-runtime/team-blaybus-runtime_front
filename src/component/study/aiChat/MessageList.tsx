@@ -11,6 +11,10 @@ interface MessageListProps {
   messageAreaRef: React.RefObject<HTMLDivElement | null>;
 }
 
+interface MessageItemProps {
+  message: Message;
+}
+
 export default function MessageList({
   messages,
   showThinking,
@@ -29,10 +33,6 @@ export default function MessageList({
       {showThinking && <AIThinking />}
     </MessageArea>
   );
-}
-
-interface MessageItemProps {
-  message: Message;
 }
 
 function UserMessage({ message }: MessageItemProps) {
