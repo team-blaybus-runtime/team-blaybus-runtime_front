@@ -1,20 +1,21 @@
 "use client";
 
+import Image from "next/image";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
-import { UserStudyHistory } from "@/apis/studyApi";
+import { EngineeringPart } from "@/apis/engineeringApi";
 import { useEditStore } from "@/store/useEditStore";
 
 interface StudyContentModalProps {
   objectName: string;
-  histories: UserStudyHistory[];
+  parts: EngineeringPart[];
 }
 
 export default function StudyContentModal({
   objectName,
-  histories,
+  parts,
 }: StudyContentModalProps) {
   const { selectedPartIndex, setSelectedPartIndex } = useEditStore();
 
@@ -27,17 +28,18 @@ export default function StudyContentModal({
       </ModalHeader>
 
       <ThumbnailGrid>
-        {histories.map((h, i) => (
+        {parts.map((part, i) => (
           <ThumbnailCard
-            key={h.userStudyHisId}
+            key={part.partName}
             $selected={selectedPartIndex === i}
             onClick={() => setSelectedPartIndex(selectedPartIndex === i ? null : i)}
           >
-            <PartPreview
-              $color={h.viewInfo.color}
-              $width={h.viewInfo.geometry[0]}
-              $height={h.viewInfo.geometry[1]}
-              $depth={h.viewInfo.geometry[2]}
+            <PartImage
+              src={part.imageUrl}
+              alt={part.partName}
+              width={80}
+              height={80}
+              unoptimized
             />
           </ThumbnailCard>
         ))}
@@ -46,54 +48,18 @@ export default function StudyContentModal({
       <Divider />
 
       <DescriptionList>
-        {histories.map((h) => (
-          <DescriptionItem key={h.userStudyHisId}>
+        {parts.map((part) => (
+          <DescriptionItem key={part.partName}>
             <Font typo="label_s" color={colors.neutral_0}>
-              {h.title}
+              {part.partName}
             </Font>
-            <PartMeta>
-              <Font typo="caption_m" color={colors.neutral_500}>
-                Part {h.viewInfo.partId}
-              </Font>
-              <Font typo="caption_m" color={colors.neutral_500}>
-                {new Date(h.updatedAt).toLocaleDateString("ko-KR")}
-              </Font>
-            </PartMeta>
+            <Font typo="caption_m" color={colors.neutral_500}>
+              {part.content}
+            </Font>
           </DescriptionItem>
         ))}
       </DescriptionList>
     </ModalContainer>
-  );
-}
-
-/** viewInfo.geometry 비율로 3D-느낌 박스 렌더 */
-function PartPreview({
-  $color,
-  $width,
-  $height,
-  $depth,
-}: {
-  $color: string;
-  $width: number;
-  $height: number;
-  $depth: number;
-}) {
-  const maxDim = Math.max($width, $height, $depth);
-  const w = ($width / maxDim) * 60;
-  const h = ($height / maxDim) * 60;
-
-  return (
-    <PreviewBox>
-      <PreviewShape
-        style={{
-          width: `${w}%`,
-          height: `${h}%`,
-          backgroundColor: $color,
-          borderRadius: "4px",
-          boxShadow: `4px 4px 0px 0px ${$color}66`,
-        }}
-      />
-    </PreviewBox>
   );
 }
 
@@ -143,16 +109,10 @@ const ThumbnailCard = styled.div<{ $selected?: boolean }>`
   }
 `;
 
-const PreviewBox = styled.div`
+const PartImage = styled(Image)`
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const PreviewShape = styled.div`
-  transition: transform 0.2s;
 `;
 
 const Divider = styled.div`
@@ -185,6 +145,3 @@ const DescriptionItem = styled(Column)`
   gap: 6px;
 `;
 
-const PartMeta = styled(Row)`
-  gap: 12px;
-`;
