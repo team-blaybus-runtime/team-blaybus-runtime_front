@@ -13,7 +13,7 @@ import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
 import useStudyAIChat from "@/providers/useStudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
-import StudyMemo from "./memo/StudyMemo";
+import StudyMemo from "@/component/study/memo/StudyMemo";
 import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
 import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
 
@@ -23,7 +23,7 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [data, setData] = useState<StudyObjectDetail | null>(null);
-  const { data: memoData } = useFetchUserMemosQuery();
+  const { data: memoData } = useFetchUserMemosQuery(data?.object.objectName);
 
   const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
     "aiChat",
