@@ -48,7 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <LayoutRoot>
       <HeaderWrapper>
         <PageContainer>
-          <Header />
+          <Header userInfo={userInfo} />
         </PageContainer>
       </HeaderWrapper>
       <Content isWideScreen={isWideScreen}>
