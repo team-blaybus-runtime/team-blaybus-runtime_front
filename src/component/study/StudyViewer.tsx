@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import type { RefObject } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
@@ -93,12 +93,12 @@ interface StudyViewerProps {
   viewerRef?: RefObject<HTMLDivElement | null>;
 }
 
-export default function StudyViewer({
+const StudyViewer = ({
   objectName,
   components,
   activeTab,
   viewerRef,
-}: StudyViewerProps) {
+}: StudyViewerProps) => {
   const [modalOpen, setModalOpen] = useState(true);
   const [histories, setHistories] = useState<UserStudyHistory[]>(MOCK_DRONE_HISTORIES);
   const [simPanel, setSimPanel] = useState<"쉐이더 설정" | "메쉬 목록" | "에셋 업로드" | null>(null);
@@ -157,7 +157,9 @@ export default function StudyViewer({
       )}
     </ViewerContainer>
   );
-}
+};
+
+export default memo(StudyViewer);
 
 const ViewerContainer = styled(Column)`
   flex: 1;
