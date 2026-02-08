@@ -36,7 +36,9 @@ export default function QuizQuestionList({
                 const showCorrect =
                   showResult && optionIndex === question.answerIndex;
                 const showWrong =
-                  showResult && isSelected && optionIndex !== question.answerIndex;
+                  showResult &&
+                  isSelected &&
+                  optionIndex !== question.answerIndex;
                 return (
                   <OptionButton
                     key={`${question.id}-${optionIndex}`}
@@ -95,8 +97,11 @@ const OptionButton = styled(Button)<{
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #2f2f2f;
-  background-color: ${({ $selected }) => ($selected ? "#2a2a2a" : "transparent")};
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  background-color: ${({ $selected }) =>
+    $selected ? colors.neutral_800 : "transparent"};
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 
   ${({ $correct }) =>
     $correct &&
