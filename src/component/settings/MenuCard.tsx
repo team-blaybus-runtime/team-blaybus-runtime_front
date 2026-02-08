@@ -45,7 +45,7 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
     if (label !== "로그아웃") return;
 
     clearTokens();
-    router.push("/login");
+    router.push("/");
   };
 
   return (

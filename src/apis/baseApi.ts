@@ -44,7 +44,7 @@ const requestRefreshToken = async (): Promise<string | null> => {
 const redirectToLogin = () => {
   clearTokens();
   if (typeof window !== "undefined") {
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 };
 
