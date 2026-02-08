@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { postSignUp } from "@/apis/auth";
 import { C } from "@/constant";
 import { setAccessToken, setRefreshToken } from "@/utils/authTokens";
-import type { AuthTokenResponse, SignUpErrorResponse, SignUpRequest } from "@/type/user";
+import type { AuthTokenResponse, SignUpErrorResponse, RegisterForm } from "@/type/user";
 
 interface UsePostSignUpOptions {
   onError?: (error: AxiosError<SignUpErrorResponse>) => void;
@@ -16,7 +16,7 @@ export const usePostSignUpMutation = (options?: UsePostSignUpOptions) => {
 
   return useMutation({
     mutationKey: ["postSignUp"],
-    mutationFn: (payload: SignUpRequest) => postSignUp(payload),
+    mutationFn: (payload: RegisterForm) => postSignUp(payload),
     onError: (error) => {
       options?.onError?.(error as AxiosError<SignUpErrorResponse>);
     },
