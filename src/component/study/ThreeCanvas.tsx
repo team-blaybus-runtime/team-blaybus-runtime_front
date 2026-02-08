@@ -10,7 +10,7 @@ import {
   ToneMapping,
 } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
-import { Vector3 } from "three";
+import { Vector3, MOUSE } from "three";
 import styled from "styled-components";
 import LightingSetup from "@/component/study/LightingSetup";
 import AssemblyViewer from "@/component/study/AssemblyViewer";
@@ -29,26 +29,10 @@ function LoadingFallback() {
   );
 }
 
-/** 편집 도구 액션(zoom, focus, undo, redo)을 Three.js 카메라에 반영 */
+/** 편집 도구 액션(zoom, focus)을 Three.js 카메라에 반영 */
 function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> }) {
   const { camera } = useThree();
-  const { zoomAction, focusAction, clearAction, pushCameraSnapshot, undo, redo, activeTool } = useEditStore();
-
-  // OrbitControls 조작 끝날 때 카메라 스냅샷 저장
-  useEffect(() => {
-    const controls = controlsRef.current;
-    if (!controls) return;
-
-    const handleEnd = () => {
-      pushCameraSnapshot({
-        position: camera.position.toArray() as [number, number, number],
-        target: [controls.target.x, controls.target.y, controls.target.z],
-      });
-    };
-
-    controls.addEventListener("end", handleEnd);
-    return () => controls.removeEventListener("end", handleEnd);
-  }, [controlsRef, camera, pushCameraSnapshot]);
+  const { zoomAction, focusAction, clearAction } = useEditStore();
 
   // zoom in / zoom out 액션 처리
   useEffect(() => {
@@ -57,7 +41,9 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     const controls = controlsRef.current;
     const dir = new Vector3();
     camera.getWorldDirection(dir);
-    const distance = zoomAction === "in" ? 1 : -1;
+    const currentDist = camera.position.distanceTo(controls.target);
+    const step = currentDist * 0.25;
+    const distance = zoomAction === "in" ? step : -step;
 
     camera.position.addScaledVector(dir, distance);
     controls.update();
@@ -74,31 +60,6 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     controls.update();
     clearAction();
   }, [focusAction, camera, controlsRef, clearAction]);
-
-  // undo/redo 시 카메라 복원
-  useEffect(() => {
-    const unsub = useEditStore.subscribe((state, prev) => {
-      // undo가 호출되어 history가 줄었으면 future 마지막 항목이 복원 대상
-      if (state.cameraHistory.length < prev.cameraHistory.length && state.cameraFuture.length > prev.cameraFuture.length) {
-        const snapshot = state.cameraFuture[state.cameraFuture.length - 1];
-        if (snapshot && controlsRef.current) {
-          camera.position.set(...snapshot.position);
-          controlsRef.current.target.set(...snapshot.target);
-          controlsRef.current.update();
-        }
-      }
-      // redo가 호출되어 history가 늘었으면 history 마지막 항목이 복원 대상
-      if (state.cameraHistory.length > prev.cameraHistory.length && state.cameraFuture.length < prev.cameraFuture.length) {
-        const snapshot = state.cameraHistory[state.cameraHistory.length - 1];
-        if (snapshot && controlsRef.current) {
-          camera.position.set(...snapshot.position);
-          controlsRef.current.target.set(...snapshot.target);
-          controlsRef.current.update();
-        }
-      }
-    });
-    return unsub;
-  }, [camera, controlsRef]);
 
   return null;
 }
@@ -209,14 +170,14 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
           enableZoom={true}
           enableRotate={!isPan}
           mouseButtons={{
-            LEFT: isPan ? 2 : 0,   // pan모드: 좌클릭=팬, 기본: 좌클릭=회전
-            MIDDLE: 1,
-            RIGHT: isPan ? 0 : 2,
+            LEFT: isPan ? MOUSE.PAN : MOUSE.ROTATE,
+            MIDDLE: MOUSE.DOLLY,
+            RIGHT: isPan ? MOUSE.ROTATE : MOUSE.PAN,
           }}
-          minDistance={0.5}
-          maxDistance={30}
+          minDistance={0.1}
+          maxDistance={100}
           minPolarAngle={0}
-          maxPolarAngle={Math.PI / 1.5}
+          maxPolarAngle={Math.PI}
           dampingFactor={0.05}
           enableDamping
         />

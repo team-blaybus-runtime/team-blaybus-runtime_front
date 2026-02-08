@@ -4,10 +4,11 @@ import styled from "styled-components";
 import { Row } from "@/styles/base/BaseComponents";
 import colors from "@/styles/constant/colors";
 import { useEditStore, EditTool } from "@/store/useEditStore";
+import { Font } from "@/styles/typo/typography";
 
 const TOOLS: { id: EditTool; icon: React.ReactNode }[] = [
   { id: "select", icon: <SelectIcon /> },
-  { id: "pan", icon: <PanIcon /> },
+  { id: "transform", icon: <TransformIcon /> },
   { id: "zoomIn", icon: <ZoomInIcon /> },
   { id: "zoomOut", icon: <ZoomOutIcon /> },
   { id: "focus", icon: <FocusIcon /> },
@@ -15,22 +16,32 @@ const TOOLS: { id: EditTool; icon: React.ReactNode }[] = [
   { id: "redo", icon: <RedoIcon /> },
 ];
 
-const PERSISTENT_TOOLS: EditTool[] = ["select", "pan"];
+const PERSISTENT_TOOLS: EditTool[] = ["select", "transform"];
 
 export default function EditToolbar() {
-  const { activeTool, setActiveTool } = useEditStore();
+  const { activeTool, setActiveTool, transformMode } = useEditStore();
 
   return (
     <ToolbarContainer>
-      {TOOLS.map((tool) => (
-        <ToolButton
-          key={tool.id}
-          $active={PERSISTENT_TOOLS.includes(tool.id) && activeTool === tool.id}
-          onClick={() => setActiveTool(tool.id)}
-        >
-          {tool.icon}
-        </ToolButton>
-      ))}
+      {TOOLS.map((tool) => {
+        const isActive = PERSISTENT_TOOLS.includes(tool.id) && activeTool === tool.id;
+        return (
+          <ToolButton
+            key={tool.id}
+            $active={isActive}
+            onClick={() => setActiveTool(tool.id)}
+          >
+            {tool.icon}
+            {tool.id === "transform" && isActive && (
+              <ModeBadge>
+                <Font typo="caption_m" color={colors.neutral_0}>
+                  {transformMode === "translate" ? "이동" : "회전"}
+                </Font>
+              </ModeBadge>
+            )}
+          </ToolButton>
+        );
+      })}
     </ToolbarContainer>
   );
 }
@@ -39,6 +50,18 @@ function SelectIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path d="M4 2L4 15L8 11L12 18L14 17L10 10L15 10L4 2Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TransformIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 2L13 5H7L10 2Z" fill="currentColor" />
+      <path d="M10 18L7 15H13L10 18Z" fill="currentColor" />
+      <path d="M2 10L5 7V13L2 10Z" fill="currentColor" />
+      <path d="M18 10L15 13V7L18 10Z" fill="currentColor" />
+      <path d="M10 5V15M5 10H15" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -105,7 +128,19 @@ const ToolbarContainer = styled(Row)`
   gap: 4px;
 `;
 
+const ModeBadge = styled.div`
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background-color: ${colors.blue_500};
+  border-radius: 4px;
+  padding: 0 3px;
+  line-height: 14px;
+  pointer-events: none;
+`;
+
 const ToolButton = styled.button<{ $active: boolean }>`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
