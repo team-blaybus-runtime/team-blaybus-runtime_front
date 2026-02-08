@@ -82,17 +82,27 @@ export default function StudyMemo({ memos, productType }: StudyMemoProps) {
         <InputWrapper>
           <TitleInput
             value={title}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => setTitle(event.target.value.slice(0, 25))}
             placeholder="제목을 입력하세요..."
+            maxLength={25}
           />
+          <InputCountRow>
+            <Font typo="caption_s" color="neutral_500">
+              {title.length}/25
+            </Font>
+          </InputCountRow>
           <StyledTextArea
             value={content}
-            onChange={(event) => setContent(event.target.value)}
+            onChange={(event) => setContent(event.target.value.slice(0, 230))}
             onKeyDown={() => {}}
             placeholder="내용을 입력하세요..."
             rows={3}
+            maxLength={230}
           />
           <SendRow>
+            <Font typo="caption_s" color="neutral_500">
+              {content.length}/230
+            </Font>
             <SendButton onClick={handleSend} disabled={isSendDisabled}>
               <Img
                 src="/icons/study/memoSend.svg"
@@ -175,7 +185,15 @@ const StyledTextArea = styled(TextArea)`
 
 const SendRow = styled(Row)`
   justify-content: flex-end;
+  align-items: center;
   width: 100%;
+  gap: 8px;
+`;
+
+const InputCountRow = styled(Row)`
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
 `;
 
 const SendButton = styled(Button)`
