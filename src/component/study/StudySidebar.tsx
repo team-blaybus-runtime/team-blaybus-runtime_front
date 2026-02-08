@@ -53,8 +53,8 @@ export default function StudySidebar({
                 : "/icons/study/quiz.svg"
             }
             alt="quiz"
-            width="40px"
-            height="40px"
+            width="32px"
+            height="32px"
             onClick={() => setSideBarContent("quiz")}
             style={{ cursor: "pointer" }}
           />
@@ -111,7 +111,7 @@ const MenuContainer = styled(Column)`
 
 const PrimaryMenu = styled(Column)`
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
 `;
 

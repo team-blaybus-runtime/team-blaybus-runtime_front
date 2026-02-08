@@ -17,9 +17,11 @@ export default function UserMemo() {
   const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
-  const lastPage = 7;
+  const pageSize = 6;
 
   const { data: memos } = useFetchUserMemosQuery();
+  const totalCount = memos?.length ?? 0;
+  const lastPage = Math.max(1, Math.ceil(totalCount / pageSize));
 
   useEffect(() => {
     const pageParam = searchParams.get("page");
@@ -42,6 +44,9 @@ export default function UserMemo() {
     [pathname, searchParams],
   );
 
+  const startIndex = (currentPage - 1) * pageSize;
+  const visibleMemos = memos?.slice(startIndex, startIndex + pageSize) ?? [];
+
   return (
     <Column width="100%" gridGap="30px" flexShrink="0">
       <Row width="100%" pt="40px">
@@ -49,12 +54,12 @@ export default function UserMemo() {
           Memo
         </Font>
       </Row>
-      {memos?.length === 0 ? (
+      {totalCount === 0 ? (
         <EmptyMemo />
       ) : (
         <Column width="100%" justifyContent="center" pb="43px" gridGap="30px">
           <Grid gridTemplateColumns="repeat(2, 1fr)" gridGap="30px">
-            {memos?.map((memo) => (
+            {visibleMemos.map((memo) => (
               <MemoCard
                 key={memo.memoId}
                 title={memo.title}
