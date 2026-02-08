@@ -10,8 +10,8 @@ export default function StudySidebar({
   onPdfExport,
   isPdfExporting = false,
 }: {
-  sideBarContent: "memo" | "aiChat";
-  setSideBarContent: (sideBarContent: "memo" | "aiChat") => void;
+  sideBarContent: "memo" | "aiChat" | "quiz";
+  setSideBarContent: (sideBarContent: "memo" | "aiChat" | "quiz") => void;
   onPdfExport?: () => void;
   isPdfExporting?: boolean;
 }) {
@@ -41,6 +41,18 @@ export default function StudySidebar({
             width="40px"
             height="40px"
             onClick={() => setSideBarContent("memo")}
+            style={{ cursor: "pointer" }}
+          />
+          <Img
+            src={
+              sideBarContent === "quiz"
+                ? "/icons/study/activeQuiz.svg"
+                : "/icons/study/quiz.svg"
+            }
+            alt="quiz"
+            width="40px"
+            height="40px"
+            onClick={() => setSideBarContent("quiz")}
             style={{ cursor: "pointer" }}
           />
           <Img
