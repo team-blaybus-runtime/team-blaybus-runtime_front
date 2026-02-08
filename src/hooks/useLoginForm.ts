@@ -1,48 +1,49 @@
+"use client";
+
 import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
-import { usePostSignUpMutation } from "@/queries/auth/usePostSignUpMutation";
-import type {
-  RegisterErrors,
-  RegisterField,
-  RegisterValues,
-  SignUpErrorResponse,
-} from "@/type/user";
+import { usePostSignInMutation } from "@/queries/auth/usePostSignInMutation";
+import type { SignInRequest, SignUpErrorResponse } from "@/type/user";
 
-const INITIAL_VALUES: RegisterValues = {
-  email: "",
-  password: "",
-  confirmPassword: "",
+type LoginErrors = {
+  email: string;
+  password: string;
+  submit: string;
 };
 
-const INITIAL_ERRORS: RegisterErrors = {
+const INITIAL_VALUES: SignInRequest = {
   email: "",
   password: "",
-  confirmPassword: "",
+};
+
+const INITIAL_ERRORS: LoginErrors = {
+  email: "",
+  password: "",
   submit: "",
 };
 
-const mapRegisterErrors = (
+const mapLoginErrors = (
   payload: SignUpErrorResponse | undefined,
   fallbackMessage: string,
-) => {
+): { errorFields: (keyof SignInRequest)[]; errors: LoginErrors } => {
   const fieldErrors = payload?.fieldErrors ?? {};
-  const nextErrorFields = Object.keys(fieldErrors) as RegisterField[];
-  const submit = nextErrorFields.length ? "" : fallbackMessage;
+  const nextErrorFields = Object.keys(fieldErrors) as (keyof SignInRequest)[];
+  const hasFieldErrors = nextErrorFields.length > 0;
+  const defaultErrorFields: (keyof SignInRequest)[] = ["email"];
 
   return {
-    errorFields: nextErrorFields,
+    errorFields: hasFieldErrors ? nextErrorFields : defaultErrorFields,
     errors: {
       ...INITIAL_ERRORS,
-      email: fieldErrors.email ?? "",
+      email: fieldErrors.email ?? (hasFieldErrors ? "" : fallbackMessage),
       password: fieldErrors.password ?? "",
-      confirmPassword: fieldErrors.confirmPassword ?? "",
-      submit,
+      submit: "",
     },
   };
 };
 
-export function useRegisterForm() {
-  const { mutate, isPending } = usePostSignUpMutation({
+export function useLoginForm() {
+  const { mutate, isPending } = usePostSignInMutation({
     onError: (error) => {
       if (!axios.isAxiosError(error)) {
         setErrors((prev) => ({
@@ -53,7 +54,7 @@ export function useRegisterForm() {
       }
 
       const payload = error.response?.data as SignUpErrorResponse | undefined;
-      const { errorFields, errors } = mapRegisterErrors(
+      const { errorFields, errors } = mapLoginErrors(
         payload,
         payload?.message ?? error.message,
       );
@@ -61,11 +62,11 @@ export function useRegisterForm() {
       setErrors(errors);
     },
   });
-  const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES);
-  const [errors, setErrors] = useState<RegisterErrors>(INITIAL_ERRORS);
-  const [errorFields, setErrorFields] = useState<RegisterField[]>([]);
+  const [values, setValues] = useState<SignInRequest>(INITIAL_VALUES);
+  const [errors, setErrors] = useState<LoginErrors>(INITIAL_ERRORS);
   const [lastSubmitValues, setLastSubmitValues] =
-    useState<RegisterValues>(INITIAL_VALUES);
+    useState<SignInRequest>(INITIAL_VALUES);
+  const [errorFields, setErrorFields] = useState<(keyof SignInRequest)[]>([]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,33 +79,21 @@ export function useRegisterForm() {
     [values],
   );
 
-  const hasPasswordMismatch = useMemo(
-    () => values.password !== values.confirmPassword,
-    [values],
-  );
-
   const hasUnchangedErrorField = useMemo(
     () =>
       errorFields.some((field) => values[field] === lastSubmitValues[field]),
     [errorFields, lastSubmitValues, values],
   );
 
-  const isSubmitDisabled =
-    isPending || hasEmptyValue || hasPasswordMismatch || hasUnchangedErrorField;
+  const isSubmitDisabled = isPending || hasEmptyValue || hasUnchangedErrorField;
 
   const handleSubmit = useCallback(() => {
     const hasAnyInput = Object.values(values).some((value) => value);
-    if (!hasAnyInput) {
-      return;
-    }
+    if (!hasAnyInput) return;
 
     setLastSubmitValues(values);
 
-    mutate({
-      email: values.email,
-      password: values.password,
-      confirmPassword: values.confirmPassword,
-    });
+    mutate(values);
   }, [mutate, values]);
 
   return {

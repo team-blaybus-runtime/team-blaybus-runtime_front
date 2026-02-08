@@ -8,15 +8,17 @@ export type ProfileSetupValues = {
 
 // 유저 회원가입
 export type SignUpRequest = {
-  username: string;
+  email: string;
   password: string;
   confirmPassword: string;
 };
 
-export type SignUpResponse = {
-  id?: string;
-  username?: string;
-  nickname?: string;
+export type AuthTokenResponse = {
+  userId: number;
+  roleType: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
 };
 
 // 회원가입 폼 상태
@@ -33,4 +35,16 @@ export type RegisterErrors = {
   submit: string;
 };
 
-export type RegisterErrorField = "email" | "password" | "confirmPassword";
+export type RegisterField = keyof RegisterValues;
+
+// 일반 로그인
+export type SignInRequest = Pick<SignUpRequest, "email" | "password">;
+
+export type SignUpField = keyof SignUpRequest;
+
+export type SignUpErrorResponse = {
+  code: string;
+  reason: string;
+  message: string;
+  fieldErrors?: Partial<Record<SignUpField, string>>;
+};
