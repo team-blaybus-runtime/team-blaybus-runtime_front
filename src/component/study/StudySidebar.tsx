@@ -3,6 +3,7 @@
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
+import { useRouter } from "next/navigation";
 
 export default function StudySidebar({
   sideBarContent,
@@ -15,6 +16,8 @@ export default function StudySidebar({
   onPdfExport?: () => void;
   isPdfExporting?: boolean;
 }) {
+  const router = useRouter();
+
   return (
     <SidebarContainer>
       <MenuContainer>
@@ -61,7 +64,10 @@ export default function StudySidebar({
             width="40px"
             height="40px"
             onClick={isPdfExporting ? undefined : onPdfExport}
-            style={{ cursor: isPdfExporting ? "not-allowed" : "pointer", opacity: isPdfExporting ? 0.5 : 1 }}
+            style={{
+              cursor: isPdfExporting ? "not-allowed" : "pointer",
+              opacity: isPdfExporting ? 0.5 : 1,
+            }}
           />
         </PrimaryMenu>
       </MenuContainer>
@@ -72,6 +78,7 @@ export default function StudySidebar({
             alt="info"
             width="24px"
             height="24px"
+            onClick={() => router.push("/mypage")}
           />
         </MenuButton>
         <MenuButton>
@@ -80,6 +87,7 @@ export default function StudySidebar({
             alt="settings"
             width="24px"
             height="24px"
+            onClick={() => router.push("/settings")}
           />
         </MenuButton>
       </FooterMenu>
