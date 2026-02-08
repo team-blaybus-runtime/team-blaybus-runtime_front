@@ -81,6 +81,7 @@ export default function StudySidebar({
             onClick={() => router.push("/mypage")}
           />
         </MenuButton>
+
         <MenuButton>
           <Img
             src="/icons/study/settings.svg"
@@ -88,6 +89,15 @@ export default function StudySidebar({
             width="24px"
             height="24px"
             onClick={() => router.push("/settings")}
+          />
+        </MenuButton>
+        <MenuButton>
+          <Img
+            src="/icons/study/workflow.svg"
+            alt="workflow"
+            width="24px"
+            height="24px"
+            onClick={() => router.push("/workflow")}
           />
         </MenuButton>
       </FooterMenu>
