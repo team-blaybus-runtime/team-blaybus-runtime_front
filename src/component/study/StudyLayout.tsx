@@ -9,7 +9,7 @@ import StudyHeader from "@/component/study/StudyHeader";
 import StudySidebar from "@/component/study/StudySidebar";
 import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
-import StudyAIChat from "@/component/study/StudyAIChat";
+import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
 import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
 import StudyMemo from "./memo/StudyMemo";
 

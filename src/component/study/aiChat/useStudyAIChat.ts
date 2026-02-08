@@ -1,42 +1,30 @@
-"use client";
-
 import { useState, useCallback, useRef, useEffect } from "react";
-import styled from "styled-components";
-import { Column, Row } from "@/styles/base/BaseComponents";
-import { Button, Img, TextArea } from "@/styles/base/BaseStyledTags";
-import { Font } from "@/styles/typo/typography";
-import colors from "@/styles/constant/colors";
 import { postAIChatStream, fetchAIChatHistory } from "@/apis/aiChat";
+import type { Message } from "@/type/aiChat";
 
-interface Message {
-  id: number;
-  role: "user" | "ai";
-  content: string;
+interface UseStudyAIChatParams {
+  productType: string;
+  chatHistoryId: number;
 }
 
-const INITIAL_MESSAGES: Message[] = [];
-
-interface StudyAIChatProps {
-  productType?: string;
-  chatHistoryId?: number;
-}
-
-export default function StudyAIChat({
-  productType = "Drone",
-  chatHistoryId = 1,
-}: StudyAIChatProps) {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+export default function useStudyAIChat({
+  productType,
+  chatHistoryId,
+}: UseStudyAIChatParams) {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasNext, setHasNext] = useState(true);
+
   const streamAbortRef = useRef<AbortController | null>(null);
   const messageAreaRef = useRef<HTMLDivElement | null>(null);
   const initialLoadRef = useRef(false);
   const typingQueueRef = useRef("");
   const typingTimerRef = useRef<number | null>(null);
   const autoScrollRef = useRef(true);
+
   const lastMessage = messages[messages.length - 1];
   const showThinking =
     isStreaming && lastMessage?.role === "ai" && !lastMessage?.content;
@@ -75,8 +63,7 @@ export default function StudyAIChat({
 
   const isNearBottom = useCallback((el: HTMLDivElement) => {
     const threshold = 60;
-    const distance =
-      el.scrollHeight - el.scrollTop - el.clientHeight;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
     return distance <= threshold;
   }, []);
 
@@ -290,156 +277,15 @@ export default function StudyAIChat({
     [handleSend],
   );
 
-  return (
-    <ChatContainer>
-      <MessageArea ref={messageAreaRef} onScroll={handleScroll}>
-        {messages.map((msg) =>
-          msg.role === "user" ? (
-            <UserBubble key={msg.id}>
-              <Font typo="body_2" color="#d4d4d4" style={{ lineHeight: "1.8" }}>
-                {msg.content}
-              </Font>
-            </UserBubble>
-          ) : (
-            <AIMessage key={msg.id}>
-              <Font typo="body_2" color="#d4d4d4" style={{ lineHeight: "1.8" }}>
-                {msg.content}
-              </Font>
-            </AIMessage>
-          ),
-        )}
-        {showThinking && (
-          <AIMessage>
-            <ThinkingRow>
-              <Spinner />
-              <Font typo="body_2" color="#8a8a8a" style={{ lineHeight: "1.8" }}>
-                AI가 답변을 생각하고 있어요...
-              </Font>
-            </ThinkingRow>
-          </AIMessage>
-        )}
-      </MessageArea>
-      <InputWrapper>
-        <StyledTextArea
-          value={input}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setInput(e.target.value)
-          }
-          onKeyDown={handleKeyDown}
-          placeholder="여기에 프롬프트를 입력하세요..."
-          rows={1}
-          disabled={isInputDisabled}
-        />
-        <SendRow>
-          <SendButton
-            onClick={handleSend}
-            disabled={!input.trim() || isInputDisabled}
-          >
-            <Img
-              src="/icons/study/send.svg"
-              alt="send"
-              width="20px"
-              height="20px"
-            />
-          </SendButton>
-        </SendRow>
-      </InputWrapper>
-    </ChatContainer>
-  );
+  return {
+    messages,
+    input,
+    showThinking,
+    isInputDisabled,
+    messageAreaRef,
+    setInput,
+    handleSend,
+    handleKeyDown,
+    handleScroll,
+  };
 }
-
-const ChatContainer = styled(Column)`
-  width: 480px;
-  height: 100%;
-  flex-shrink: 0;
-`;
-
-const MessageArea = styled(Column)`
-  flex: 1;
-  overflow-x: hidden;
-  overflow-y: auto;
-  gap: 19px;
-  padding-bottom: 40px;
-`;
-
-const UserBubble = styled(Row)`
-  align-items: center;
-  background-color: #171717;
-  border-radius: 8px;
-  padding: 11px 21px;
-  width: 100%;
-`;
-
-const AIMessage = styled(Column)`
-  padding: 0 24px;
-  width: 100%;
-`;
-
-const InputWrapper = styled(Column)`
-  background-color: #2b2b2b;
-  border-radius: 16px;
-  padding: 12px;
-  gap: 2px;
-  align-items: flex-end;
-  flex-shrink: 0;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-`;
-
-const StyledTextArea = styled(TextArea)`
-  width: 100%;
-  height: 40px;
-  background: transparent;
-  resize: none;
-  color: #d4d4d4;
-  font-family: Pretendard, sans-serif;
-  font-size: 16px;
-  line-height: 1.8;
-  overflow-y: auto;
-
-  &::placeholder {
-    color: #5f5f5f;
-  }
-`;
-
-const SendRow = styled(Row)`
-  justify-content: flex-end;
-  width: 100%;
-`;
-
-const SendButton = styled(Button)`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: ${colors.blue_700};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  flex-shrink: 0;
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
-
-const ThinkingRow = styled(Row)`
-  align-items: center;
-  gap: 8px;
-  padding: 0 24px;
-`;
-
-const Spinner = styled.div`
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
