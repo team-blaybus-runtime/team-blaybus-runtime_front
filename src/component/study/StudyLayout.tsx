@@ -32,7 +32,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const aiChat = useStudyAIChat({
     productType: data?.object.objectName ?? id,
-    chatHistoryId: 2,
+    chatHistoryId: 1,
   });
   const { exportPdf, isExporting } = useStudyPdfExport({
     viewerRef,
