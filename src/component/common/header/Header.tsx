@@ -5,17 +5,14 @@ import { Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import { useRouter } from "next/navigation";
 import LoginBtn from "@/component/common/header/LoginBtn";
+import { UserInfo } from "@/type/user";
 
-export default function Header() {
+export default function Header({ userInfo }: { userInfo?: UserInfo }) {
   const router = useRouter();
   const menuList = [
     {
       name: "Home",
       href: "/main",
-    },
-    {
-      name: "My Page",
-      href: "/mypage",
     },
     {
       name: "Settings",
@@ -38,25 +35,45 @@ export default function Header() {
         style={{ cursor: "pointer" }}
       />
       <Row flex="1" justifyContent="flex-end" gridGap="24px">
-        <Row gridGap="16px" alignItems="center">
-          {menuList.map((menu) => (
+        {userInfo && (
+          <Row gridGap="16px" alignItems="center">
+            {menuList.map((menu) => (
+              <Font
+                key={menu.name}
+                typo="button_2"
+                color="neutral_200"
+                px="12px"
+                onClick={() => router.push(menu.href)}
+                style={{
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  textAlign: "center",
+                }}
+              >
+                {menu.name}
+              </Font>
+            ))}
+          </Row>
+        )}
+        {!userInfo ? (
+          <LoginBtn />
+        ) : (
+          <>
             <Font
-              key={menu.name}
               typo="button_2"
               color="neutral_200"
               width="69px"
-              onClick={() => router.push(menu.href)}
+              onClick={() => router.push("/mypage")}
               style={{
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 textAlign: "center",
               }}
             >
-              {menu.name}
+              {userInfo?.nickname}
             </Font>
-          ))}
-        </Row>
-        <LoginBtn />
+          </>
+        )}
       </Row>
     </CenterRow>
   );

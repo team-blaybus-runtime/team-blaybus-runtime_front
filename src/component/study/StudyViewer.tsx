@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
+import type { RefObject } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import { Column } from "@/styles/base/BaseComponents";
@@ -89,9 +90,16 @@ interface StudyViewerProps {
   objectName: string;
   components: StudyComponent[];
   activeTab: StudyTab;
+  viewerRef?: RefObject<HTMLDivElement | null>;
 }
 
-export default function StudyViewer({ objectName, components, activeTab }: StudyViewerProps) {
+const StudyViewer = ({
+  objectName,
+  components,
+  activeTab,
+  viewerRef,
+}: StudyViewerProps) => {
+  const [modalOpen, setModalOpen] = useState(true);
   const [histories, setHistories] = useState<UserStudyHistory[]>(MOCK_DRONE_HISTORIES);
   const [simPanel, setSimPanel] = useState<SimulatorPanel | null>(null);
 
@@ -104,7 +112,7 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
   }, []);
 
   return (
-    <ViewerContainer>
+    <ViewerContainer ref={viewerRef}>
       <ThreeCanvas components={components} />
 
       {/* 단일 부품 탭: 오른쪽 모달 */}
@@ -148,7 +156,9 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
       )}
     </ViewerContainer>
   );
-}
+};
+
+export default memo(StudyViewer);
 
 const ViewerContainer = styled(Column)`
   flex: 1;

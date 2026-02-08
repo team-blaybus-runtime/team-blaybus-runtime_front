@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
-import { CenterColumn, CenterRow, Column } from "@/styles/base/BaseComponents";
-import { Button, Div } from "@/styles/base/BaseStyledTags";
+import { CenterColumn, Column } from "@/styles/base/BaseComponents";
+import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import FormInput from "@/component/common/FormInput";
-import { ProfileSetupValues } from "@/type/user";
+import { ProfileSetup } from "@/type/user";
+import { useProfileSetupForm } from "@/hooks/auth/useProfileSetupForm";
 
 interface ProfileSetupModalProps {
   open: boolean;
-  onSubmit: (values: ProfileSetupValues) => void;
+  onSubmit: (values: ProfileSetup) => void;
   onClose?: () => void;
-  defaultValues?: Partial<ProfileSetupValues>;
+  defaultValues?: Partial<ProfileSetup>;
 }
 
 function getScrollbarWidth() {
@@ -28,27 +29,14 @@ export default function ProfileSetupModal({
   onClose,
   defaultValues,
 }: ProfileSetupModalProps) {
-  const initial = useMemo(
-    () => ({
-      name: defaultValues?.name ?? "",
-      major: defaultValues?.major ?? "",
-      grade: defaultValues?.grade ?? "",
-      goal: defaultValues?.goal ?? "",
-    }),
-    [
-      defaultValues?.goal,
-      defaultValues?.major,
-      defaultValues?.name,
-      defaultValues?.grade,
-    ],
-  );
-
-  const [values, setValues] = useState<ProfileSetupValues>(initial);
-
-  useEffect(() => {
-    if (!open) return;
-    setValues(initial);
-  }, [open, initial]);
+  const {
+    values,
+    errors,
+    isPending,
+    isSubmitDisabled,
+    handleFieldChange,
+    handleSubmit,
+  } = useProfileSetupForm({ open, onSubmit, onClose, defaultValues });
 
   useEffect(() => {
     if (!open) return;
@@ -68,12 +56,6 @@ export default function ProfileSetupModal({
 
   if (!open) return null;
 
-  const isValid =
-    values.name.trim() &&
-    values.major.trim() &&
-    values.goal.trim() &&
-    values.grade.trim();
-
   return (
     <Overlay aria-modal="true" role="dialog">
       <Modal>
@@ -91,41 +73,47 @@ export default function ProfileSetupModal({
             <FormInput
               label="이름"
               placeholder="예) 김도사"
-              value={values.name}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, name: e.target.value }))
-              }
+              value={values.nickname}
+              onChange={(e) => handleFieldChange("nickname", e.target.value)}
+              errorMessage={errors.nickname}
             />
             <FormInput
               label="전공"
               placeholder="예) 기계공학과"
               value={values.major}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, major: e.target.value }))
-              }
+              onChange={(e) => handleFieldChange("major", e.target.value)}
+              errorMessage={errors.major}
             />
             <FormInput
               label="학년"
-              placeholder="예) 2학년"
+              placeholder="예) 2"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={values.grade}
               onChange={(e) =>
-                setValues((prev) => ({ ...prev, grade: e.target.value }))
+                handleFieldChange(
+                  "grade",
+                  e.target.value
+                    .replace(/[^0-9]/g, "")
+                    .replace(/^0+(?=\d)/, "")
+                    .slice(0, 2),
+                )
               }
+              errorMessage={errors.grade}
             />
             <FormInput
               label="목표"
               placeholder="예) 분해도 이해하기"
               value={values.goal}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, goal: e.target.value }))
-              }
+              onChange={(e) => handleFieldChange("goal", e.target.value)}
+              errorMessage={errors.goal}
             />
           </Column>
 
           <CTA
             type="button"
-            disabled={!isValid}
-            onClick={() => onSubmit(values)}
+            disabled={isSubmitDisabled || isPending}
+            onClick={handleSubmit}
           >
             <Font
               typo="button_2"
@@ -137,21 +125,6 @@ export default function ProfileSetupModal({
             </Font>
           </CTA>
         </Column>
-
-        <CenterRow width="100%" gridGap="8px" p="16px 4px">
-          <Font typo="button_2" color="neutral_300">
-            프로필은 마이페이지에서 언제든 설정 가능합니다
-          </Font>
-
-          <Font
-            typo="button_2"
-            color="blue_700"
-            onClick={onClose}
-            style={{ cursor: "pointer" }}
-          >
-            둘러보기
-          </Font>
-        </CenterRow>
       </Modal>
     </Overlay>
   );

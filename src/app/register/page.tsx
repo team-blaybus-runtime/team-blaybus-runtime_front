@@ -5,11 +5,12 @@ import { Font } from "@/styles/typo/typography";
 import { Button } from "@/styles/base/BaseStyledTags";
 import AlreadyAccount from "@/component/register/AlreadyAccount";
 import RegisterInfo from "@/component/register/RegisterInfo";
-import { useRouter } from "next/navigation";
-import { C } from "@/constant";
+import { useRegisterForm } from "@/hooks/auth/useRegisterForm";
+import colors from "@/styles/constant/colors";
 
 export default function Register() {
-  const router = useRouter();
+  const { values, errors, isSubmitDisabled, handleChange, handleSubmit } =
+    useRegisterForm();
 
   return (
     <CenterColumn width="100%" height="100%">
@@ -17,20 +18,16 @@ export default function Register() {
         <Font typo="title_1" color="neutral_0">
           회원가입
         </Font>
-        <RegisterInfo />
+        <RegisterInfo values={values} errors={errors} onChange={handleChange} />
         <Button
           type="button"
           width="100%"
-          bg="blue_700"
+          bg={isSubmitDisabled ? colors.neutral_700 : colors.blue_700}
           p="12px 8px"
           alignItems="center"
           borderRadius="8px"
-          onClick={() => {
-            try {
-              sessionStorage.setItem(C.SHOW_PROFILE_SETUP_KEY, "1");
-            } catch {}
-            router.push("/main");
-          }}
+          disabled={isSubmitDisabled}
+          onClick={handleSubmit}
         >
           <Font typo="button_1" color="neutral_0">
             회원가입

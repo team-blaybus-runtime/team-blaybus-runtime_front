@@ -7,13 +7,19 @@ import { Column } from "@/styles/base/BaseComponents";
 import Footer from "@/component/common/Footer";
 import colors from "@/styles/constant/colors";
 import ProfileSetupModal from "@/component/common/modal/ProfileSetupModal";
-import { ProfileSetupValues } from "@/type/user";
+import { ProfileSetup } from "@/type/user";
+import { useAuthPageRedirect } from "@/hooks/auth/useAuthPageRedirect";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  const isAuthPage =
+    pathname.startsWith("/login") || pathname.startsWith("/register");
+  const { userInfo } = useAuthPageRedirect(isAuthPage);
+
   const [profileSetupOpen, setProfileSetupOpen] = useState(true);
 
-  const handleProfileSubmit = (_values: ProfileSetupValues) => {
+  const handleProfileSubmit = (_values: ProfileSetup) => {
     setProfileSetupOpen(false);
   };
   const handleProfileClose = () => {
@@ -21,20 +27,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const isWideScreen = pathname === "/";
-  const noFooterScreen =
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register");
+  const noFooterScreen = pathname === "/" || isAuthPage;
 
   if (pathname.startsWith("/study")) {
-    return <LayoutRoot>{children}</LayoutRoot>;
+    return (
+      <LayoutRoot>
+        {children}
+        {userInfo?.role === "GUEST" && (
+          <ProfileSetupModal
+            open={profileSetupOpen}
+            onSubmit={handleProfileSubmit}
+            onClose={handleProfileClose}
+          />
+        )}
+      </LayoutRoot>
+    );
   }
 
   return (
     <LayoutRoot>
       <HeaderWrapper>
         <PageContainer>
-          <Header />
+          <Header userInfo={userInfo} />
         </PageContainer>
       </HeaderWrapper>
       <Content isWideScreen={isWideScreen}>
@@ -47,11 +61,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </PageContainer>
         </FooterWrapper>
       )}
-      {/* <ProfileSetupModal
-        open={profileSetupOpen}
-        onSubmit={handleProfileSubmit}
-        onClose={handleProfileClose}
-      /> */}
+      {userInfo?.role === "GUEST" && (
+        <ProfileSetupModal
+          open={profileSetupOpen}
+          onSubmit={handleProfileSubmit}
+          onClose={handleProfileClose}
+        />
+      )}
     </LayoutRoot>
   );
 }

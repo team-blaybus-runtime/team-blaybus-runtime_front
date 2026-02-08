@@ -7,9 +7,13 @@ import { Button, Img } from "@/styles/base/BaseStyledTags";
 export default function StudySidebar({
   sideBarContent,
   setSideBarContent,
+  onPdfExport,
+  isPdfExporting = false,
 }: {
   sideBarContent: "memo" | "aiChat";
   setSideBarContent: (sideBarContent: "memo" | "aiChat") => void;
+  onPdfExport?: () => void;
+  isPdfExporting?: boolean;
 }) {
   return (
     <SidebarContainer>
@@ -38,6 +42,14 @@ export default function StudySidebar({
             height="40px"
             onClick={() => setSideBarContent("memo")}
             style={{ cursor: "pointer" }}
+          />
+          <Img
+            src={"/icons/study/pdf.svg"}
+            alt="memo"
+            width="40px"
+            height="40px"
+            onClick={isPdfExporting ? undefined : onPdfExport}
+            style={{ cursor: isPdfExporting ? "not-allowed" : "pointer", opacity: isPdfExporting ? 0.5 : 1 }}
           />
         </PrimaryMenu>
       </MenuContainer>

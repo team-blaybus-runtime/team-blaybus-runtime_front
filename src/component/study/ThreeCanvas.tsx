@@ -160,6 +160,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
+          preserveDrawingBuffer: true,
         }}
       >
         <color attach="background" args={["#2b2b2b"]} />

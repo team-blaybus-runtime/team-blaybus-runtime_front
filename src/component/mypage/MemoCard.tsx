@@ -1,20 +1,21 @@
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Font, FontLine } from "@/styles/typo/typography";
 import CardTag from "@/component/mypage/CardTag";
+import { formatDateOnly } from "@/utils/formatDate";
 
 interface MemoCardProps {
   title: string;
-  tag: string;
-  preview: string;
-  createdAt: string;
+  productTypeDesc: string;
+  content: string;
+  updatedAt: string;
   onClick?: () => void;
 }
 
 export default function MemoCard({
   title,
-  tag,
-  preview,
-  createdAt,
+  productTypeDesc,
+  content,
+  updatedAt,
   onClick,
 }: MemoCardProps) {
   return (
@@ -27,21 +28,21 @@ export default function MemoCard({
       onClick={onClick}
     >
       <Row width="100%" height="100%" alignItems="center" gridGap="10px">
-        <Font typo="title_2" color="neutral_0">
+        <FontLine typo="title_2" color="neutral_0" line={1}>
           {title}
-        </Font>
-        <CardTag tag={tag} />
+        </FontLine>
+        <CardTag productTypeDesc={productTypeDesc} />
       </Row>
 
       <Row width="100%" height="auto">
         <FontLine typo="body_2" color="neutral_0" line={1}>
-          {preview}
+          {content}
         </FontLine>
       </Row>
 
       <Row width="100%" height="auto" py="9px">
         <Font typo="caption_s" color="neutral_500">
-          작성일 {createdAt}
+          작성일 {formatDateOnly(updatedAt)}
         </Font>
       </Row>
     </Column>
