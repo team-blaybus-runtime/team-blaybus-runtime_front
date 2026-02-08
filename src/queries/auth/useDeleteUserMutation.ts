@@ -14,7 +14,7 @@ export const useDeleteUserMutation = () => {
     onSuccess: () => {
       clearTokens();
       toast.success("탈퇴가 완료되었습니다.");
-      router.push("/login");
+      router.push("/");
     },
     onError: (error) => {
       console.error(error);
