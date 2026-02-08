@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img, TextArea } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
+import { postAIChatStream, fetchAIChatHistory } from "@/apis/aiChat";
 
 interface Message {
   id: number;
@@ -13,26 +14,122 @@ interface Message {
   content: string;
 }
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: 1,
-    role: "user",
-    content: "이거 확인해 줘",
-  },
-  {
-    id: 2,
-    role: "ai",
-    content:
-      "AI 어시스턴트 답변~~\n대통령은 내란 또는 외환의 죄를 범한 경우를 제외하고는 재직중 형사상의 소추를 받지 아니한다. 국회의원은 국가이익을 우선하여 양심에 따라 직무를 행한다. 모든 국민은 인간다운 생활을 할 권리를 가진다. 국무총리는 국무위원의 해임을 대통령에게 건의할 수 있다.\n\n대통령은 제4항과 제5항의 규정에 의하여 확정된 법률을 지체없이 공포하여야 한다. 제5항에 의하여 법률이 확정된 후 또는 제4항에 의한 확정법률이 정부에 이송된 후 5일 이내에 대통령이 공포하지 아니할 때에는 국회의장이 이를 공포한다.",
-  },
-];
+const INITIAL_MESSAGES: Message[] = [];
 
-export default function StudyAIChat() {
+interface StudyAIChatProps {
+  productType?: string;
+  chatHistoryId?: number;
+}
+
+export default function StudyAIChat({
+  productType = "Drone",
+  chatHistoryId = 1,
+}: StudyAIChatProps) {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [hasNext, setHasNext] = useState(true);
+  const streamAbortRef = useRef<AbortController | null>(null);
+  const messageAreaRef = useRef<HTMLDivElement | null>(null);
+  const initialLoadRef = useRef(false);
+  const typingQueueRef = useRef("");
+  const typingTimerRef = useRef<number | null>(null);
+  const autoScrollRef = useRef(true);
+  const lastMessage = messages[messages.length - 1];
+  const showThinking =
+    isStreaming && lastMessage?.role === "ai" && !lastMessage?.content;
+  const isInputDisabled = isStreaming || isTyping;
 
-  const handleSend = useCallback(() => {
-    if (!input.trim()) return;
+  const stopTyping = useCallback(() => {
+    if (typingTimerRef.current) {
+      window.clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    setIsTyping(false);
+  }, []);
+
+  const startTyping = useCallback(
+    (targetId: number) => {
+      if (typingTimerRef.current) return;
+      setIsTyping(true);
+      typingTimerRef.current = window.setInterval(() => {
+        if (!typingQueueRef.current) {
+          stopTyping();
+          return;
+        }
+        const nextChunk = typingQueueRef.current.slice(0, 2);
+        typingQueueRef.current = typingQueueRef.current.slice(2);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === targetId
+              ? { ...msg, content: msg.content + nextChunk }
+              : msg,
+          ),
+        );
+      }, 30);
+    },
+    [stopTyping],
+  );
+
+  const isNearBottom = useCallback((el: HTMLDivElement) => {
+    const threshold = 60;
+    const distance =
+      el.scrollHeight - el.scrollTop - el.clientHeight;
+    return distance <= threshold;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadHistory = async () => {
+      try {
+        const data = await fetchAIChatHistory(chatHistoryId, {
+          lastId: null,
+          order: "asc",
+          limit: 50,
+        });
+
+        if (!active) return;
+        const mapped: Message[] = data.messages.map((msg) => ({
+          id: msg.chatMessageId,
+          role: msg.role === "ANSWER" ? "ai" : "user",
+          content: msg.content,
+        }));
+        setMessages(mapped);
+        setHasNext(data.hasNext);
+        initialLoadRef.current = true;
+        requestAnimationFrame(() => {
+          const el = messageAreaRef.current;
+          if (el) {
+            el.scrollTop = el.scrollHeight;
+          }
+        });
+      } catch {
+        // 히스토리 조회 실패 시 기존 메시지 유지
+      }
+    };
+
+    loadHistory();
+
+    return () => {
+      active = false;
+      stopTyping();
+    };
+  }, [chatHistoryId, stopTyping]);
+
+  useEffect(() => {
+    const el = messageAreaRef.current;
+    if (!el || !autoScrollRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages, showThinking, isTyping, isStreaming]);
+
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || isStreaming) return;
+    streamAbortRef.current?.abort();
+    stopTyping();
+    typingQueueRef.current = "";
 
     const userMessage: Message = {
       id: Date.now(),
@@ -43,12 +140,145 @@ export default function StudyAIChat() {
     const aiResponse: Message = {
       id: Date.now() + 1,
       role: "ai",
-      content: "AI 응답이 여기에 표시됩니다.",
+      content: "",
     };
 
     setMessages((prev) => [...prev, userMessage, aiResponse]);
     setInput("");
-  }, [input]);
+
+    const controller = new AbortController();
+    streamAbortRef.current = controller;
+    setIsStreaming(true);
+
+    try {
+      const response = await postAIChatStream(
+        {
+          content: userMessage.content,
+          productType,
+          chatHistoryId,
+        },
+        controller.signal,
+      );
+
+      if (!response.ok || !response.body) {
+        throw new Error("스트리밍 응답을 시작하지 못했습니다.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      const appendAnswer = (chunk: string) => {
+        if (!chunk) return;
+        typingQueueRef.current += chunk;
+        startTyping(aiResponse.id);
+      };
+
+      const handleEvent = (eventChunk: string) => {
+        const dataLines = eventChunk
+          .split("\n")
+          .filter((line) => line.startsWith("data:"))
+          .map((line) => line.replace(/^data:\s?/, ""));
+
+        if (dataLines.length === 0) return;
+        const data = dataLines.join("\n").trim();
+        if (!data || data === "[DONE]") return;
+
+        try {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) {
+            const answer = parsed
+              .map((item) => item?.answer)
+              .filter(Boolean)
+              .join("");
+            appendAnswer(answer || data);
+            return;
+          }
+          if (parsed?.answer) {
+            appendAnswer(parsed.answer);
+            return;
+          }
+        } catch {
+          // JSON이 아니면 원문 그대로 사용
+        }
+
+        appendAnswer(data);
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+        events.forEach(handleEvent);
+      }
+
+      if (buffer.trim()) {
+        handleEvent(buffer);
+      }
+    } catch {
+      stopTyping();
+      typingQueueRef.current = "";
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiResponse.id
+            ? { ...msg, content: "응답을 가져오지 못했습니다." }
+            : msg,
+        ),
+      );
+      if (typingQueueRef.current) {
+        startTyping(aiResponse.id);
+      }
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [chatHistoryId, input, isStreaming, productType, startTyping, stopTyping]);
+
+  const loadMoreHistory = useCallback(async () => {
+    if (isLoadingHistory || !hasNext || messages.length === 0) return;
+    setIsLoadingHistory(true);
+
+    const el = messageAreaRef.current;
+    const prevScrollHeight = el?.scrollHeight ?? 0;
+    const prevScrollTop = el?.scrollTop ?? 0;
+    const lastId = messages[0]?.id;
+
+    try {
+      const data = await fetchAIChatHistory(chatHistoryId, {
+        order: "desc",
+        limit: 20,
+        lastId,
+      });
+      const mapped: Message[] = data.messages.map((msg) => ({
+        id: msg.chatMessageId,
+        role: msg.role === "ANSWER" ? "ai" : "user",
+        content: msg.content,
+      }));
+      const nextMessages = mapped.reverse();
+      setMessages((prev) => [...nextMessages, ...prev]);
+      setHasNext(data.hasNext);
+      requestAnimationFrame(() => {
+        const nextEl = messageAreaRef.current;
+        if (!nextEl) return;
+        const nextScrollHeight = nextEl.scrollHeight;
+        nextEl.scrollTop = nextScrollHeight - prevScrollHeight + prevScrollTop;
+      });
+    } catch {
+      // 추가 히스토리 조회 실패 시 무시
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [chatHistoryId, hasNext, isLoadingHistory, messages]);
+
+  const handleScroll = useCallback(() => {
+    const el = messageAreaRef.current;
+    if (!el || !initialLoadRef.current) return;
+    autoScrollRef.current = isNearBottom(el);
+    if (el.scrollTop <= 24) {
+      loadMoreHistory();
+    }
+  }, [isNearBottom, loadMoreHistory]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -57,12 +287,12 @@ export default function StudyAIChat() {
         handleSend();
       }
     },
-    [handleSend]
+    [handleSend],
   );
 
   return (
     <ChatContainer>
-      <MessageArea>
+      <MessageArea ref={messageAreaRef} onScroll={handleScroll}>
         {messages.map((msg) =>
           msg.role === "user" ? (
             <UserBubble key={msg.id}>
@@ -76,7 +306,17 @@ export default function StudyAIChat() {
                 {msg.content}
               </Font>
             </AIMessage>
-          )
+          ),
+        )}
+        {showThinking && (
+          <AIMessage>
+            <ThinkingRow>
+              <Spinner />
+              <Font typo="body_2" color="#8a8a8a" style={{ lineHeight: "1.8" }}>
+                AI가 답변을 생각하고 있어요...
+              </Font>
+            </ThinkingRow>
+          </AIMessage>
         )}
       </MessageArea>
       <InputWrapper>
@@ -88,9 +328,13 @@ export default function StudyAIChat() {
           onKeyDown={handleKeyDown}
           placeholder="여기에 프롬프트를 입력하세요..."
           rows={1}
+          disabled={isInputDisabled}
         />
         <SendRow>
-          <SendButton onClick={handleSend} disabled={!input.trim()}>
+          <SendButton
+            onClick={handleSend}
+            disabled={!input.trim() || isInputDisabled}
+          >
             <Img
               src="/icons/study/send.svg"
               alt="send"
@@ -115,6 +359,7 @@ const MessageArea = styled(Column)`
   overflow-x: hidden;
   overflow-y: auto;
   gap: 19px;
+  padding-bottom: 40px;
 `;
 
 const UserBubble = styled(Row)`
@@ -175,5 +420,26 @@ const SendButton = styled(Button)`
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+`;
+
+const ThinkingRow = styled(Row)`
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+`;
+
+const Spinner = styled.div`
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;

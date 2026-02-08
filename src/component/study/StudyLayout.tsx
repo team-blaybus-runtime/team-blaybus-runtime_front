@@ -28,6 +28,9 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   useEffect(() => {
     fetchStudyObject(id).then(setData);
   }, [id]);
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
 
   return (
     <LayoutRoot>
@@ -72,7 +75,11 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
                 activeTab={activeTab}
               />
             </ViewerColumn>
-            {sideBarContent === "aiChat" ? <StudyAIChat /> : <StudyMemo />}
+            {sideBarContent === "aiChat" ? (
+              <StudyAIChat productType={data?.object.objectName ?? id} />
+            ) : (
+              <StudyMemo />
+            )}
           </ContentRow>
         </MainContent>
       </Section>
