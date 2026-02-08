@@ -34,3 +34,9 @@ export const putPassword = async (payload: {
   const response = await Api.put("/auth/password", payload);
   return response.data;
 };
+
+// 회원 탈퇴 API
+export const deleteUser = async () => {
+  const response = await Api.delete("/users");
+  return response.data;
+};

@@ -7,6 +7,8 @@ import { Img } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import { clearTokens } from "@/utils/authTokens";
 import ChangePasswordModal from "@/component/settings/ChangePasswordModal";
+import ConfirmDeleteModal from "@/component/settings/ConfirmDeleteModal";
+import { useDeleteUserMutation } from "@/queries/auth/useDeleteUserMutation";
 
 const ACCOUNT_MENU_ITEMS = [
   "비밀번호 변경",
@@ -20,6 +22,9 @@ const SUPPORT_MENU_ITEMS = ["알림 설정", "FAQ", "피드백"];
 export default function MenuCard({ type }: { type: "account" | "support" }) {
   const router = useRouter();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { mutate: deleteUser, isPending: isDeleting } =
+    useDeleteUserMutation();
   const title = type === "account" ? "계정 설정" : "지원";
   const icon =
     type === "account"
@@ -31,6 +36,10 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
   const handleMenuClick = (label: string) => {
     if (label === "비밀번호 변경") {
       setIsPasswordModalOpen(true);
+      return;
+    }
+    if (label === "탈퇴하기") {
+      setIsDeleteModalOpen(true);
       return;
     }
     if (label !== "로그아웃") return;
@@ -81,6 +90,14 @@ export default function MenuCard({ type }: { type: "account" | "support" }) {
         <ChangePasswordModal
           open={isPasswordModalOpen}
           onClose={() => setIsPasswordModalOpen(false)}
+        />
+      )}
+      {type === "account" && (
+        <ConfirmDeleteModal
+          open={isDeleteModalOpen}
+          isPending={isDeleting}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={() => deleteUser()}
         />
       )}
     </>
