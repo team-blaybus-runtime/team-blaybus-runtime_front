@@ -8,8 +8,17 @@ import {
 } from "@/utils/authTokens";
 import { postRefreshToken } from "@/apis/auth";
 
-const REFRESH_ENDPOINT = "/auth/refresh";
+const AUTH_SKIP_PATHS = ["/auth/sign-up", "/auth/sign-in", "/auth/refresh"];
+
+const shouldSkipAuth = (url?: string) =>
+  AUTH_SKIP_PATHS.some((path) => url?.includes(path));
 let refreshPromise: Promise<string | null> | null = null;
+
+const attachAccessToken = (request: any, token: string | null) => {
+  if (token) {
+    request.headers["Authorization"] = `Bearer ${token}`;
+  }
+};
 
 const requestRefreshToken = async (): Promise<string | null> => {
   const refreshToken = getRefreshToken();
@@ -43,15 +52,12 @@ const ensureAccessToken = async (): Promise<string | null> => {
 const applyInterceptors = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use(
     async (request) => {
-      if (request.url?.includes(REFRESH_ENDPOINT)) {
+      if (shouldSkipAuth(request.url)) {
         return request;
       }
 
       const token = await ensureAccessToken();
-
-      if (token) {
-        // request.headers["Authorization"] = `Bearer ${token}`;
-      }
+      attachAccessToken(request, token);
 
       return request;
     },
@@ -72,12 +78,12 @@ const applyInterceptors = (axiosInstance: AxiosInstance) => {
       if (
         status === 401 &&
         !originalRequest?._retry &&
-        !originalRequest?.url?.includes(REFRESH_ENDPOINT)
+        !shouldSkipAuth(originalRequest?.url)
       ) {
         originalRequest._retry = true;
         const newToken = await ensureAccessToken();
         if (newToken) {
-          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+          attachAccessToken(originalRequest, newToken);
           return axiosInstance(originalRequest);
         }
       }
