@@ -17,6 +17,7 @@ import AssemblyViewer from "@/component/study/AssemblyViewer";
 import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
+import { useSimulatorStore } from "@/store/useSimulatorStore";
 import { StudyComponent } from "@/apis/studyApi";
 
 function LoadingFallback() {
@@ -33,6 +34,22 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
   const { camera } = useThree();
   const { zoomAction, focusAction, clearAction, pushCameraSnapshot, undo, redo, activeTool } = useEditStore();
 
+  // OrbitControls 조작 끝날 때 카메라 스냅샷 저장
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const handleEnd = () => {
+      pushCameraSnapshot({
+        position: camera.position.toArray() as [number, number, number],
+        target: [controls.target.x, controls.target.y, controls.target.z],
+      });
+    };
+
+    controls.addEventListener("end", handleEnd);
+    return () => controls.removeEventListener("end", handleEnd);
+  }, [controlsRef, camera, pushCameraSnapshot]);
+
   // zoom in / zoom out 액션 처리
   useEffect(() => {
     if (!zoomAction || !controlsRef.current) return;
@@ -42,33 +59,60 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     camera.getWorldDirection(dir);
     const distance = zoomAction === "in" ? 1 : -1;
 
-    // 현재 카메라 스냅샷 저장
-    pushCameraSnapshot({
-      position: camera.position.toArray() as [number, number, number],
-      target: [controls.target.x, controls.target.y, controls.target.z],
-    });
-
     camera.position.addScaledVector(dir, distance);
     controls.update();
     clearAction();
-  }, [zoomAction, camera, controlsRef, clearAction, pushCameraSnapshot]);
+  }, [zoomAction, camera, controlsRef, clearAction]);
 
   // focus 액션 처리 - 카메라를 기본 위치로 리셋
   useEffect(() => {
     if (!focusAction || !controlsRef.current) return;
 
     const controls = controlsRef.current;
-
-    pushCameraSnapshot({
-      position: camera.position.toArray() as [number, number, number],
-      target: [controls.target.x, controls.target.y, controls.target.z],
-    });
-
     camera.position.set(3, 2, 3);
     controls.target.set(0, 0, 0);
     controls.update();
     clearAction();
-  }, [focusAction, camera, controlsRef, clearAction, pushCameraSnapshot]);
+  }, [focusAction, camera, controlsRef, clearAction]);
+
+  // undo/redo 시 카메라 복원
+  useEffect(() => {
+    const unsub = useEditStore.subscribe((state, prev) => {
+      // undo가 호출되어 history가 줄었으면 future 마지막 항목이 복원 대상
+      if (state.cameraHistory.length < prev.cameraHistory.length && state.cameraFuture.length > prev.cameraFuture.length) {
+        const snapshot = state.cameraFuture[state.cameraFuture.length - 1];
+        if (snapshot && controlsRef.current) {
+          camera.position.set(...snapshot.position);
+          controlsRef.current.target.set(...snapshot.target);
+          controlsRef.current.update();
+        }
+      }
+      // redo가 호출되어 history가 늘었으면 history 마지막 항목이 복원 대상
+      if (state.cameraHistory.length > prev.cameraHistory.length && state.cameraFuture.length < prev.cameraFuture.length) {
+        const snapshot = state.cameraHistory[state.cameraHistory.length - 1];
+        if (snapshot && controlsRef.current) {
+          camera.position.set(...snapshot.position);
+          controlsRef.current.target.set(...snapshot.target);
+          controlsRef.current.update();
+        }
+      }
+    });
+    return unsub;
+  }, [camera, controlsRef]);
+
+  return null;
+}
+
+/** 시뮬레이터 타임라인 → explodeLevel 동기화 */
+function SimulatorSync() {
+  const { currentTime, duration, isPlaying } = useSimulatorStore();
+  const { setExplodeLevel } = useModelStore();
+
+  useFrame(() => {
+    if (!isPlaying && currentTime === 0) return;
+    const progress = duration > 0 ? currentTime / duration : 0;
+    setExplodeLevel(progress);
+  });
 
   return null;
 }
@@ -177,6 +221,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
         />
 
         <EditToolHandler controlsRef={controlsRef} />
+        <SimulatorSync />
 
         <gridHelper
           args={[20, 20, "#27272a", "#1a1a1a"]}

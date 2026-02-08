@@ -2,25 +2,21 @@
 
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
-import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { UserStudyHistory } from "@/apis/studyApi";
+import { useEditStore } from "@/store/useEditStore";
 
 interface StudyContentModalProps {
-  open: boolean;
-  onClose: () => void;
   objectName: string;
   histories: UserStudyHistory[];
 }
 
 export default function StudyContentModal({
-  open,
-  onClose,
   objectName,
   histories,
 }: StudyContentModalProps) {
-  if (!open) return null;
+  const { selectedPartIndex, setSelectedPartIndex } = useEditStore();
 
   return (
     <ModalContainer>
@@ -28,14 +24,15 @@ export default function StudyContentModal({
         <Font typo="label_l" color={colors.blue_700}>
           {objectName}
         </Font>
-        <CloseButton onClick={onClose}>
-          <CloseIcon />
-        </CloseButton>
       </ModalHeader>
 
       <ThumbnailGrid>
-        {histories.map((h) => (
-          <ThumbnailCard key={h.userStudyHisId}>
+        {histories.map((h, i) => (
+          <ThumbnailCard
+            key={h.userStudyHisId}
+            $selected={selectedPartIndex === i}
+            onClick={() => setSelectedPartIndex(selectedPartIndex === i ? null : i)}
+          >
             <PartPreview
               $color={h.viewInfo.color}
               $width={h.viewInfo.geometry[0]}
@@ -66,20 +63,6 @@ export default function StudyContentModal({
         ))}
       </DescriptionList>
     </ModalContainer>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M15 5L5 15M5 5l10 10"
-        stroke="#969696"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -135,22 +118,6 @@ const ModalHeader = styled(Row)`
   flex-shrink: 0;
 `;
 
-const CloseButton = styled(Button)`
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 8px;
-  flex-shrink: 0;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-`;
-
 const ThumbnailGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -159,16 +126,17 @@ const ThumbnailGrid = styled.div`
   flex-shrink: 0;
 `;
 
-const ThumbnailCard = styled.div`
+const ThumbnailCard = styled.div<{ $selected?: boolean }>`
   aspect-ratio: 1;
-  background-color: ${colors.neutral_900};
+  background-color: ${({ $selected }) => ($selected ? colors.neutral_800 : colors.neutral_900)};
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${colors.blue_700}` : "none")};
 
   &:hover {
     background-color: ${colors.neutral_800};

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { Row, Column } from "@/styles/base/BaseComponents";
 import colors from "@/styles/constant/colors";
+import { useSimulatorStore } from "@/store/useSimulatorStore";
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -11,41 +12,33 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-interface SimulatorControlsProps {
-  duration?: number;
-}
-
-export default function SimulatorControls({ duration = 30 }: SimulatorControlsProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+export default function SimulatorControls() {
+  const { isPlaying, currentTime, duration, setIsPlaying, setCurrentTime, reset } =
+    useSimulatorStore();
   const animRef = useRef<number | null>(null);
   const lastTimestampRef = useRef<number | null>(null);
-
-  const play = useCallback(() => {
-    setIsPlaying(true);
-    lastTimestampRef.current = null;
-  }, []);
 
   const pause = useCallback(() => {
     setIsPlaying(false);
     if (animRef.current) cancelAnimationFrame(animRef.current);
     animRef.current = null;
     lastTimestampRef.current = null;
-  }, []);
+  }, [setIsPlaying]);
 
-  const reset = useCallback(() => {
+  const handleReset = useCallback(() => {
     pause();
-    setCurrentTime(0);
-  }, [pause]);
+    reset();
+  }, [pause, reset]);
 
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       pause();
     } else {
       if (currentTime >= duration) setCurrentTime(0);
-      play();
+      lastTimestampRef.current = null;
+      setIsPlaying(true);
     }
-  }, [isPlaying, pause, play, currentTime, duration]);
+  }, [isPlaying, pause, currentTime, duration, setCurrentTime, setIsPlaying]);
 
   // 애니메이션 루프
   useEffect(() => {
@@ -54,14 +47,13 @@ export default function SimulatorControls({ duration = 30 }: SimulatorControlsPr
     const tick = (timestamp: number) => {
       if (lastTimestampRef.current !== null) {
         const delta = (timestamp - lastTimestampRef.current) / 1000;
-        setCurrentTime((prev) => {
-          const next = prev + delta;
-          if (next >= duration) {
-            setIsPlaying(false);
-            return duration;
-          }
-          return next;
-        });
+        const next = currentTime + delta;
+        if (next >= duration) {
+          setCurrentTime(duration);
+          setIsPlaying(false);
+          return;
+        }
+        setCurrentTime(next);
       }
       lastTimestampRef.current = timestamp;
       animRef.current = requestAnimationFrame(tick);
@@ -71,7 +63,7 @@ export default function SimulatorControls({ duration = 30 }: SimulatorControlsPr
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [isPlaying, duration]);
+  }, [isPlaying, currentTime, duration, setCurrentTime, setIsPlaying]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -92,7 +84,7 @@ export default function SimulatorControls({ duration = 30 }: SimulatorControlsPr
         <TimeLabel>{formatTime(duration)}</TimeLabel>
       </TimeRow>
       <ButtonRow>
-        <ControlButton onClick={reset} aria-label="리셋">
+        <ControlButton onClick={handleReset} aria-label="리셋">
           <ResetIcon />
         </ControlButton>
         <ControlButton onClick={togglePlay} aria-label={isPlaying ? "일시정지" : "재생"}>

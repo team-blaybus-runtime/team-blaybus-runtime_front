@@ -8,7 +8,7 @@ import StudyContentModal from "@/component/study/StudyContentModal";
 import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
 import SimulatorControls from "@/component/study/SimulatorControls";
-import SimulatorSettingsPanel from "@/component/study/SimulatorSettingsPanel";
+import SimulatorSettingsPanel, { SimulatorPanel } from "@/component/study/SimulatorSettingsPanel";
 import { StudyComponent, UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
 import { StudyTab } from "@/component/study/StudyTabBar";
 
@@ -92,9 +92,8 @@ interface StudyViewerProps {
 }
 
 export default function StudyViewer({ objectName, components, activeTab }: StudyViewerProps) {
-  const [modalOpen, setModalOpen] = useState(true);
   const [histories, setHistories] = useState<UserStudyHistory[]>(MOCK_DRONE_HISTORIES);
-  const [simPanel, setSimPanel] = useState<"쉐이더 설정" | "메쉬 목록" | "에셋 업로드" | null>(null);
+  const [simPanel, setSimPanel] = useState<SimulatorPanel | null>(null);
 
   useEffect(() => {
     fetchUserStudyHistories()
@@ -112,8 +111,6 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
       {activeTab === "단일 부품" && (
         <OverlayRight>
           <StudyContentModal
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
             objectName={objectName}
             histories={histories}
           />
@@ -139,6 +136,7 @@ export default function StudyViewer({ objectName, components, activeTab }: Study
         <SimulatorSettingsPanel
           activePanel={simPanel}
           onPanelChange={setSimPanel}
+          components={components}
         />
       </OverlayTopLeft>
 

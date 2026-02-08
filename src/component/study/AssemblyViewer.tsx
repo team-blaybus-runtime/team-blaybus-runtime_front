@@ -34,11 +34,13 @@ function ComponentModel({
   glbUrl,
   index,
   isSelected,
+  isVisible,
   onSelect,
 }: {
   glbUrl: string;
   index: number;
   isSelected: boolean;
+  isVisible: boolean;
   onSelect: (index: number) => void;
 }) {
   const { scene } = useGLTF(glbUrl);
@@ -85,7 +87,7 @@ function ComponentModel({
   );
 
   return (
-    <group ref={groupRef} onClick={handleClick}>
+    <group ref={groupRef} onClick={handleClick} visible={isVisible}>
       <primitive object={clonedScene} />
     </group>
   );
@@ -93,7 +95,7 @@ function ComponentModel({
 
 export default function AssemblyViewer({ components }: AssemblyViewerProps) {
   const groupRef = useRef<Group>(null);
-  const { explodeLevel, setIsLoading } = useModelStore();
+  const { explodeLevel, setIsLoading, hiddenParts } = useModelStore();
   const { activeTool, selectedPartIndex, setSelectedPartIndex } = useEditStore();
   const partsRef = useRef<PartData[]>([]);
   const centerRef = useRef<Vector3>(new Vector3());
@@ -200,6 +202,7 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
             glbUrl={comp.glbUrl}
             index={i}
             isSelected={selectedPartIndex === i}
+            isVisible={!hiddenParts.has(i)}
             onSelect={handlePartSelect}
           />
         ))}
