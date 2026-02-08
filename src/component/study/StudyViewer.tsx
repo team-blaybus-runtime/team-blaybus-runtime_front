@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import type { RefObject } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
@@ -10,7 +10,6 @@ import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
 import SimulatorControls from "@/component/study/SimulatorControls";
 import SimulatorSettingsPanel, { SimulatorPanel } from "@/component/study/SimulatorSettingsPanel";
-import { StudyComponent } from "@/apis/studyApi";
 import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineeringApi";
 import { StudyTab } from "@/component/study/StudyTabBar";
 
@@ -19,16 +18,27 @@ const ThreeCanvas = dynamic(
   { ssr: false }
 );
 
+/** objectId → 서버 enum ProductType 매핑 */
+const PRODUCT_TYPE_MAP: Record<string, string> = {
+  drone: "Drone",
+  "leaf-spring": "Leaf_Spring",
+  "machine-vice": "Machine_Vice",
+  "robot-arm": "Robot_Arm",
+  "robot-gripper": "Robot_Gripper",
+  suspension: "Suspension",
+  "v4-engine": "V4_Engine",
+};
+
 interface StudyViewerProps {
+  objectId: string;
   objectName: string;
-  components: StudyComponent[];
   activeTab: StudyTab;
   viewerRef?: RefObject<HTMLDivElement | null>;
 }
 
 const StudyViewer = ({
+  objectId,
   objectName,
-  components,
   activeTab,
   viewerRef,
 }: StudyViewerProps) => {
@@ -36,12 +46,23 @@ const StudyViewer = ({
   const [simPanel, setSimPanel] = useState<SimulatorPanel | null>(null);
 
   useEffect(() => {
-    if (!objectName) return;
-    const productType = objectName.replace(/ /g, "_");
+    const productType = PRODUCT_TYPE_MAP[objectId];
+    if (!productType) return;
     fetchEngineeringParts(productType)
       .then(setParts)
       .catch(() => {});
-  }, [objectName]);
+  }, [objectId]);
+
+  // API 응답 → 3D 뷰어용 컴포넌트 변환 (assetUrl = GLB URL)
+  const components = useMemo(
+    () =>
+      parts.map((part, i) => ({
+        componentId: `part-${i}`,
+        componentName: part.partName,
+        glbUrl: part.assetUrl,
+      })),
+    [parts]
+  );
 
   return (
     <ViewerContainer ref={viewerRef}>

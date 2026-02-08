@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useEffect, useCallback, useState } from "react";
+import React, { Component, useRef, useMemo, useEffect, useCallback, useState } from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
 import { useGLTF, Center, TransformControls } from "@react-three/drei";
 import {
@@ -16,6 +16,30 @@ import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/studyApi";
 
+/** GLB 로드 실패 시 해당 파트만 건너뛰는 에러 바운더리 */
+class PartErrorBoundary extends Component<
+  { children: React.ReactNode; partName: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; partName: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn(`[GLB 로드 실패] ${this.props.partName}:`, error.message);
+  }
+
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
 interface AssemblyViewerProps {
   components: StudyComponent[];
 }
@@ -29,6 +53,15 @@ interface PartData {
 // 선택 하이라이트 — 강하게
 const HIGHLIGHT_EMISSIVE = new Color("#3399FF");
 const DEFAULT_EMISSIVE = new Color("#000000");
+
+const S3_HOST = "https://blaybus-runtime-bucket.s3.ap-northeast-2.amazonaws.com";
+
+function toProxyUrl(url: string) {
+  if (url.startsWith(S3_HOST)) {
+    return url.replace(S3_HOST, "/s3-proxy");
+  }
+  return url;
+}
 
 function ComponentModel({
   glbUrl,
@@ -45,7 +78,7 @@ function ComponentModel({
   onSelect: (index: number) => void;
   registerRef: (index: number, el: Group | null) => void;
 }) {
-  const { scene } = useGLTF(glbUrl);
+  const { scene } = useGLTF(toProxyUrl(glbUrl));
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
@@ -206,7 +239,7 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
   // GLB preload
   useEffect(() => {
     components.forEach((comp) => {
-      useGLTF.preload(comp.glbUrl);
+      useGLTF.preload(toProxyUrl(comp.glbUrl));
     });
   }, [components]);
 
@@ -303,15 +336,16 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
     <Center>
       <group ref={groupRef} onPointerMissed={handleMissClick}>
         {components.map((comp, i) => (
-          <ComponentModel
-            key={comp.componentId}
-            glbUrl={comp.glbUrl}
-            index={i}
-            isSelected={selectedPartIndex === i}
-            isVisible={!hiddenParts.has(i)}
-            onSelect={handlePartSelect}
-            registerRef={registerRef}
-          />
+          <PartErrorBoundary key={comp.componentId} partName={comp.componentName}>
+            <ComponentModel
+              glbUrl={comp.glbUrl}
+              index={i}
+              isSelected={selectedPartIndex === i}
+              isVisible={!hiddenParts.has(i)}
+              onSelect={handlePartSelect}
+              registerRef={registerRef}
+            />
+          </PartErrorBoundary>
         ))}
       </group>
 

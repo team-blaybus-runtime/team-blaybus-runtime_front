@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Header userInfo={userInfo} />
         </PageContainer>
       </HeaderWrapper>
-      <Content isWideScreen={isWideScreen}>
+      <Content $isWideScreen={isWideScreen}>
         <PageContainer>{children}</PageContainer>
       </Content>
       {!noFooterScreen && (
@@ -79,12 +79,12 @@ const LayoutRoot = styled(Column)`
   overflow-y: auto;
 `;
 
-const Content = styled.main<{ isWideScreen: boolean }>`
+const Content = styled.main<{ $isWideScreen: boolean }>`
   flex: 1 0 auto;
   display: flex;
   width: 100%;
   background-color: ${colors.neutral_1100};
-  min-width: ${({ isWideScreen }) => (isWideScreen ? "100vw" : "1280px")};
+  min-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
   min-height: 800px;
 `;
 

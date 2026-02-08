@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Button, Img } from "@/styles/base/BaseStyledTags";
@@ -29,6 +29,9 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
     "aiChat",
   );
   const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const renameInputRef = useRef<HTMLInputElement>(null);
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const aiChat = useStudyAIChat({
     productType: data?.object.objectName ?? id,
@@ -44,6 +47,28 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   useEffect(() => {
     fetchStudyObject(id).then(setData);
   }, [id]);
+
+  const displayName = customName || data?.object.objectName || "";
+
+  const startRename = useCallback(() => {
+    setCustomName(displayName);
+    setIsRenaming(true);
+    setTimeout(() => renameInputRef.current?.select(), 0);
+  }, [displayName]);
+
+  const confirmRename = useCallback(() => {
+    const trimmed = customName.trim();
+    if (trimmed && data) {
+      setData({ ...data, object: { ...data.object, objectName: trimmed } });
+    }
+    setCustomName("");
+    setIsRenaming(false);
+  }, [customName, data]);
+
+  const cancelRename = useCallback(() => {
+    setCustomName("");
+    setIsRenaming(false);
+  }, []);
 
   // 새로고침 시 페이지별 사이드바 선택된 옵션을 유지하기 위해 로컬스토리지 사용
   useEffect(() => {
@@ -73,15 +98,30 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
           <PageHeader>
             <HeaderLeft>
               <FileNameContainer>
-                <Font typo="label_m" color="#ffffff">
-                  {data?.object.objectName ?? "로딩 중..."}
-                </Font>
-                <Img
-                  src="/icons/study/edit.svg"
-                  alt="edit"
-                  width="24px"
-                  height="24px"
-                />
+                {isRenaming ? (
+                  <RenameInput
+                    ref={renameInputRef}
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") confirmRename();
+                      if (e.key === "Escape") cancelRename();
+                    }}
+                    onBlur={confirmRename}
+                  />
+                ) : (
+                  <Font typo="label_m" color="#ffffff">
+                    {displayName || "로딩 중..."}
+                  </Font>
+                )}
+                <EditIcon onClick={startRename}>
+                  <Img
+                    src="/icons/study/edit.svg"
+                    alt="edit"
+                    width="24px"
+                    height="24px"
+                  />
+                </EditIcon>
               </FileNameContainer>
             </HeaderLeft>
             <IconBtn>
@@ -99,8 +139,8 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
                 <StudyTabBar activeTab={activeTab} onTabChange={setActiveTab} />
               </TabCenter>
               <StudyViewer
+                objectId={id}
                 objectName={data?.object.objectName ?? ""}
-                components={data?.components ?? []}
                 activeTab={activeTab}
                 viewerRef={viewerRef}
               />
@@ -153,8 +193,40 @@ const HeaderLeft = styled(Row)`
 
 const FileNameContainer = styled(Row)`
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   overflow: hidden;
+`;
+
+const RenameInput = styled.input`
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 2px 0;
+  outline: none;
+  min-width: 100px;
+
+  &:focus {
+    border-bottom-color: #3b82f6;
+  }
+`;
+
+const EditIcon = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 `;
 
 const ContentRow = styled(Row)`

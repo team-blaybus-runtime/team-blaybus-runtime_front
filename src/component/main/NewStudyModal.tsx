@@ -10,6 +10,10 @@ import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import DomainCard from "@/component/main/DomainCard";
 import { createUserStudyHistory } from "@/apis/studyApi";
+import {
+  EngineeringProductType,
+  fetchEngineeringProductTypes,
+} from "@/apis/engineeringApi";
 
 interface NewStudyModalProps {
   open: boolean;
@@ -17,18 +21,19 @@ interface NewStudyModalProps {
   onCreated?: () => void;
 }
 
-const DOMAINS = [
-  { id: "drone", name: "Drone", image: "/3D Asset/Drone/조립도1.png" },
-  { id: "machine-vice", name: "Machine Vice", image: "/3D Asset/Machine Vice/공작 기계 바이스2.png" },
-  { id: "suspension", name: "Suspension", image: "/3D Asset/Suspension/서스펜션 조립도.png" },
-  { id: "robot-arm", name: "Robot Arm", image: "/3D Asset/Robot Arm/로보팔 조립도.png" },
-  { id: "robot-gripper", name: "Robot Gripper", image: "/3D Asset/Robot Gripper/로봇집게 조립도.png" },
-  { id: "leaf-spring", name: "Leaf Spring", image: "/3D Asset/Leaf Spring/판스프링 조립도.png" },
-  { id: "v4-engine", name: "V4 Engine", image: "/3D Asset/V4_Engine/V4실린더 엔진 조립도.png" },
-];
+/** productTypeDesc → URL-safe objectId 변환 */
+function toObjectId(desc: string): string {
+  return desc.replace(/_/g, "-").toLowerCase();
+}
+
+/** productTypeDesc → 표시 이름 변환 */
+function toDisplayName(desc: string): string {
+  return desc.replace(/_/g, " ");
+}
 
 export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModalProps) {
   const router = useRouter();
+  const [domains, setDomains] = useState<EngineeringProductType[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const cardRowRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -48,7 +53,11 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
   useEffect(() => {
     if (!open) {
       setSelectedDomain(null);
+      return;
     }
+    fetchEngineeringProductTypes()
+      .then(setDomains)
+      .catch(() => {});
   }, [open]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -86,18 +95,18 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
     return "disselect" as const;
   };
 
-  const handleCardClick = (domainId: string) => {
+  const handleCardClick = (desc: string) => {
     if (hasDragged.current) return;
-    setSelectedDomain((prev) => (prev === domainId ? null : domainId));
+    setSelectedDomain((prev) => (prev === desc ? null : desc));
   };
 
   const handleStudy = async () => {
     if (!selectedDomain) return;
-    const domain = DOMAINS.find((d) => d.id === selectedDomain);
+    const displayName = toDisplayName(selectedDomain);
     try {
       await createUserStudyHistory({
-        productType: domain?.name ?? selectedDomain,
-        title: `${domain?.name ?? selectedDomain} 구조 학습`,
+        productType: selectedDomain,
+        title: `${displayName} 구조 학습`,
         viewInfo: {
           partId: 1,
           position: [0, 0, 0],
@@ -116,7 +125,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
       // API 실패해도 페이지 이동은 허용
     }
     onClose();
-    router.push(`/study/${selectedDomain}`);
+    router.push(`/study/${toObjectId(selectedDomain)}`);
   };
 
   return (
@@ -143,13 +152,13 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {DOMAINS.map((domain) => (
+          {domains.map((domain) => (
             <DomainCard
-              key={domain.id}
-              name={domain.name}
-              image={domain.image}
-              state={getCardState(domain.id)}
-              onClick={() => handleCardClick(domain.id)}
+              key={domain.productTypeDesc}
+              name={toDisplayName(domain.productTypeDesc)}
+              image={domain.imageUrl}
+              state={getCardState(domain.productTypeDesc)}
+              onClick={() => handleCardClick(domain.productTypeDesc)}
             />
           ))}
         </CardRow>

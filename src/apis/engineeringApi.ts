@@ -9,6 +9,7 @@ export interface EngineeringPart {
   partName: string;
   content: string;
   imageUrl: string;
+  assetUrl: string;
 }
 
 /**
