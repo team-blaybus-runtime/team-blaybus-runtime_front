@@ -20,7 +20,6 @@ import {
   saveUserStudyHistory,
 } from "@/apis/study";
 import { useRenderStore } from "@/store/useRenderStore";
-import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
 import StudyMemo from "@/component/study/memo/StudyMemo";
 import StudyQuiz from "@/component/study/quiz/StudyQuiz";
 import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
@@ -32,8 +31,7 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [history, setHistory] = useState<UserStudyHistory | null>(null);
-  const [data, setData] = useState<StudyObjectDetail | null>(null);
-  const { data: memoData } = useFetchUserMemosQuery(data?.object.objectName);
+  const { data: memoData } = useFetchUserMemosQuery(history?.ProductTypeDesc);
 
   const [sideBarContent, setSideBarContent] = useState<
     "memo" | "aiChat" | "quiz"
@@ -94,7 +92,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         productType: history.ProductTypeDesc,
         title: trimmed,
         viewInfo,
-      }).catch(() => {});
+      }).catch(() => { });
     }
     setCustomName("");
     setIsRenaming(false);
@@ -119,7 +117,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
           productType: h.ProductTypeDesc,
           title: h.title,
           viewInfo,
-        }).catch(() => {});
+        }).catch(() => { });
       }, 3000);
     });
     return () => {
@@ -214,7 +212,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             ) : (
               <StudyQuiz
                 objectId={id}
-                objectName={data?.object.objectName ?? id}
+                objectName={productType || id}
               />
             )}
           </ContentRow>
