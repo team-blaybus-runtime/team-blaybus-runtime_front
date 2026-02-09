@@ -400,8 +400,8 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
   },
 };
 
-export function getStudyQuizData(objectId: string): StudyQuizData | null {
-  return STUDY_QUIZ_DATA[objectId] ?? null;
+export function getStudyQuizData(objectName: string): StudyQuizData | null {
+  return STUDY_QUIZ_DATA[objectName.toLowerCase()] ?? null;
 }
 
 export function getAllQuizComponents(): string[] {
