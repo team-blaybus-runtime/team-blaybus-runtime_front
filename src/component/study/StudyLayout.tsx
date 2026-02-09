@@ -15,10 +15,11 @@ import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
 import useStudyAIChat from "@/providers/useStudyAIChat";
 import {
   UserStudyHistory,
+  ViewInfo,
   fetchUserStudyHistory,
   saveUserStudyHistory,
 } from "@/apis/study";
-import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
+import { useRenderStore } from "@/store/useRenderStore";
 import StudyMemo from "@/component/study/memo/StudyMemo";
 import StudyQuiz from "@/component/study/quiz/StudyQuiz";
 import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
@@ -30,8 +31,7 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [history, setHistory] = useState<UserStudyHistory | null>(null);
-  const [data, setData] = useState<StudyObjectDetail | null>(null);
-  const { data: memoData } = useFetchUserMemosQuery(data?.object.objectName);
+  const { data: memoData } = useFetchUserMemosQuery(history?.ProductTypeDesc);
 
   const [sideBarContent, setSideBarContent] = useState<
     "memo" | "aiChat" | "quiz"
@@ -74,24 +74,57 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
     setTimeout(() => renameInputRef.current?.select(), 0);
   }, [displayName]);
 
+  const buildViewInfo = useCallback((base: ViewInfo): ViewInfo => {
+    const { cameraState, bloom, ao, lighting } = useRenderStore.getState();
+    return {
+      ...base,
+      camera: cameraState,
+      renderSettings: { bloom, ao, lighting },
+    };
+  }, []);
+
   const confirmRename = useCallback(() => {
     const trimmed = customName.trim();
     if (trimmed && history) {
-      setHistory({ ...history, title: trimmed });
+      const viewInfo = buildViewInfo(history.viewInfo);
+      setHistory({ ...history, title: trimmed, viewInfo });
       saveUserStudyHistory({
         productType: history.ProductTypeDesc,
         title: trimmed,
-        viewInfo: history.viewInfo,
-      }).catch(() => {});
+        viewInfo,
+      }).catch(() => { });
     }
     setCustomName("");
     setIsRenaming(false);
-  }, [customName, history]);
+  }, [customName, history, buildViewInfo]);
 
   const cancelRename = useCallback(() => {
     setCustomName("");
     setIsRenaming(false);
   }, []);
+
+  // 카메라/쉐이더 변경 후 3초 멈추면 자동 저장
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const unsub = useRenderStore.subscribe(() => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        const h = history;
+        if (!h) return;
+        const viewInfo = buildViewInfo(h.viewInfo);
+        setHistory((prev) => prev ? { ...prev, viewInfo } : prev);
+        saveUserStudyHistory({
+          productType: h.ProductTypeDesc,
+          title: h.title,
+          viewInfo,
+        }).catch(() => { });
+      }, 3000);
+    });
+    return () => {
+      unsub();
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [history, buildViewInfo]);
 
   // 새로고침 시 페이지별 사이드바 선택된 옵션을 유지하기 위해 로컬스토리지 사용
   useEffect(() => {
@@ -166,6 +199,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
                 objectName={title}
                 activeTab={activeTab}
                 viewerRef={viewerRef}
+                viewInfo={history?.viewInfo}
               />
             </ViewerColumn>
             {sideBarContent === "aiChat" ? (
@@ -178,7 +212,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             ) : (
               <StudyQuiz
                 objectId={id}
-                objectName={data?.object.objectName ?? id}
+                objectName={productType || id}
               />
             )}
           </ContentRow>

@@ -2,7 +2,7 @@
 
 import { Suspense, useRef, useEffect, useCallback } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows, Bounds } from "@react-three/drei";
+import { OrbitControls, Environment, ContactShadows, Bounds, useBounds } from "@react-three/drei";
 import {
   EffectComposer,
   Bloom,
@@ -18,7 +18,7 @@ import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
 import { useSimulatorStore } from "@/store/useSimulatorStore";
-import { StudyComponent } from "@/apis/study";
+import { StudyComponent, ViewInfo } from "@/apis/study";
 
 function LoadingFallback() {
   return (
@@ -30,7 +30,13 @@ function LoadingFallback() {
 }
 
 /** 편집 도구 액션(zoom, focus)을 Three.js 카메라에 반영 */
-function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+function EditToolHandler({
+  controlsRef,
+  boundsApi,
+}: {
+  controlsRef: React.RefObject<any>;
+  boundsApi: React.RefObject<any>;
+}) {
   const { camera } = useThree();
   const { zoomAction, focusAction, clearAction } = useEditStore();
 
@@ -50,16 +56,15 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     clearAction();
   }, [zoomAction, camera, controlsRef, clearAction]);
 
-  // focus 액션 처리 - 카메라를 기본 위치로 리셋
+  // focus 액션 처리 - Bounds.refresh()로 모델에 맞게 카메라 리셋
   useEffect(() => {
-    if (!focusAction || !controlsRef.current) return;
+    if (!focusAction) return;
 
-    const controls = controlsRef.current;
-    camera.position.set(3, 2, 3);
-    controls.target.set(0, 0, 0);
-    controls.update();
+    if (boundsApi.current) {
+      boundsApi.current.refresh().clip().fit();
+    }
     clearAction();
-  }, [focusAction, camera, controlsRef, clearAction]);
+  }, [focusAction, boundsApi, clearAction]);
 
   return null;
 }
@@ -68,35 +73,121 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
 function SimulatorSync() {
   const { currentTime, duration, isPlaying } = useSimulatorStore();
   const { setExplodeLevel } = useModelStore();
-  const wasPlayingRef = useRef(false);
+  const prevTimeRef = useRef(currentTime);
 
   useFrame(() => {
     const progress = duration > 0 ? currentTime / duration : 0;
 
     if (isPlaying) {
-      // 재생 중: 매 프레임 동기화
       setExplodeLevel(progress);
-      wasPlayingRef.current = true;
-    } else if (wasPlayingRef.current) {
-      // 방금 멈춤/리셋: 한 번만 동기화 후 수동 조작 허용
+    } else if (prevTimeRef.current !== currentTime) {
+      // 리셋 또는 트랙 클릭으로 시간이 바뀐 경우 동기화
       setExplodeLevel(progress);
-      wasPlayingRef.current = false;
     }
+
+    prevTimeRef.current = currentTime;
   });
 
   return null;
 }
 
-interface ThreeCanvasProps {
-  components: StudyComponent[];
+/** OrbitControls 변경 시 카메라 상태를 스토어에 동기화 (변경 시에만) */
+function CameraSync({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+  const { camera } = useThree();
+  const setCameraState = useRenderStore((s) => s.setCameraState);
+  const prevRef = useRef<string>("");
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const pos = camera.position;
+    const target = controls.target;
+    const fov = (camera as any).fov ?? 45;
+    const key = `${pos.x.toFixed(3)},${pos.y.toFixed(3)},${pos.z.toFixed(3)},${target.x.toFixed(3)},${target.y.toFixed(3)},${target.z.toFixed(3)},${fov.toFixed(1)}`;
+    if (key === prevRef.current) return;
+    prevRef.current = key;
+    setCameraState({
+      position: [pos.x, pos.y, pos.z],
+      target: [target.x, target.y, target.z],
+      fov,
+    });
+  });
+
+  return null;
 }
 
-export default function ThreeCanvas({ components }: ThreeCanvasProps) {
+/** viewInfo에서 카메라/쉐이더 설정 복원 (Bounds fit 이후 실행) */
+function ViewInfoRestore({
+  viewInfo,
+  controlsRef,
+}: {
+  viewInfo?: ViewInfo;
+  controlsRef: React.RefObject<any>;
+}) {
+  const { camera } = useThree();
+  const { setBloom, setAO, setLighting } = useRenderStore();
+  const restored = useRef(false);
+
+  // 쉐이더 설정은 즉시 복원
+  useEffect(() => {
+    if (!viewInfo?.renderSettings) return;
+    setBloom(viewInfo.renderSettings.bloom);
+    setAO(viewInfo.renderSettings.ao);
+    setLighting(viewInfo.renderSettings.lighting);
+  }, [viewInfo, setBloom, setAO, setLighting]);
+
+  // 카메라는 Bounds fit 이후 복원해야 하므로 지연 실행
+  useEffect(() => {
+    if (restored.current || !viewInfo?.camera) return;
+
+    const timer = setTimeout(() => {
+      const [px, py, pz] = viewInfo.camera!.position;
+      const [tx, ty, tz] = viewInfo.camera!.target;
+      camera.position.set(px, py, pz);
+      if ((camera as any).fov !== undefined) {
+        (camera as any).fov = viewInfo.camera!.fov;
+        (camera as any).updateProjectionMatrix();
+      }
+      if (controlsRef.current) {
+        controlsRef.current.target.set(tx, ty, tz);
+        controlsRef.current.update();
+      }
+      restored.current = true;
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [viewInfo, camera, controlsRef]);
+
+  return null;
+}
+
+/** Bounds 내부에서 useBounds API를 ref로 전달하는 래퍼 */
+function BoundsContent({
+  children,
+  boundsApi,
+}: {
+  children: React.ReactNode;
+  boundsApi: React.MutableRefObject<any>;
+}) {
+  const api = useBounds();
+  useEffect(() => {
+    boundsApi.current = api;
+  }, [api, boundsApi]);
+  return <>{children}</>;
+}
+
+interface ThreeCanvasProps {
+  components: StudyComponent[];
+  viewInfo?: ViewInfo;
+}
+
+export default function ThreeCanvas({ components, viewInfo }: ThreeCanvasProps) {
   const { bloom, ao, lighting } = useRenderStore();
   const { isTransforming, explodeLevel, setExplodeLevel } = useModelStore();
   const activeTool = useEditStore((s) => s.activeTool);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
+  const boundsApiRef = useRef<any>(null);
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -142,8 +233,10 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
 
         <Suspense fallback={<LoadingFallback />}>
           {components.length > 0 && (
-            <Bounds fit clip margin={1.5}>
-              <AssemblyViewer components={components} />
+            <Bounds fit={!viewInfo?.camera} clip margin={1.5}>
+              <BoundsContent boundsApi={boundsApiRef}>
+                <AssemblyViewer components={components} />
+              </BoundsContent>
             </Bounds>
           )}
           <Environment preset="city" background={false} />
@@ -191,7 +284,9 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
           enableDamping
         />
 
-        <EditToolHandler controlsRef={controlsRef} />
+        <EditToolHandler controlsRef={controlsRef} boundsApi={boundsApiRef} />
+        <CameraSync controlsRef={controlsRef} />
+        <ViewInfoRestore viewInfo={viewInfo} controlsRef={controlsRef} />
         <SimulatorSync />
 
         <gridHelper

@@ -35,9 +35,11 @@ interface EditState {
   // 액션 트리거 (1회성 동작용)
   zoomAction: "in" | "out" | null;
   focusAction: boolean;
+  resetTransformFlag: number;
   clearAction: () => void;
   triggerZoom: (dir: "in" | "out") => void;
   triggerFocus: () => void;
+  resetEditState: () => void;
 }
 
 export const useEditStore = create<EditState>((set, get) => ({
@@ -102,7 +104,19 @@ export const useEditStore = create<EditState>((set, get) => ({
 
   zoomAction: null,
   focusAction: false,
+  resetTransformFlag: 0,
   clearAction: () => set({ zoomAction: null, focusAction: false }),
   triggerZoom: (dir) => set({ zoomAction: dir }),
   triggerFocus: () => set({ focusAction: true }),
+  resetEditState: () =>
+    set((s) => ({
+      activeTool: "select",
+      transformMode: "translate",
+      selectedPartIndex: null,
+      zoomAction: null,
+      focusAction: false,
+      history: [],
+      future: [],
+      resetTransformFlag: s.resetTransformFlag + 1,
+    })),
 }));

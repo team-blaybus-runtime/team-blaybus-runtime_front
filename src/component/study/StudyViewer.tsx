@@ -11,7 +11,9 @@ import EditToolbar from "@/component/study/EditToolbar";
 import SimulatorControls from "@/component/study/SimulatorControls";
 import SimulatorSettingsPanel, { SimulatorPanel } from "@/component/study/SimulatorSettingsPanel";
 import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineering";
+import { ViewInfo } from "@/apis/study";
 import { StudyTab } from "@/component/study/StudyTabBar";
+import { useEditStore } from "@/store/useEditStore";
 
 const ThreeCanvas = dynamic(
   () => import("@/component/study/ThreeCanvas"),
@@ -23,6 +25,7 @@ interface StudyViewerProps {
   objectName: string;
   activeTab: StudyTab;
   viewerRef?: RefObject<HTMLDivElement | null>;
+  viewInfo?: ViewInfo;
 }
 
 const StudyViewer = ({
@@ -30,9 +33,18 @@ const StudyViewer = ({
   objectName,
   activeTab,
   viewerRef,
+  viewInfo,
 }: StudyViewerProps) => {
   const [parts, setParts] = useState<EngineeringPart[]>([]);
   const [simPanel, setSimPanel] = useState<SimulatorPanel | null>(null);
+  const resetEditState = useEditStore((s) => s.resetEditState);
+
+  // 탭 변경 시 편집 상태 초기화
+  useEffect(() => {
+    if (activeTab !== "편집") {
+      resetEditState();
+    }
+  }, [activeTab, resetEditState]);
 
   useEffect(() => {
     if (!productType) return;
@@ -54,7 +66,7 @@ const StudyViewer = ({
 
   return (
     <ViewerContainer ref={viewerRef}>
-      <ThreeCanvas components={components} />
+      <ThreeCanvas components={components} viewInfo={viewInfo} />
 
       {/* 단일 부품 탭: 오른쪽 모달 */}
       {activeTab === "단일 부품" && (

@@ -16,12 +16,26 @@ interface RenderSettings {
   };
 }
 
+interface CameraState {
+  position: [number, number, number];
+  target: [number, number, number];
+  fov: number;
+}
+
 interface RenderState extends RenderSettings {
+  cameraState: CameraState;
+  setCameraState: (camera: CameraState) => void;
   setBloom: (bloom: Partial<RenderSettings["bloom"]>) => void;
   setAO: (ao: Partial<RenderSettings["ao"]>) => void;
   setLighting: (lighting: Partial<RenderSettings["lighting"]>) => void;
   reset: () => void;
 }
+
+const defaultCameraState: CameraState = {
+  position: [3, 2, 3],
+  target: [0, 0, 0],
+  fov: 45,
+};
 
 const defaultSettings: RenderSettings = {
   bloom: {
@@ -41,6 +55,8 @@ const defaultSettings: RenderSettings = {
 
 export const useRenderStore = create<RenderState>((set) => ({
   ...defaultSettings,
+  cameraState: defaultCameraState,
+  setCameraState: (camera) => set({ cameraState: camera }),
   setBloom: (bloom) =>
     set((state) => ({
       bloom: { ...state.bloom, ...bloom },
@@ -53,5 +69,5 @@ export const useRenderStore = create<RenderState>((set) => ({
     set((state) => ({
       lighting: { ...state.lighting, ...lighting },
     })),
-  reset: () => set(defaultSettings),
+  reset: () => set({ ...defaultSettings, cameraState: defaultCameraState }),
 }));
