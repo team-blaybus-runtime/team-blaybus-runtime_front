@@ -11,7 +11,6 @@ import {
   addEdge,
   Background,
   Controls,
-  MarkerType,
   MiniMap,
   type Connection,
   type Edge,
@@ -28,20 +27,6 @@ import type { Workflow } from "@/apis/workflow";
 import { flowToNodeInfo, nodeInfoToFlow } from "./utils/workflowConversion";
 import { useUpdateWorkflowMutation } from "@/queries/workflow/useUpdateWorkflowMutation";
 import colors from "@/styles/constant/colors";
-
-function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json;charset=utf-8",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
 
 interface WorkflowCanvasProps {
   workflow: Workflow;
@@ -101,7 +86,7 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
             ...params,
             label: "",
             type: "smoothstep",
-            markerEnd: { type: MarkerType.ArrowClosed },
+            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.5 },
           },
           eds,
         ),
@@ -136,17 +121,13 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
     });
   }, [nodes, edges, viewport, workflow.id, workflow.title, updateMutation]);
 
-  const exportJson = useCallback(() => {
-    const nodeInfo = flowToNodeInfo(nodes, edges, viewport);
-    downloadJson(
-      `workflow-${workflow.title || workflow.id}-${Date.now()}.json`,
-      { ...workflow, nodeInfo },
-    );
-  }, [nodes, edges, viewport, workflow]);
-
   // 선택한 워크플로우 데이터 → 캔버스 반영 (워크플로우 전환 시에만)
   useEffect(() => {
-    const { nodes: n, edges: e, viewport: v } = nodeInfoToFlow(workflow.nodeInfo);
+    const {
+      nodes: n,
+      edges: e,
+      viewport: v,
+    } = nodeInfoToFlow(workflow.nodeInfo);
     setNodes(n);
     setEdges(e);
     setViewport(v);
@@ -159,11 +140,10 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
       <CanvasArea>
         <ToolbarWrapper>
           <WorkflowToolbar
-          onAddNode={addNode}
-          onSave={handleSave}
-          onExportJson={exportJson}
-          isSaving={updateMutation.isPending}
-        />
+            onAddNode={addNode}
+            onSave={handleSave}
+            isSaving={updateMutation.isPending}
+          />
         </ToolbarWrapper>
 
         <ReactFlow
@@ -175,8 +155,7 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           onConnect={onConnect}
           defaultEdgeOptions={{
             type: "smoothstep",
-            style: { stroke: "rgba(255,255,255,0.55)", strokeWidth: 2 },
-            markerEnd: { type: MarkerType.ArrowClosed },
+            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.5 },
           }}
           deleteKeyCode={["Backspace", "Delete"]}
           onNodeClick={(_, node) => {

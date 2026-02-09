@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * 링크 첨부 폼: 제목/URL을 입력해 첨부 메타를 추가합니다.
+ * 링크 추가: 제목(선택) + URL 입력 + "추가" 버튼
+ * (섹션 제목/카드 박스는 Inspector에서 감싸줌)
  */
 
 import { useState } from "react";
 import styled from "styled-components";
 import colors from "@/styles/constant/colors";
-import { Button, Div, Input } from "@/styles/base/BaseStyledTags";
-import type { Attachment } from "../../../type/workflowTypes";
+import { Button, Input } from "@/styles/base/BaseStyledTags";
+import type { Attachment } from "@/type/workflowTypes";
 import { Font } from "@/styles/typo/typography";
 
 export default function AddLinkForm({
@@ -21,20 +22,17 @@ export default function AddLinkForm({
 
   return (
     <Form>
-      <Font typo="label_s" color="alpha_light_90">
-        링크 추가
-      </Font>
-      <TextInput
+      <StyledInput
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="제목(선택)"
+        placeholder="제목"
       />
-      <TextInput
+      <StyledInput
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://..."
       />
-      <SubmitButton
+      <AddButton
         type="button"
         onClick={() => {
           const trimmed = url.trim();
@@ -49,31 +47,31 @@ export default function AddLinkForm({
         }}
       >
         추가
-      </SubmitButton>
+      </AddButton>
     </Form>
   );
 }
 
-const Form = styled(Div)`
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid ${colors.alpha_light_10};
+const Form = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
-const TextInput = styled(Input).attrs({ typo: "body_2" })`
+const StyledInput = styled(Input).attrs({ typo: "caption_s" })`
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid ${colors.alpha_light_10};
-  margin-bottom: 8px;
-  background: ${colors.alpha_dark_0};
-  color: ${colors.alpha_light_90};
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid ${colors.neutral_700};
+  border-radius: 8px;
+  background: ${colors.neutral_900};
+  color: ${colors.neutral_0};
 `;
 
-const SubmitButton = styled(Button).attrs({ typo: "button_3" })`
-  padding: 8px 10px;
+const AddButton = styled(Button).attrs({ typo: "caption_s" })`
+  width: 100%;
+  padding: 12px;
   border-radius: 10px;
-  border: 1px solid ${colors.alpha_light_10};
-  background: ${colors.alpha_dark_0};
-  color: ${colors.alpha_light_90};
+  background: ${colors.neutral_800};
+  color: ${colors.neutral_0};
 `;

@@ -1,6 +1,6 @@
 import type { Edge, Viewport } from "@xyflow/react";
 import type { NodeInfo } from "@/apis/workflow";
-import type { WorkflowNode } from "@/type/workflowTypes";
+import type { WorkflowNode, Attachment } from "@/type/workflowTypes";
 
 const DEFAULT_MEASURED = { width: 260, height: 50 };
 
@@ -17,7 +17,7 @@ export function nodeInfoToFlow(nodeInfo: NodeInfo): {
     data: {
       title: n.data.title,
       content: n.data.content,
-      attachments: n.data.attachments ?? [],
+      attachments: (n.data.attachments ?? []) as Attachment[],
       updatedAt: n.data.updatedAt,
     },
   }));
@@ -26,9 +26,8 @@ export function nodeInfoToFlow(nodeInfo: NodeInfo): {
     id: e.id,
     source: e.source,
     target: e.target,
-    type: e.type,
-    style: e.style,
-    markerEnd: e.markerEnd,
+    type: e.type ?? "smoothstep",
+    style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.5 },
     label: e.label,
   }));
 
@@ -63,7 +62,10 @@ export function flowToNodeInfo(
       },
       measured:
         "measured" in n && n.measured
-          ? { width: n.measured.width, height: n.measured.height }
+          ? {
+              width: n.measured.width ?? DEFAULT_MEASURED.width,
+              height: n.measured.height ?? DEFAULT_MEASURED.height,
+            }
           : DEFAULT_MEASURED,
       selected: false,
       dragging: false,

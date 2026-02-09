@@ -10,14 +10,12 @@ import { CenterRow } from "@/styles/base/BaseComponents";
 interface WorkflowToolbarProps {
   onAddNode: () => void;
   onSave: () => void;
-  onExportJson: () => void;
   isSaving?: boolean;
 }
 
 export default function WorkflowToolbar({
   onAddNode,
   onSave,
-  onExportJson,
   isSaving = false,
 }: WorkflowToolbarProps) {
   return (
@@ -32,15 +30,8 @@ export default function WorkflowToolbar({
       <ToolbarButton type="button" onClick={onAddNode}>
         + 노드
       </ToolbarButton>
-      <ToolbarButton
-        type="button"
-        onClick={onSave}
-        disabled={isSaving}
-      >
+      <ToolbarButton type="button" onClick={onSave} disabled={isSaving}>
         {isSaving ? "저장 중..." : "저장하기"}
-      </ToolbarButton>
-      <ToolbarButton type="button" onClick={onExportJson}>
-        Export JSON
       </ToolbarButton>
     </CenterRow>
   );

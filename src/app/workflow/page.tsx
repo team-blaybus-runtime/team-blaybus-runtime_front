@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { ReactFlowProvider } from "@xyflow/react";
 import WorkflowList from "@/component/workflow/WorkflowList";
 import WorkflowCanvas from "@/component/workflow/WorkflowCanvas";
+import CreateWorkflowModal from "@/component/workflow/CreateWorkflowModal";
 import { getDefaultNodeInfo } from "@/component/workflow/utils/workflowConversion";
 import { useFetchWorkflowsQuery } from "@/queries/workflow/useFetchWorkflowsQuery";
 import { useCreateWorkflowMutation } from "@/queries/workflow/useCreateWorkflowMutation";
@@ -22,6 +23,7 @@ export default function WorkflowPage() {
     null,
   );
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const selectedWorkflow = workflows.find((w) => w.id === selectedWorkflowId);
 
@@ -29,17 +31,25 @@ export default function WorkflowPage() {
     setSelectedWorkflowId(workflow.id);
   }, []);
 
-  const handleCreate = useCallback(() => {
-    const defaultNodeInfo = getDefaultNodeInfo();
-    createMutation.mutate(
-      { title: "제목 없음", nodeInfo: defaultNodeInfo },
-      {
-        onSuccess: (data) => {
-          setSelectedWorkflowId(data.id);
+  const handleOpenCreateModal = useCallback(() => {
+    setCreateModalOpen(true);
+  }, []);
+
+  const handleCreateWithTitle = useCallback(
+    (title: string) => {
+      const defaultNodeInfo = getDefaultNodeInfo();
+      createMutation.mutate(
+        { title, nodeInfo: defaultNodeInfo },
+        {
+          onSuccess: (data) => {
+            setCreateModalOpen(false);
+            setSelectedWorkflowId(data.id);
+          },
         },
-      },
-    );
-  }, [createMutation]);
+      );
+    },
+    [createMutation],
+  );
 
   const handleDelete = useCallback(
     (workflowId: number) => {
@@ -62,38 +72,59 @@ export default function WorkflowPage() {
   );
 
   return (
-    <PageLayout>
-      <ReactFlowProvider>
-        <WorkflowList
-          workflows={workflows}
-          selectedId={selectedWorkflowId}
-          onSelect={handleSelect}
-          onCreate={handleCreate}
-          onDelete={handleDelete}
-          isCreating={createMutation.isPending}
-          isDeletingId={deletingId}
-        />
-        <MainArea>
-          {isLoading ? (
-            <EmptyMessage>로딩 중...</EmptyMessage>
-          ) : selectedWorkflow ? (
-            <WorkflowCanvas workflow={selectedWorkflow} />
-          ) : (
-            <EmptyMessage>
-              왼쪽에서 워크플로우를 선택하거나 새 워크플로우를 만들어 보세요.
-            </EmptyMessage>
-          )}
-        </MainArea>
-      </ReactFlowProvider>
-    </PageLayout>
+    <ScrollWrapper>
+      <PageLayout>
+        <ReactFlowProvider>
+          <CreateWorkflowModal
+            open={createModalOpen}
+            isCreating={createMutation.isPending}
+            onCreate={handleCreateWithTitle}
+            onClose={() => setCreateModalOpen(false)}
+          />
+          <WorkflowList
+            workflows={workflows}
+            selectedId={selectedWorkflowId}
+            onSelect={handleSelect}
+            onCreate={handleOpenCreateModal}
+            onDelete={handleDelete}
+            isCreating={createMutation.isPending}
+            isDeletingId={deletingId}
+          />
+          <MainArea>
+            {isLoading ? (
+              <EmptyMessage>로딩 중...</EmptyMessage>
+            ) : selectedWorkflow ? (
+              <WorkflowCanvas workflow={selectedWorkflow} />
+            ) : (
+              <EmptyMessage>
+                왼쪽에서 워크플로우를 선택하거나 새 워크플로우를 만들어 보세요.
+              </EmptyMessage>
+            )}
+          </MainArea>
+        </ReactFlowProvider>
+      </PageLayout>
+    </ScrollWrapper>
   );
 }
 
-const PageLayout = styled(Div)`
-  display: flex;
+const ScrollWrapper = styled.div`
   width: 100%;
   height: 100%;
   min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+`;
+
+const PageLayout = styled(Div)`
+  display: flex;
+  min-width: 1280px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
 `;
 
 const MainArea = styled.div`

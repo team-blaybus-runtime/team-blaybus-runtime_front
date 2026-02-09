@@ -1,13 +1,13 @@
-/**
- * 첨부 목록: 노드의 링크/이미지/파일 메타를 표시합니다.
- */
-
 import styled from "styled-components";
 import colors from "@/styles/constant/colors";
-import { Button, Div, Img } from "@/styles/base/BaseStyledTags";
+import { Button, Img } from "@/styles/base/BaseStyledTags";
 import type { Attachment } from "../../../type/workflowTypes";
 import { Column } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
+
+const CARD_BG = "#262626";
+const CONTROL_BG = "#3A3A3A";
+const BORDER = "rgba(255,255,255,0.08)";
 
 type WorkflowAttachmentListProps = {
   attachments: Attachment[];
@@ -27,24 +27,25 @@ export default function WorkflowAttachmentList({
   }
 
   return (
-    <Column gridGap="8px">
+    <Column gridGap="10px">
       {attachments.map((a, idx) => (
-        <Item key={`${a.type}-${idx}`} gridGap="5px">
-          <Font typo="label_s" color="alpha_light_90">
+        <Item key={`${a.type}-${idx}`} gridGap="6px">
+          <Font typo="label_s" color="alpha_light_70">
             {a.type === "link"
               ? "링크"
               : a.type === "image"
                 ? "이미지"
                 : "파일"}
           </Font>
+
           {a.type === "link" ? (
-            <Font typo="caption_s" color="alpha_light_70">
+            <Font typo="caption_s" color="alpha_light_80">
               {(a.title ? `${a.title} · ` : "") + a.url}
             </Font>
           ) : a.type === "image" ? (
-            <Column gridGap="5px">
+            <Column gridGap="6px">
               <PreviewImage src={a.dataUrl} alt={a.name} />
-              <Font typo="caption_s" color="alpha_light_70">
+              <Font typo="caption_s" color="alpha_light_80">
                 {a.name}
                 {typeof a.size === "number"
                   ? ` (${(a.size / 1024).toFixed(1)}KB)`
@@ -52,11 +53,12 @@ export default function WorkflowAttachmentList({
               </Font>
             </Column>
           ) : (
-            <Font typo="caption_s" color="alpha_light_70">
+            <Font typo="caption_s" color="alpha_light_80">
               {a.name}
               {typeof a.size === "number" ? ` (${a.size}B)` : ""}
             </Font>
           )}
+
           <RemoveButton type="button" onClick={() => onRemoveAttachment(idx)}>
             제거
           </RemoveButton>
@@ -66,25 +68,29 @@ export default function WorkflowAttachmentList({
   );
 }
 
-const Item = styled(Column).attrs({ typo: "caption_s" })`
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid ${colors.alpha_light_10};
+const Item = styled(Column)`
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid ${BORDER};
+  background: ${CARD_BG};
 `;
 
 const PreviewImage = styled(Img)`
   max-width: 100%;
-  max-height: 120px;
-  border-radius: 8px;
+  max-height: 140px;
+  border-radius: 12px;
   object-fit: contain;
-  background: ${colors.alpha_dark_20};
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid ${BORDER};
 `;
 
-const RemoveButton = styled(Button).attrs({ typo: "button_3" })`
-  margin-top: 8px;
-  padding: 6px 8px;
+const RemoveButton = styled(Button)`
+  width: 100%;
+  height: 40px;
   border-radius: 10px;
-  border: 1px solid ${colors.alpha_light_10};
-  background: #0b1220;
+  border: 1px solid ${BORDER};
+  background: ${CONTROL_BG};
   color: ${colors.alpha_light_90};
+  font-size: 13px;
+  font-weight: 600;
 `;
