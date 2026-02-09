@@ -74,122 +74,122 @@ const DRONE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
 };
 
 const SUSPENSION_LAYOUT: Record<string, AssemblyTransform> = {
-  base: { position: [0, 0, 0] },
-  rod: { position: [0, 0.4, 0] },
-  spring: { position: [0, 0.8, 0] },
-  nut: { position: [0, 1.2, 0] },
-  nit: { position: [0, 1.0, 0] },
+  base: { position: [0, 0, 0], explodedPosition: [0, 0, 0] },
+  rod: { position: [0, 0.1, 0], explodedPosition: [0, 0.4, 0] },
+  spring: { position: [0, 0.005, 0], explodedPosition: [0, 0.8, 0] },
+  nut: { position: [0, 0.1, 0], explodedPosition: [0, 1.2, 0] },
+  nit: { position: [0, 0.06, 0], explodedPosition: [0, 1.0, 0] },
 };
 
 const V4_ENGINE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> =
-  {
-    crankshaft: {
-      position: [0, 0.05, 0.3],
-      rotation: [-Math.PI / 2, 0, -4.7],
-      explodedPosition: [0, -0.3, 0],
+{
+  crankshaft: {
+    position: [0, 0.05, 0.3],
+    rotation: [-Math.PI / 2, 0, -4.7],
+    explodedPosition: [0, -0.3, 0],
+  },
+  connectingrodcap: [
+    {
+      position: [0.04, 0.05, 0.1435],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.15, 0.25],
     },
-    connectingrodcap: [
-      {
-        position: [0.04, 0.05, 0.1435],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.15, 0.25],
-      },
-      {
-        position: [-0.046, 0.05, 0.031],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.15, 0.1],
-      },
-      {
-        position: [-0.046, 0.05, -0.0835],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.15, -0.1],
-      },
-      {
-        position: [0.04, 0.05, -0.1985],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.15, -0.25],
-      },
-    ],
-    connectingrod: [
-      {
-        position: [0.019, 0.25, 0.1435],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.3, 0.25],
-      },
-      {
-        position: [-0.025, 0.25, 0.031],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.3, 0.1],
-      },
-      {
-        position: [-0.025, 0.25, -0.0835],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.3, -0.1],
-      },
-      {
-        position: [0.019, 0.25, -0.1985],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.3, -0.25],
-      },
-    ],
-    piston: [
-      {
-        position: [0.022, 0.223, 0.1435],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.45, 0.25],
-      },
-      {
-        position: [-0.027, 0.223, 0.031],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.45, 0.1],
-      },
-      {
-        position: [-0.027, 0.223, -0.0835],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.45, -0.1],
-      },
-      {
-        position: [0.022, 0.223, -0.1985],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.45, -0.25],
-      },
-    ],
-    pistonpin: [
-      {
-        position: [0.018, 0.25, 0.184],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.6, 0.25],
-      },
-      {
-        position: [-0.025, 0.25, 0.072],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.6, 0.1],
-      },
-      {
-        position: [-0.025, 0.25, -0.043],
-        rotation: [0, 0, -Math.PI / 30],
-        explodedPosition: [0, 0.6, -0.1],
-      },
-      {
-        position: [0.018, 0.25, -0.158],
-        rotation: [0, 0, Math.PI / 30],
-        explodedPosition: [0, 0.6, -0.25],
-      },
-    ],
-    // 피스톤 링은 피스톤과 같은 좌표로 겹쳐 배치
-    pistonring: [
-      { position: [0.022, 0.223, 0.1435], rotation: [0, 0, Math.PI / 30] },
-      { position: [-0.027, 0.223, 0.031], rotation: [0, 0, -Math.PI / 30] },
-      { position: [-0.027, 0.223, -0.0835], rotation: [0, 0, -Math.PI / 30] },
-      { position: [0.022, 0.223, -0.1985], rotation: [0, 0, Math.PI / 30] },
-    ],
-    conrodbolt: [
-      { position: [-0.045, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
-      { position: [-0.015, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
-      { position: [0.015, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
-      { position: [0.045, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
-    ],
-  };
+    {
+      position: [-0.046, 0.05, 0.031],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.15, 0.1],
+    },
+    {
+      position: [-0.046, 0.05, -0.0835],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.15, -0.1],
+    },
+    {
+      position: [0.04, 0.05, -0.1985],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.15, -0.25],
+    },
+  ],
+  connectingrod: [
+    {
+      position: [0.019, 0.25, 0.1435],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.3, 0.25],
+    },
+    {
+      position: [-0.025, 0.25, 0.031],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.3, 0.1],
+    },
+    {
+      position: [-0.025, 0.25, -0.0835],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.3, -0.1],
+    },
+    {
+      position: [0.019, 0.25, -0.1985],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.3, -0.25],
+    },
+  ],
+  piston: [
+    {
+      position: [0.022, 0.223, 0.1435],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.45, 0.25],
+    },
+    {
+      position: [-0.027, 0.223, 0.031],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.45, 0.1],
+    },
+    {
+      position: [-0.027, 0.223, -0.0835],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.45, -0.1],
+    },
+    {
+      position: [0.022, 0.223, -0.1985],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.45, -0.25],
+    },
+  ],
+  pistonpin: [
+    {
+      position: [0.018, 0.25, 0.184],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.6, 0.25],
+    },
+    {
+      position: [-0.025, 0.25, 0.072],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.6, 0.1],
+    },
+    {
+      position: [-0.025, 0.25, -0.043],
+      rotation: [0, 0, -Math.PI / 30],
+      explodedPosition: [0, 0.6, -0.1],
+    },
+    {
+      position: [0.018, 0.25, -0.158],
+      rotation: [0, 0, Math.PI / 30],
+      explodedPosition: [0, 0.6, -0.25],
+    },
+  ],
+  // 피스톤 링은 피스톤과 같은 좌표로 겹쳐 배치
+  pistonring: [
+    { position: [0.022, 0.223, 0.1435], rotation: [0, 0, Math.PI / 30] },
+    { position: [-0.027, 0.223, 0.031], rotation: [0, 0, -Math.PI / 30] },
+    { position: [-0.027, 0.223, -0.0835], rotation: [0, 0, -Math.PI / 30] },
+    { position: [0.022, 0.223, -0.1985], rotation: [0, 0, Math.PI / 30] },
+  ],
+  conrodbolt: [
+    { position: [-0.045, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
+    { position: [-0.015, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
+    { position: [0.015, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
+    { position: [0.045, -0.018, 0.008], rotation: [0, 0, Math.PI / 30] },
+  ],
+};
 
 const ROBOT_GRIPPER_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   // 조립도2 정면 뷰 기준 배치
@@ -286,10 +286,10 @@ function scaleTransform(
     position: [mapped[0] * scale, mapped[1] * scale, mapped[2] * scale],
     explodedPosition: transform.explodedPosition
       ? [
-          transform.explodedPosition[0] * scale,
-          transform.explodedPosition[1] * scale,
-          transform.explodedPosition[2] * scale,
-        ]
+        transform.explodedPosition[0] * scale,
+        transform.explodedPosition[1] * scale,
+        transform.explodedPosition[2] * scale,
+      ]
       : undefined,
   };
 }

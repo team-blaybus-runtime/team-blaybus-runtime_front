@@ -104,13 +104,6 @@ const StudyViewer = ({
   }, [parts, productType]);
 
   const assemblyInstances = useMemo(() => {
-    const key = normalizeProductType(productType);
-    if (
-      false
-    ) {
-      // Suspension/V4는 GLB 원점 기준 조립을 우선 사용
-      return undefined;
-    }
     return getAssemblyInstances(productType, components);
   }, [productType, components]);
 
