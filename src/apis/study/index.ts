@@ -45,7 +45,7 @@ export interface StudyComponent {
 // ===== API 요청 타입 =====
 
 export interface CreateStudyHistoryRequest {
-  productType: string;
+  productTypeDesc: string;
   title: string;
   viewInfo: ViewInfo;
 }

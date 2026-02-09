@@ -105,7 +105,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
     const displayName = toDisplayName(selectedDomain);
     try {
       const created = await saveUserStudyHistory({
-        productType: selectedDomain,
+        productTypeDesc: selectedDomain,
         title: `${displayName} 구조 학습`,
         viewInfo: {
           partId: 1,
