@@ -208,7 +208,7 @@ function PartTransformHandler({
 export default function AssemblyViewer({ components }: AssemblyViewerProps) {
   const groupRef = useRef<Group>(null);
   const { explodeLevel, setIsLoading, hiddenParts } = useModelStore();
-  const { activeTool, transformMode, selectedPartIndex, setSelectedPartIndex } = useEditStore();
+  const { activeTool, transformMode, selectedPartIndex, setSelectedPartIndex, resetTransformFlag } = useEditStore();
   const partsRef = useRef<PartData[]>([]);
   const centerRef = useRef<Vector3>(new Vector3());
   const isInitialized = useRef(false);
@@ -232,6 +232,15 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
     if (el) innerRefs.current.set(index, el);
     else innerRefs.current.delete(index);
   }, []);
+
+  // 편집 모드 종료 시 객체 이동/회전 초기화
+  useEffect(() => {
+    if (resetTransformFlag === 0) return;
+    innerRefs.current.forEach((group) => {
+      group.position.set(0, 0, 0);
+      group.rotation.set(0, 0, 0);
+    });
+  }, [resetTransformFlag]);
 
   // 클릭 핸들러 — select, translate, rotate 모드에서 파트 선택
   const handlePartSelect = useCallback(
