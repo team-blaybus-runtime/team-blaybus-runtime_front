@@ -89,7 +89,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
       const viewInfo = buildViewInfo(history.viewInfo);
       setHistory({ ...history, title: trimmed, viewInfo });
       saveUserStudyHistory({
-        productType: history.ProductTypeDesc,
+        productTypeDesc: history.ProductTypeDesc,
         title: trimmed,
         viewInfo,
       }).catch(() => { });
@@ -114,7 +114,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         const viewInfo = buildViewInfo(h.viewInfo);
         setHistory((prev) => prev ? { ...prev, viewInfo } : prev);
         saveUserStudyHistory({
-          productType: h.ProductTypeDesc,
+          productTypeDesc: h.ProductTypeDesc,
           title: h.title,
           viewInfo,
         }).catch(() => { });
