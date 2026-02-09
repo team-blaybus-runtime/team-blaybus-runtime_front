@@ -46,11 +46,21 @@ export default function MemoDetailModal({
         <Content>
           <Header>
             {isEditing ? (
-              <TitleInput
-                value={editTitle}
-                onChange={(event) => setEditTitle(event.target.value)}
-                placeholder="제목을 입력해주세요."
-              />
+              <TitleBlock>
+                <TitleInput
+                  value={editTitle}
+                  onChange={(event) =>
+                    setEditTitle(event.target.value.slice(0, 25))
+                  }
+                  placeholder="제목을 입력해주세요."
+                  maxLength={25}
+                />
+                <CountRow>
+                  <Font typo="caption_s" color="neutral_500">
+                    {editTitle.length}/25
+                  </Font>
+                </CountRow>
+              </TitleBlock>
             ) : (
               <Font typo="title_3" color="neutral_0">
                 {memo.title}
@@ -66,11 +76,21 @@ export default function MemoDetailModal({
           </Header>
           <Body>
             {isEditing ? (
-              <ContentTextArea
-                value={editContent}
-                onChange={(event) => setEditContent(event.target.value)}
-                placeholder="내용을 입력해주세요."
-              />
+              <ContentEditWrapper>
+                <ContentTextArea
+                  value={editContent}
+                  onChange={(event) =>
+                    setEditContent(event.target.value.slice(0, 230))
+                  }
+                  placeholder="내용을 입력해주세요."
+                  maxLength={230}
+                />
+                <CountRow>
+                  <Font typo="caption_s" color="neutral_500">
+                    {editContent.length}/230
+                  </Font>
+                </CountRow>
+              </ContentEditWrapper>
             ) : (
               <Font typo="caption_s" color="neutral_300">
                 {memo.content || "내용을 입력해주세요."}
@@ -130,6 +150,11 @@ const Header = styled(Row)`
   justify-content: space-between;
 `;
 
+const TitleBlock = styled(Column)`
+  flex: 1;
+  gap: 6px;
+`;
+
 const TitleInput = styled(Input)`
   width: 100%;
   background: transparent;
@@ -147,12 +172,23 @@ const TitleInput = styled(Input)`
 const Body = styled(Column)`
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+`;
+
+const ContentEditWrapper = styled(Column)`
+  height: 100%;
+  min-height: 240px;
+  gap: 6px;
+`;
+
+const CountRow = styled(Row)`
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 const ContentTextArea = styled(TextArea)`
   width: 100%;
   height: 100%;
-  min-height: 240px;
   background: transparent;
   color: ${colors.neutral_300};
   font-family: Pretendard, sans-serif;

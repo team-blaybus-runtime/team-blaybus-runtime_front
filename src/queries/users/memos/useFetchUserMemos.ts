@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { fetchUserMemos } from "@/apis/users";
 
-export const useFetchUserMemosQuery = () => {
+export const useFetchUserMemosQuery = (productType?: string) => {
   return useQuery({
-    queryKey: ["fetchUserMemos"],
-    queryFn: fetchUserMemos,
-    staleTime: 1000 * 60 * 1000, // 10분 캐시
+    queryKey: ["fetchUserMemos", productType],
+    queryFn: () => fetchUserMemos(productType),
+    staleTime: 1000 * 60 * 1, // 1분 캐시
   });
 };
