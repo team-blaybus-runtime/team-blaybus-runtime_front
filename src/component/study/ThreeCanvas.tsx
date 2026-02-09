@@ -2,7 +2,7 @@
 
 import { Suspense, useRef, useEffect, useCallback } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows, Bounds } from "@react-three/drei";
+import { OrbitControls, Environment, ContactShadows, Bounds, useBounds } from "@react-three/drei";
 import {
   EffectComposer,
   Bloom,
@@ -30,7 +30,13 @@ function LoadingFallback() {
 }
 
 /** 편집 도구 액션(zoom, focus)을 Three.js 카메라에 반영 */
-function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+function EditToolHandler({
+  controlsRef,
+  boundsApi,
+}: {
+  controlsRef: React.RefObject<any>;
+  boundsApi: React.RefObject<any>;
+}) {
   const { camera } = useThree();
   const { zoomAction, focusAction, clearAction } = useEditStore();
 
@@ -50,16 +56,15 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     clearAction();
   }, [zoomAction, camera, controlsRef, clearAction]);
 
-  // focus 액션 처리 - 카메라를 기본 위치로 리셋
+  // focus 액션 처리 - Bounds.refresh()로 모델에 맞게 카메라 리셋
   useEffect(() => {
-    if (!focusAction || !controlsRef.current) return;
+    if (!focusAction) return;
 
-    const controls = controlsRef.current;
-    camera.position.set(3, 2, 3);
-    controls.target.set(0, 0, 0);
-    controls.update();
+    if (boundsApi.current) {
+      boundsApi.current.refresh().clip().fit();
+    }
     clearAction();
-  }, [focusAction, camera, controlsRef, clearAction]);
+  }, [focusAction, boundsApi, clearAction]);
 
   return null;
 }
@@ -68,23 +73,37 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
 function SimulatorSync() {
   const { currentTime, duration, isPlaying } = useSimulatorStore();
   const { setExplodeLevel } = useModelStore();
-  const wasPlayingRef = useRef(false);
+  const prevTimeRef = useRef(currentTime);
 
   useFrame(() => {
     const progress = duration > 0 ? currentTime / duration : 0;
 
     if (isPlaying) {
-      // 재생 중: 매 프레임 동기화
       setExplodeLevel(progress);
-      wasPlayingRef.current = true;
-    } else if (wasPlayingRef.current) {
-      // 방금 멈춤/리셋: 한 번만 동기화 후 수동 조작 허용
+    } else if (prevTimeRef.current !== currentTime) {
+      // 리셋 또는 트랙 클릭으로 시간이 바뀐 경우 동기화
       setExplodeLevel(progress);
-      wasPlayingRef.current = false;
     }
+
+    prevTimeRef.current = currentTime;
   });
 
   return null;
+}
+
+/** Bounds 내부에서 useBounds API를 ref로 전달하는 래퍼 */
+function BoundsContent({
+  children,
+  boundsApi,
+}: {
+  children: React.ReactNode;
+  boundsApi: React.MutableRefObject<any>;
+}) {
+  const api = useBounds();
+  useEffect(() => {
+    boundsApi.current = api;
+  }, [api, boundsApi]);
+  return <>{children}</>;
 }
 
 interface ThreeCanvasProps {
@@ -97,6 +116,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
   const activeTool = useEditStore((s) => s.activeTool);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
+  const boundsApiRef = useRef<any>(null);
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -143,7 +163,9 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
         <Suspense fallback={<LoadingFallback />}>
           {components.length > 0 && (
             <Bounds fit clip margin={1.5}>
-              <AssemblyViewer components={components} />
+              <BoundsContent boundsApi={boundsApiRef}>
+                <AssemblyViewer components={components} />
+              </BoundsContent>
             </Bounds>
           )}
           <Environment preset="city" background={false} />
@@ -191,7 +213,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
           enableDamping
         />
 
-        <EditToolHandler controlsRef={controlsRef} />
+        <EditToolHandler controlsRef={controlsRef} boundsApi={boundsApiRef} />
         <SimulatorSync />
 
         <gridHelper

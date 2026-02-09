@@ -38,6 +38,7 @@ interface EditState {
   clearAction: () => void;
   triggerZoom: (dir: "in" | "out") => void;
   triggerFocus: () => void;
+  resetEditState: () => void;
 }
 
 export const useEditStore = create<EditState>((set, get) => ({
@@ -105,4 +106,12 @@ export const useEditStore = create<EditState>((set, get) => ({
   clearAction: () => set({ zoomAction: null, focusAction: false }),
   triggerZoom: (dir) => set({ zoomAction: dir }),
   triggerFocus: () => set({ focusAction: true }),
+  resetEditState: () =>
+    set({
+      activeTool: "select",
+      transformMode: "translate",
+      selectedPartIndex: null,
+      zoomAction: null,
+      focusAction: false,
+    }),
 }));

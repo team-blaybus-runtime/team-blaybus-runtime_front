@@ -80,7 +80,8 @@ function ComponentModel({
 }) {
   const { scene } = useGLTF(toProxyUrl(glbUrl));
 
-  const clonedScene = useMemo(() => {
+  // 지오메트리를 원점에 센터링 + 원래 위치 offset 계산
+  const { centeredScene, offset } = useMemo(() => {
     const clone = scene.clone(true);
     clone.traverse((child: Object3D) => {
       if (child instanceof Mesh && child.material) {
@@ -97,18 +98,25 @@ function ComponentModel({
         child.receiveShadow = true;
       }
     });
-    return clone;
+
+    // 지오메트리 중심을 원점으로 이동
+    const box = new Box3().setFromObject(clone);
+    const center = new Vector3();
+    box.getCenter(center);
+    clone.position.sub(center);
+
+    return { centeredScene: clone, offset: center };
   }, [scene]);
 
   // 선택 하이라이트
   useEffect(() => {
-    clonedScene.traverse((child: Object3D) => {
+    centeredScene.traverse((child: Object3D) => {
       if (child instanceof Mesh && child.material instanceof MeshStandardMaterial) {
         child.material.emissive = isSelected ? HIGHLIGHT_EMISSIVE : DEFAULT_EMISSIVE;
         child.material.emissiveIntensity = isSelected ? 1.0 : 0;
       }
     });
-  }, [isSelected, clonedScene]);
+  }, [isSelected, centeredScene]);
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
@@ -127,9 +135,16 @@ function ComponentModel({
 
   return (
     <group visible={isVisible}>
-      {/* inner group: TransformControls 대상 + 선택 시 살짝 확대 */}
-      <group ref={innerRefCallback} onClick={handleClick} scale={isSelected ? 1.03 : 1}>
-        <primitive object={clonedScene} />
+      {/* offset wrapper: 원래 위치 보정 (explode는 가장 바깥 group을 이동) */}
+      <group position={[offset.x, offset.y, offset.z]}>
+        {/* inner group: TransformControls 대상 — 원점 = 지오메트리 중심 */}
+        <group
+          ref={innerRefCallback}
+          onClick={handleClick}
+          scale={isSelected ? 1.03 : 1}
+        >
+          <primitive object={centeredScene} />
+        </group>
       </group>
     </group>
   );
@@ -158,13 +173,11 @@ function PartTransformHandler({
       setIsTransforming(event.value);
 
       if (event.value) {
-        // 드래그 시작 — before 저장
         beforeRef.current = {
           position: partObject.position.toArray() as [number, number, number],
           rotation: [partObject.rotation.x, partObject.rotation.y, partObject.rotation.z],
         };
       } else if (beforeRef.current) {
-        // 드래그 끝 — after 저장 + 히스토리 push
         pushHistory({
           type: "transform",
           partIndex,
@@ -333,21 +346,23 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
   });
 
   return (
-    <Center>
-      <group ref={groupRef} onPointerMissed={handleMissClick}>
-        {components.map((comp, i) => (
-          <PartErrorBoundary key={comp.componentId} partName={comp.componentName}>
-            <ComponentModel
-              glbUrl={comp.glbUrl}
-              index={i}
-              isSelected={selectedPartIndex === i}
-              isVisible={!hiddenParts.has(i)}
-              onSelect={handlePartSelect}
-              registerRef={registerRef}
-            />
-          </PartErrorBoundary>
-        ))}
-      </group>
+    <>
+      <Center>
+        <group ref={groupRef} onPointerMissed={handleMissClick}>
+          {components.map((comp, i) => (
+            <PartErrorBoundary key={comp.componentId} partName={comp.componentName}>
+              <ComponentModel
+                glbUrl={comp.glbUrl}
+                index={i}
+                isSelected={selectedPartIndex === i}
+                isVisible={!hiddenParts.has(i)}
+                onSelect={handlePartSelect}
+                registerRef={registerRef}
+              />
+            </PartErrorBoundary>
+          ))}
+        </group>
+      </Center>
 
       {transformTarget && selectedPartIndex !== null && isTransformTool && (
         <PartTransformHandler
@@ -357,6 +372,6 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
           mode={transformMode}
         />
       )}
-    </Center>
+    </>
   );
 }

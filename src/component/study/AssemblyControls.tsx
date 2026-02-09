@@ -27,12 +27,8 @@ export default function AssemblyControls() {
           조립 / 분해
         </Font>
         <ProgressLabel>
-          <Font typo="caption_s" color={colors.neutral_500}>
-            분해 진행도
-          </Font>
-          <Font typo="caption_s" color={colors.blue_500}>
-            {percent}%
-          </Font>
+          <ProgressText>분해 진행도</ProgressText>
+          <PercentText>{percent}%</PercentText>
         </ProgressLabel>
       </LabelRow>
 
@@ -46,12 +42,8 @@ export default function AssemblyControls() {
           $percent={percent}
         />
         <SliderLabels>
-          <Font typo="caption_s" color={colors.neutral_600}>
-            완전 조립
-          </Font>
-          <Font typo="caption_s" color={colors.neutral_600}>
-            완전 분해
-          </Font>
+          <SliderLabelText>완전 조립</SliderLabelText>
+          <SliderLabelText>완전 분해</SliderLabelText>
         </SliderLabels>
       </SliderWrapper>
     </Container>
@@ -83,6 +75,22 @@ const SliderWrapper = styled(Column)`
   gap: 0;
 `;
 
+const ProgressText = styled.span`
+  font-family: "Pretendard", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 20px;
+  color: ${colors.neutral_500};
+`;
+
+const PercentText = styled.span`
+  font-family: "Pretendard", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 20px;
+  color: ${colors.blue_500};
+`;
+
 const SliderInput = styled.input<{ $percent: number }>`
   -webkit-appearance: none;
   appearance: none;
@@ -91,7 +99,7 @@ const SliderInput = styled.input<{ $percent: number }>`
   border-radius: 2000px;
   background: linear-gradient(
     to right,
-    ${colors.blue_700} ${(p) => p.$percent}%,
+    ${colors.blue_500} ${(p) => p.$percent}%,
     ${colors.neutral_700} ${(p) => p.$percent}%
   );
   outline: none;
@@ -103,20 +111,18 @@ const SliderInput = styled.input<{ $percent: number }>`
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: ${colors.blue_700};
-    border: 2px solid ${colors.neutral_0};
+    background: ${colors.blue_500};
+    border: none;
     cursor: pointer;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
   }
 
   &::-moz-range-thumb {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: ${colors.blue_700};
-    border: 2px solid ${colors.neutral_0};
+    background: ${colors.blue_500};
+    border: none;
     cursor: pointer;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
   }
 `;
 
@@ -124,4 +130,12 @@ const SliderLabels = styled(Row)`
   width: 100%;
   justify-content: space-between;
   margin-top: 2px;
+`;
+
+const SliderLabelText = styled.span`
+  font-family: "Pretendard", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 20px;
+  color: ${colors.neutral_600};
 `;
