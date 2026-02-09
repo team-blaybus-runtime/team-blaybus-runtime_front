@@ -45,7 +45,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   const productType = history?.ProductTypeDesc ?? "";
 
   const aiChat = useStudyAIChat({
-    productType: productType || id,
+    productType: (productType ?? "").replace(/\s+/g, "_"),
     chatHistoryId: Number(id) || 1,
   });
   const { exportPdf, isExporting } = useStudyPdfExport({
@@ -204,7 +204,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             ) : sideBarContent === "memo" ? (
               <StudyMemo
                 memos={memoData ?? []}
-                productType={productType || id}
+                productType={(productType ?? "").replace(/\s+/g, "_") || id}
               />
             ) : (
               <StudyQuiz objectId={id} objectName={productType} />
