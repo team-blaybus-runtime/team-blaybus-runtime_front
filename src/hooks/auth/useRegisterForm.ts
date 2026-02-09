@@ -79,19 +79,7 @@ export function useRegisterForm() {
     [values],
   );
 
-  const hasPasswordMismatch = useMemo(
-    () => values.password !== values.confirmPassword,
-    [values],
-  );
-
-  const hasUnchangedErrorField = useMemo(
-    () =>
-      errorFields.some((field) => values[field] === lastSubmitValues[field]),
-    [errorFields, lastSubmitValues, values],
-  );
-
-  const isSubmitDisabled =
-    isPending || hasEmptyValue || hasPasswordMismatch || hasUnchangedErrorField;
+  const isSubmitDisabled = isPending || hasEmptyValue;
 
   const handleSubmit = useCallback(() => {
     const hasAnyInput = Object.values(values).some((value) => value);

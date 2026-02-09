@@ -79,13 +79,7 @@ export function useLoginForm() {
     [values],
   );
 
-  const hasUnchangedErrorField = useMemo(
-    () =>
-      errorFields.some((field) => values[field] === lastSubmitValues[field]),
-    [errorFields, lastSubmitValues, values],
-  );
-
-  const isSubmitDisabled = isPending || hasEmptyValue || hasUnchangedErrorField;
+  const isSubmitDisabled = isPending || hasEmptyValue;
 
   const handleSubmit = useCallback(() => {
     const hasAnyInput = Object.values(values).some((value) => value);
