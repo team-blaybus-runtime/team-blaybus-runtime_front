@@ -1,14 +1,13 @@
 "use client";
 
 /**
- * 워크플로우 캔버스: 노드/엣지 편집, 저장/복원, Inspector 연동을 담당합니다.
+ * 워크플로우 캔버스: 노드/엣지 편집, API 저장, Inspector 연동을 담당합니다.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import {
   ReactFlow,
-  ReactFlowProvider,
   addEdge,
   Background,
   Controls,
@@ -24,22 +23,11 @@ import { Div } from "@/styles/base/BaseStyledTags";
 import TextNode from "./canvas/TextNode";
 import WorkflowInspector from "./inspectorPanel/WorkflowInspector";
 import WorkflowToolbar from "./canvas/WorkflowToolbar";
-import type {
-  WorkflowDocV1,
-  WorkflowNode,
-  WorkflowNodeData,
-} from "@/type/workflowTypes";
+import type { WorkflowNode, WorkflowNodeData } from "@/type/workflowTypes";
+import type { Workflow } from "@/apis/workflow";
+import { flowToNodeInfo, nodeInfoToFlow } from "./utils/workflowConversion";
+import { useUpdateWorkflowMutation } from "@/queries/workflow/useUpdateWorkflowMutation";
 import colors from "@/styles/constant/colors";
-
-const STORAGE_KEY = "workflowDoc:v1";
-
-function safeJsonParse<T>(text: string): T | null {
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
-  }
-}
 
 function downloadJson(filename: string, data: unknown) {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -55,7 +43,12 @@ function downloadJson(filename: string, data: unknown) {
   URL.revokeObjectURL(url);
 }
 
-export default function WorkflowCanvas() {
+interface WorkflowCanvasProps {
+  workflow: Workflow;
+}
+
+export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
+  const updateMutation = useUpdateWorkflowMutation();
   const nodeTypes = useMemo(() => ({ textNode: TextNode }), []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNode>([]);
@@ -134,72 +127,43 @@ export default function WorkflowCanvas() {
     setSelectedEdgeId(null);
   }, [setNodes]);
 
+  const handleSave = useCallback(() => {
+    const nodeInfo = flowToNodeInfo(nodes, edges, viewport);
+    updateMutation.mutate({
+      workflowId: workflow.id,
+      title: workflow.title,
+      nodeInfo,
+    });
+  }, [nodes, edges, viewport, workflow.id, workflow.title, updateMutation]);
+
   const exportJson = useCallback(() => {
-    const doc: WorkflowDocV1 = {
-      version: 1,
-      nodes,
-      edges,
-      viewport,
-      updatedAt: Date.now(),
-    };
-    downloadJson(`workflow-${doc.updatedAt}.json`, doc);
-  }, [nodes, edges, viewport]);
+    const nodeInfo = flowToNodeInfo(nodes, edges, viewport);
+    downloadJson(
+      `workflow-${workflow.title || workflow.id}-${Date.now()}.json`,
+      { ...workflow, nodeInfo },
+    );
+  }, [nodes, edges, viewport, workflow]);
 
-  // 초기 복원 + 기본 노드 생성
+  // 선택한 워크플로우 데이터 → 캔버스 반영 (워크플로우 전환 시에만)
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const initialNode: WorkflowNode = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        type: "textNode",
-        position: { x: 140, y: 140 },
-        data: {
-          title: "시작",
-          content: "오른쪽 Inspector에서 텍스트를 편집해보세요.",
-          attachments: [],
-          updatedAt: Date.now(),
-        },
-      };
-      setNodes([initialNode]);
-      setEdges([]);
-      setViewport({ x: 0, y: 0, zoom: 1 });
-      setHydrated(true);
-      return;
-    }
-
-    const parsed = safeJsonParse<WorkflowDocV1>(raw);
-    if (!parsed || parsed.version !== 1) {
-      setHydrated(true);
-      return;
-    }
-    setNodes(parsed.nodes ?? []);
-    setEdges(parsed.edges ?? []);
-    setViewport(parsed.viewport ?? { x: 0, y: 0, zoom: 1 });
+    const { nodes: n, edges: e, viewport: v } = nodeInfoToFlow(workflow.nodeInfo);
+    setNodes(n);
+    setEdges(e);
+    setViewport(v);
     setHydrated(true);
-  }, [setEdges, setNodes]);
-
-  // 자동 저장 (0.8s 디바운스)
-  useEffect(() => {
-    if (!hydrated) return;
-    const t = window.setTimeout(() => {
-      const doc: WorkflowDocV1 = {
-        version: 1,
-        nodes,
-        edges,
-        viewport,
-        updatedAt: Date.now(),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(doc));
-    }, 800);
-    return () => window.clearTimeout(t);
-  }, [nodes, edges, viewport, hydrated]);
+  }, [workflow.id, setNodes, setEdges]);
 
   return (
     // <ReactFlowProvider>
     <CanvasLayout width="100%" height="100%" bg="alpha_dark_80">
       <CanvasArea>
         <ToolbarWrapper>
-          <WorkflowToolbar onAddNode={addNode} onExportJson={exportJson} />
+          <WorkflowToolbar
+          onAddNode={addNode}
+          onSave={handleSave}
+          onExportJson={exportJson}
+          isSaving={updateMutation.isPending}
+        />
         </ToolbarWrapper>
 
         <ReactFlow

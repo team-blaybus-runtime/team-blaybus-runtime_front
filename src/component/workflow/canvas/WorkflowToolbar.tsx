@@ -6,16 +6,19 @@ import styled from "styled-components";
 import colors from "@/styles/constant/colors";
 import { Button } from "@/styles/base/BaseStyledTags";
 import { CenterRow } from "@/styles/base/BaseComponents";
-import { Font } from "@/styles/typo/typography";
 
 interface WorkflowToolbarProps {
   onAddNode: () => void;
+  onSave: () => void;
   onExportJson: () => void;
+  isSaving?: boolean;
 }
 
 export default function WorkflowToolbar({
   onAddNode,
+  onSave,
   onExportJson,
+  isSaving = false,
 }: WorkflowToolbarProps) {
   return (
     <CenterRow
@@ -29,13 +32,16 @@ export default function WorkflowToolbar({
       <ToolbarButton type="button" onClick={onAddNode}>
         + 노드
       </ToolbarButton>
+      <ToolbarButton
+        type="button"
+        onClick={onSave}
+        disabled={isSaving}
+      >
+        {isSaving ? "저장 중..." : "저장하기"}
+      </ToolbarButton>
       <ToolbarButton type="button" onClick={onExportJson}>
         Export JSON
       </ToolbarButton>
-
-      <Font typo="caption_s" color="alpha_light_50" p="8px">
-        자동 저장됨
-      </Font>
     </CenterRow>
   );
 }
@@ -46,4 +52,8 @@ const ToolbarButton = styled(Button).attrs({ typo: "button_3" })`
   border: 1px solid ${colors.alpha_light_10};
   background: ${colors.neutral_1000};
   color: ${colors.alpha_light_90};
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;

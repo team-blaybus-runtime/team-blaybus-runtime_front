@@ -26,8 +26,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setProfileSetupOpen(false);
   };
 
-  const isWideScreen = pathname === "/";
-  const noFooterScreen = pathname === "/" || isAuthPage;
+  const isWideScreen = pathname === "/" || pathname.startsWith("/workflow");
+  const noFooterScreen =
+    pathname === "/" || isAuthPage || pathname.startsWith("/workflow");
 
   if (pathname.startsWith("/study")) {
     return (
@@ -52,7 +53,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </PageContainer>
       </HeaderWrapper>
       <Content $isWideScreen={isWideScreen}>
-        <PageContainer>{children}</PageContainer>
+        <ContentContainer $isWideScreen={isWideScreen}>
+          {children}
+        </ContentContainer>
       </Content>
       {!noFooterScreen && (
         <FooterWrapper>
@@ -93,6 +96,13 @@ const PageContainer = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
+`;
+
+const ContentContainer = styled.div<{ $isWideScreen: boolean }>`
+  width: 100%;
+  max-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
+  margin: 0 auto;
+  padding: ${({ $isWideScreen }) => ($isWideScreen ? "0" : "0 24px")};
 `;
 
 const HeaderWrapper = styled.header`
