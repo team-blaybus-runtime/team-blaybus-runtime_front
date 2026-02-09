@@ -1,26 +1,23 @@
 "use client";
 
+import Image from "next/image";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
-import { Button } from "@/styles/base/BaseStyledTags";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
-import { UserStudyHistory } from "@/apis/studyApi";
+import { EngineeringPart } from "@/apis/engineering";
+import { useEditStore } from "@/store/useEditStore";
 
 interface StudyContentModalProps {
-  open: boolean;
-  onClose: () => void;
   objectName: string;
-  histories: UserStudyHistory[];
+  parts: EngineeringPart[];
 }
 
 export default function StudyContentModal({
-  open,
-  onClose,
   objectName,
-  histories,
+  parts,
 }: StudyContentModalProps) {
-  if (!open) return null;
+  const { selectedPartIndex, setSelectedPartIndex } = useEditStore();
 
   return (
     <ModalContainer>
@@ -28,19 +25,21 @@ export default function StudyContentModal({
         <Font typo="label_l" color={colors.blue_700}>
           {objectName}
         </Font>
-        <CloseButton onClick={onClose}>
-          <CloseIcon />
-        </CloseButton>
       </ModalHeader>
 
       <ThumbnailGrid>
-        {histories.map((h) => (
-          <ThumbnailCard key={h.userStudyHisId}>
-            <PartPreview
-              $color={h.viewInfo.color}
-              $width={h.viewInfo.geometry[0]}
-              $height={h.viewInfo.geometry[1]}
-              $depth={h.viewInfo.geometry[2]}
+        {parts.map((part, i) => (
+          <ThumbnailCard
+            key={part.partName}
+            $selected={selectedPartIndex === i}
+            onClick={() => setSelectedPartIndex(selectedPartIndex === i ? null : i)}
+          >
+            <PartImage
+              src={part.imageUrl}
+              alt={part.partName}
+              width={80}
+              height={80}
+              unoptimized
             />
           </ThumbnailCard>
         ))}
@@ -49,68 +48,18 @@ export default function StudyContentModal({
       <Divider />
 
       <DescriptionList>
-        {histories.map((h) => (
-          <DescriptionItem key={h.userStudyHisId}>
+        {parts.map((part) => (
+          <DescriptionItem key={part.partName}>
             <Font typo="label_s" color={colors.neutral_0}>
-              {h.title}
+              {part.partName}
             </Font>
-            <PartMeta>
-              <Font typo="caption_m" color={colors.neutral_500}>
-                Part {h.viewInfo.partId}
-              </Font>
-              <Font typo="caption_m" color={colors.neutral_500}>
-                {new Date(h.updatedAt).toLocaleDateString("ko-KR")}
-              </Font>
-            </PartMeta>
+            <Font typo="caption_m" color={colors.neutral_500}>
+              {part.content}
+            </Font>
           </DescriptionItem>
         ))}
       </DescriptionList>
     </ModalContainer>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M15 5L5 15M5 5l10 10"
-        stroke="#969696"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** viewInfo.geometry 비율로 3D-느낌 박스 렌더 */
-function PartPreview({
-  $color,
-  $width,
-  $height,
-  $depth,
-}: {
-  $color: string;
-  $width: number;
-  $height: number;
-  $depth: number;
-}) {
-  const maxDim = Math.max($width, $height, $depth);
-  const w = ($width / maxDim) * 60;
-  const h = ($height / maxDim) * 60;
-
-  return (
-    <PreviewBox>
-      <PreviewShape
-        style={{
-          width: `${w}%`,
-          height: `${h}%`,
-          backgroundColor: $color,
-          borderRadius: "4px",
-          boxShadow: `4px 4px 0px 0px ${$color}66`,
-        }}
-      />
-    </PreviewBox>
   );
 }
 
@@ -135,22 +84,6 @@ const ModalHeader = styled(Row)`
   flex-shrink: 0;
 `;
 
-const CloseButton = styled(Button)`
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 8px;
-  flex-shrink: 0;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-`;
-
 const ThumbnailGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -159,32 +92,27 @@ const ThumbnailGrid = styled.div`
   flex-shrink: 0;
 `;
 
-const ThumbnailCard = styled.div`
+const ThumbnailCard = styled.div<{ $selected?: boolean }>`
   aspect-ratio: 1;
-  background-color: ${colors.neutral_900};
+  background-color: ${({ $selected }) => ($selected ? colors.neutral_800 : colors.neutral_900)};
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${colors.blue_700}` : "none")};
 
   &:hover {
     background-color: ${colors.neutral_800};
   }
 `;
 
-const PreviewBox = styled.div`
+const PartImage = styled(Image)`
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const PreviewShape = styled.div`
-  transition: transform 0.2s;
 `;
 
 const Divider = styled.div`
@@ -217,6 +145,3 @@ const DescriptionItem = styled(Column)`
   gap: 6px;
 `;
 
-const PartMeta = styled(Row)`
-  gap: 12px;
-`;

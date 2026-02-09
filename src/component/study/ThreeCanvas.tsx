@@ -10,14 +10,15 @@ import {
   ToneMapping,
 } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
-import { Vector3 } from "three";
+import { Vector3, MOUSE } from "three";
 import styled from "styled-components";
 import LightingSetup from "@/component/study/LightingSetup";
 import AssemblyViewer from "@/component/study/AssemblyViewer";
 import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
-import { StudyComponent } from "@/apis/studyApi";
+import { useSimulatorStore } from "@/store/useSimulatorStore";
+import { StudyComponent } from "@/apis/study";
 
 function LoadingFallback() {
   return (
@@ -28,10 +29,10 @@ function LoadingFallback() {
   );
 }
 
-/** 편집 도구 액션(zoom, focus, undo, redo)을 Three.js 카메라에 반영 */
+/** 편집 도구 액션(zoom, focus)을 Three.js 카메라에 반영 */
 function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> }) {
   const { camera } = useThree();
-  const { zoomAction, focusAction, clearAction, pushCameraSnapshot, undo, redo, activeTool } = useEditStore();
+  const { zoomAction, focusAction, clearAction } = useEditStore();
 
   // zoom in / zoom out 액션 처리
   useEffect(() => {
@@ -40,35 +41,48 @@ function EditToolHandler({ controlsRef }: { controlsRef: React.RefObject<any> })
     const controls = controlsRef.current;
     const dir = new Vector3();
     camera.getWorldDirection(dir);
-    const distance = zoomAction === "in" ? 1 : -1;
-
-    // 현재 카메라 스냅샷 저장
-    pushCameraSnapshot({
-      position: camera.position.toArray() as [number, number, number],
-      target: [controls.target.x, controls.target.y, controls.target.z],
-    });
+    const currentDist = camera.position.distanceTo(controls.target);
+    const step = currentDist * 0.25;
+    const distance = zoomAction === "in" ? step : -step;
 
     camera.position.addScaledVector(dir, distance);
     controls.update();
     clearAction();
-  }, [zoomAction, camera, controlsRef, clearAction, pushCameraSnapshot]);
+  }, [zoomAction, camera, controlsRef, clearAction]);
 
   // focus 액션 처리 - 카메라를 기본 위치로 리셋
   useEffect(() => {
     if (!focusAction || !controlsRef.current) return;
 
     const controls = controlsRef.current;
-
-    pushCameraSnapshot({
-      position: camera.position.toArray() as [number, number, number],
-      target: [controls.target.x, controls.target.y, controls.target.z],
-    });
-
     camera.position.set(3, 2, 3);
     controls.target.set(0, 0, 0);
     controls.update();
     clearAction();
-  }, [focusAction, camera, controlsRef, clearAction, pushCameraSnapshot]);
+  }, [focusAction, camera, controlsRef, clearAction]);
+
+  return null;
+}
+
+/** 시뮬레이터 타임라인 → explodeLevel 동기화 */
+function SimulatorSync() {
+  const { currentTime, duration, isPlaying } = useSimulatorStore();
+  const { setExplodeLevel } = useModelStore();
+  const wasPlayingRef = useRef(false);
+
+  useFrame(() => {
+    const progress = duration > 0 ? currentTime / duration : 0;
+
+    if (isPlaying) {
+      // 재생 중: 매 프레임 동기화
+      setExplodeLevel(progress);
+      wasPlayingRef.current = true;
+    } else if (wasPlayingRef.current) {
+      // 방금 멈춤/리셋: 한 번만 동기화 후 수동 조작 허용
+      setExplodeLevel(progress);
+      wasPlayingRef.current = false;
+    }
+  });
 
   return null;
 }
@@ -128,7 +142,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
 
         <Suspense fallback={<LoadingFallback />}>
           {components.length > 0 && (
-            <Bounds fit clip observe margin={1.5}>
+            <Bounds fit clip margin={1.5}>
               <AssemblyViewer components={components} />
             </Bounds>
           )}
@@ -165,19 +179,20 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
           enableZoom={true}
           enableRotate={!isPan}
           mouseButtons={{
-            LEFT: isPan ? 2 : 0,   // pan모드: 좌클릭=팬, 기본: 좌클릭=회전
-            MIDDLE: 1,
-            RIGHT: isPan ? 0 : 2,
+            LEFT: isPan ? MOUSE.PAN : MOUSE.ROTATE,
+            MIDDLE: MOUSE.DOLLY,
+            RIGHT: isPan ? MOUSE.ROTATE : MOUSE.PAN,
           }}
-          minDistance={0.5}
-          maxDistance={30}
+          minDistance={0.1}
+          maxDistance={100}
           minPolarAngle={0}
-          maxPolarAngle={Math.PI / 1.5}
+          maxPolarAngle={Math.PI}
           dampingFactor={0.05}
           enableDamping
         />
 
         <EditToolHandler controlsRef={controlsRef} />
+        <SimulatorSync />
 
         <gridHelper
           args={[20, 20, "#27272a", "#1a1a1a"]}

@@ -23,7 +23,7 @@ export default function DomainCard({
   return (
     <CardWrapper onClick={onClick}>
       {image ? (
-        <CardImage src={image} alt={name} />
+        <CardImage src={image} alt={name} draggable="false" />
       ) : (
         <Placeholder />
       )}

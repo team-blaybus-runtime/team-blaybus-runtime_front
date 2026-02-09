@@ -11,7 +11,7 @@ import StudyCard from "@/component/main/StudyCard";
 import NewStudyBtn from "@/component/main/NewStudyBtn";
 import NewStudyModal from "@/component/main/NewStudyModal";
 import Pagination from "@/component/common/Pagination";
-import { UserStudyHistory, fetchUserStudyHistories } from "@/apis/studyApi";
+import { UserStudyHistory, fetchUserStudyHistories } from "@/apis/study";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -67,7 +67,7 @@ export default function HomePage() {
                   domain={h.ProductTypeDesc}
                   title={h.title}
                   date={new Date(h.updatedAt).toLocaleDateString("ko-KR")}
-                  onClick={() => router.push(`/study/${h.ProductTypeDesc.toLowerCase()}`)}
+                  onClick={() => router.push(`/study/${h.userStudyHisId}`)}
                 />
               ))}
             </CardGrid>
