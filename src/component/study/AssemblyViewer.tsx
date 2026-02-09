@@ -14,7 +14,7 @@ import {
 } from "three";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
-import { StudyComponent } from "@/apis/studyApi";
+import { StudyComponent } from "@/apis/study";
 
 /** GLB 로드 실패 시 해당 파트만 건너뛰는 에러 바운더리 */
 class PartErrorBoundary extends Component<

@@ -18,7 +18,7 @@ import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
 import { useSimulatorStore } from "@/store/useSimulatorStore";
-import { StudyComponent } from "@/apis/studyApi";
+import { StudyComponent } from "@/apis/study";
 
 function LoadingFallback() {
   return (

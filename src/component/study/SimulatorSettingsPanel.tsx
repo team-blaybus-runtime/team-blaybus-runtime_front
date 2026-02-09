@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import colors from "@/styles/constant/colors";
 import { ShaderSettingsPanel, MeshListPanel, AssetUploadPanel } from "@/component/study/SettingsSubPanels";
-import { StudyComponent } from "@/apis/studyApi";
+import { StudyComponent } from "@/apis/study";
 
 export type SimulatorPanel = "쉐이더 설정" | "메쉬 목록" | "에셋 업로드";
 

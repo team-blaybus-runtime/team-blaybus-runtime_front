@@ -10,7 +10,7 @@ import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
 import SimulatorControls from "@/component/study/SimulatorControls";
 import SimulatorSettingsPanel, { SimulatorPanel } from "@/component/study/SimulatorSettingsPanel";
-import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineeringApi";
+import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineering";
 import { StudyTab } from "@/component/study/StudyTabBar";
 
 const ThreeCanvas = dynamic(

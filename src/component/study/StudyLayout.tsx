@@ -12,7 +12,7 @@ import StudyTabBar, { StudyTab } from "@/component/study/StudyTabBar";
 import StudyViewer from "@/component/study/StudyViewer";
 import StudyAIChat from "@/component/study/aiChat/StudyAIChat";
 import useStudyAIChat from "@/providers/useStudyAIChat";
-import { fetchStudyObject, StudyObjectDetail } from "@/apis/studyApi";
+import { fetchEngineeringProductTypes } from "@/apis/engineering";
 import StudyMemo from "./memo/StudyMemo";
 import useStudyPdfExport from "@/hooks/study/useStudyPdfExport";
 import { useFetchUserMemosQuery } from "@/queries/users/memos/useFetchUserMemos";
@@ -22,7 +22,7 @@ interface StudyLayoutProps {
 }
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
-  const [data, setData] = useState<StudyObjectDetail | null>(null);
+  const [objectName, setObjectName] = useState("");
   const { data: memoData } = useFetchUserMemosQuery();
 
   const [sideBarContent, setSideBarContent] = useState<"memo" | "aiChat">(
@@ -34,21 +34,26 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   const renameInputRef = useRef<HTMLInputElement>(null);
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const aiChat = useStudyAIChat({
-    productType: data?.object.objectName ?? id,
+    productType: objectName || id,
     chatHistoryId: 1,
   });
   const { exportPdf, isExporting } = useStudyPdfExport({
     viewerRef,
     memos: memoData ?? [],
     messages: aiChat.messages,
-    title: data?.object.objectName ?? "학습 정리",
+    title: objectName ?? "학습 정리",
   });
 
   useEffect(() => {
-    fetchStudyObject(id).then(setData);
+    fetchEngineeringProductTypes().then((types) => {
+      const match = types.find(
+        (t) => t.productTypeDesc.toLowerCase().replace(/[_ ]/g, "-") === id,
+      );
+      if (match) setObjectName(match.productTypeDesc);
+    });
   }, [id]);
 
-  const displayName = customName || data?.object.objectName || "";
+  const displayName = customName || objectName || "";
 
   const startRename = useCallback(() => {
     setCustomName(displayName);
@@ -58,12 +63,12 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
 
   const confirmRename = useCallback(() => {
     const trimmed = customName.trim();
-    if (trimmed && data) {
-      setData({ ...data, object: { ...data.object, objectName: trimmed } });
+    if (trimmed) {
+      setObjectName(trimmed);
     }
     setCustomName("");
     setIsRenaming(false);
-  }, [customName, data]);
+  }, [customName]);
 
   const cancelRename = useCallback(() => {
     setCustomName("");
@@ -140,7 +145,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
               </TabCenter>
               <StudyViewer
                 objectId={id}
-                objectName={data?.object.objectName ?? ""}
+                objectName={objectName}
                 activeTab={activeTab}
                 viewerRef={viewerRef}
               />
@@ -150,7 +155,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             ) : (
               <StudyMemo
                 memos={memoData ?? []}
-                productType={data?.object.objectName ?? id}
+                productType={objectName || id}
               />
             )}
           </ContentRow>

@@ -9,11 +9,11 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import DomainCard from "@/component/main/DomainCard";
-import { createUserStudyHistory } from "@/apis/studyApi";
+import { saveUserStudyHistory } from "@/apis/study";
 import {
   EngineeringProductType,
   fetchEngineeringProductTypes,
-} from "@/apis/engineeringApi";
+} from "@/apis/engineering";
 
 interface NewStudyModalProps {
   open: boolean;
@@ -104,7 +104,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
     if (!selectedDomain) return;
     const displayName = toDisplayName(selectedDomain);
     try {
-      await createUserStudyHistory({
+      await saveUserStudyHistory({
         productType: selectedDomain,
         title: `${displayName} 구조 학습`,
         viewInfo: {

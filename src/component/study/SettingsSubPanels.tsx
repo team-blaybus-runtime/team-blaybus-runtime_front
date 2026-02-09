@@ -7,7 +7,7 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
-import { StudyComponent } from "@/apis/studyApi";
+import { StudyComponent } from "@/apis/study";
 
 /* ─── 쉐이더 설정 ─── */
 

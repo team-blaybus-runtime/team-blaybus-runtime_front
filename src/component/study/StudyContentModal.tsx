@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
-import { EngineeringPart } from "@/apis/engineeringApi";
+import { EngineeringPart } from "@/apis/engineering";
 import { useEditStore } from "@/store/useEditStore";
 
 interface StudyContentModalProps {
