@@ -118,6 +118,16 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
           roughness: 0.4,
           metalness: 0.6,
           envMapIntensity: 1,
+          camera: {
+            position: [3, 2, 3],
+            target: [0, 0, 0],
+            fov: 45,
+          },
+          renderSettings: {
+            bloom: { intensity: 0.5, threshold: 0.8, smoothing: 0.9 },
+            ao: { radius: 0.5, intensity: 1.5 },
+            lighting: { keyLightIntensity: 2.0, ambientIntensity: 0.2 },
+          },
         },
       });
       onCreated?.();

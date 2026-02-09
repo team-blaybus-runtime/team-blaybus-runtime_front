@@ -23,11 +23,11 @@ export async function fetchEngineeringProductTypes(): Promise<EngineeringProduct
 
 /**
  * 엔지니어링 부품 목록 조회
- * GET /engineering/parts?productType={productType}
+ * GET /engineering/parts?productTypeDesc={productTypeDesc}
  */
-export async function fetchEngineeringParts(productType: string): Promise<EngineeringPart[]> {
+export async function fetchEngineeringParts(productTypeDesc: string): Promise<EngineeringPart[]> {
   const { data } = await Api.get<EngineeringPart[]>("/engineering/parts", {
-    params: { productType },
+    params: { productTypeDesc },
   });
   return data;
 }

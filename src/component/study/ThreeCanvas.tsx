@@ -18,7 +18,7 @@ import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
 import { useSimulatorStore } from "@/store/useSimulatorStore";
-import { StudyComponent } from "@/apis/study";
+import { StudyComponent, ViewInfo } from "@/apis/study";
 
 function LoadingFallback() {
   return (
@@ -91,6 +91,76 @@ function SimulatorSync() {
   return null;
 }
 
+/** OrbitControls 변경 시 카메라 상태를 스토어에 동기화 (변경 시에만) */
+function CameraSync({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+  const { camera } = useThree();
+  const setCameraState = useRenderStore((s) => s.setCameraState);
+  const prevRef = useRef<string>("");
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const pos = camera.position;
+    const target = controls.target;
+    const fov = (camera as any).fov ?? 45;
+    const key = `${pos.x.toFixed(3)},${pos.y.toFixed(3)},${pos.z.toFixed(3)},${target.x.toFixed(3)},${target.y.toFixed(3)},${target.z.toFixed(3)},${fov.toFixed(1)}`;
+    if (key === prevRef.current) return;
+    prevRef.current = key;
+    setCameraState({
+      position: [pos.x, pos.y, pos.z],
+      target: [target.x, target.y, target.z],
+      fov,
+    });
+  });
+
+  return null;
+}
+
+/** viewInfo에서 카메라/쉐이더 설정 복원 (Bounds fit 이후 실행) */
+function ViewInfoRestore({
+  viewInfo,
+  controlsRef,
+}: {
+  viewInfo?: ViewInfo;
+  controlsRef: React.RefObject<any>;
+}) {
+  const { camera } = useThree();
+  const { setBloom, setAO, setLighting } = useRenderStore();
+  const restored = useRef(false);
+
+  // 쉐이더 설정은 즉시 복원
+  useEffect(() => {
+    if (!viewInfo?.renderSettings) return;
+    setBloom(viewInfo.renderSettings.bloom);
+    setAO(viewInfo.renderSettings.ao);
+    setLighting(viewInfo.renderSettings.lighting);
+  }, [viewInfo, setBloom, setAO, setLighting]);
+
+  // 카메라는 Bounds fit 이후 복원해야 하므로 지연 실행
+  useEffect(() => {
+    if (restored.current || !viewInfo?.camera) return;
+
+    const timer = setTimeout(() => {
+      const [px, py, pz] = viewInfo.camera!.position;
+      const [tx, ty, tz] = viewInfo.camera!.target;
+      camera.position.set(px, py, pz);
+      if ((camera as any).fov !== undefined) {
+        (camera as any).fov = viewInfo.camera!.fov;
+        (camera as any).updateProjectionMatrix();
+      }
+      if (controlsRef.current) {
+        controlsRef.current.target.set(tx, ty, tz);
+        controlsRef.current.update();
+      }
+      restored.current = true;
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [viewInfo, camera, controlsRef]);
+
+  return null;
+}
+
 /** Bounds 내부에서 useBounds API를 ref로 전달하는 래퍼 */
 function BoundsContent({
   children,
@@ -108,9 +178,10 @@ function BoundsContent({
 
 interface ThreeCanvasProps {
   components: StudyComponent[];
+  viewInfo?: ViewInfo;
 }
 
-export default function ThreeCanvas({ components }: ThreeCanvasProps) {
+export default function ThreeCanvas({ components, viewInfo }: ThreeCanvasProps) {
   const { bloom, ao, lighting } = useRenderStore();
   const { isTransforming, explodeLevel, setExplodeLevel } = useModelStore();
   const activeTool = useEditStore((s) => s.activeTool);
@@ -162,7 +233,7 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
 
         <Suspense fallback={<LoadingFallback />}>
           {components.length > 0 && (
-            <Bounds fit clip margin={1.5}>
+            <Bounds fit={!viewInfo?.camera} clip margin={1.5}>
               <BoundsContent boundsApi={boundsApiRef}>
                 <AssemblyViewer components={components} />
               </BoundsContent>
@@ -214,6 +285,8 @@ export default function ThreeCanvas({ components }: ThreeCanvasProps) {
         />
 
         <EditToolHandler controlsRef={controlsRef} boundsApi={boundsApiRef} />
+        <CameraSync controlsRef={controlsRef} />
+        <ViewInfoRestore viewInfo={viewInfo} controlsRef={controlsRef} />
         <SimulatorSync />
 
         <gridHelper

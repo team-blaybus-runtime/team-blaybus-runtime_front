@@ -13,6 +13,16 @@ export interface ViewInfo {
   roughness: number;
   metalness: number;
   envMapIntensity: number;
+  camera?: {
+    position: [number, number, number];
+    target: [number, number, number];
+    fov: number;
+  };
+  renderSettings?: {
+    bloom: { intensity: number; threshold: number; smoothing: number };
+    ao: { radius: number; intensity: number };
+    lighting: { keyLightIntensity: number; ambientIntensity: number };
+  };
 }
 
 export interface UserStudyHistory {

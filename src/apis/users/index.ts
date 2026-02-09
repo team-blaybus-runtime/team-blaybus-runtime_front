@@ -16,9 +16,9 @@ export const updateUserProfile = async (profile: ProfileSetup) => {
 };
 
 // 메모 조회 API
-export const fetchUserMemos = async (productType?: string) => {
+export const fetchUserMemos = async (productTypeDesc?: string) => {
   const response = await Api.get<MemoItem[]>(
-    `/users/memos${productType ? `?productType=${productType}` : ""}`,
+    `/users/memos${productTypeDesc ? `?productTypeDesc=${productTypeDesc}` : ""}`,
   );
   return response.data;
 };
