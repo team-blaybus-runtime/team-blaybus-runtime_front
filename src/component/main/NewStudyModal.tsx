@@ -9,7 +9,7 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { zIndex } from "@/styles/constant/zIndex";
 import DomainCard from "@/component/main/DomainCard";
-import { saveUserStudyHistory } from "@/apis/study";
+import { saveUserStudyHistory, fetchUserStudyHistories } from "@/apis/study";
 import {
   EngineeringProductType,
   fetchEngineeringProductTypes,
@@ -104,7 +104,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
     if (!selectedDomain) return;
     const displayName = toDisplayName(selectedDomain);
     try {
-      const created = await saveUserStudyHistory({
+      await saveUserStudyHistory({
         productTypeDesc: selectedDomain,
         title: `${displayName} 구조 학습`,
         viewInfo: {
@@ -130,9 +130,15 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
           },
         },
       });
+      const histories = await fetchUserStudyHistories();
+      const latest = histories.sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )[0];
       onCreated?.();
       onClose();
-      router.push(`/study/${created.userStudyHisId}`);
+      if (latest) {
+        router.push(`/study/${latest.userStudyHisId}`);
+      }
       return;
     } catch {
       // API 실패해도 페이지 이동은 허용
