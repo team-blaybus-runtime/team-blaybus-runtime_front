@@ -35,7 +35,7 @@ export default function RegisterInfo({
       />
       <FormInput
         label="패스워드 확인"
-        placeholder="패스워드를 다시 입려해 주세요."
+        placeholder="패스워드를 다시 입력해 주세요."
         type="password"
         name="confirmPassword"
         value={values.confirmPassword}

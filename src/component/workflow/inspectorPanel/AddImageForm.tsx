@@ -1,14 +1,18 @@
 "use client";
 
 /**
- * 이미지 첨부 폼: 파일을 읽어 dataUrl로 첨부합니다.
+ * 이미지 첨부: "이미지 선택" 버튼 + 도움말 텍스트 (섹션 제목은 Inspector에서 표시)
+ * 선택 시 리사이즈·압축하여 413 Request Entity Too Large 방지
  */
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 import colors from "@/styles/constant/colors";
-import { Button, Div, Input } from "@/styles/base/BaseStyledTags";
-import type { Attachment } from "../../../type/workflowTypes";
+import { Button, Input } from "@/styles/base/BaseStyledTags";
+import type { Attachment } from "@/type/workflowTypes";
+import { compressImageFile } from "@/utils/imageCompression";
+import { Font } from "@/styles/typo/typography";
+import { CenterColumn } from "@/styles/base/BaseComponents";
 
 export default function AddImageForm({
   onAdd,
@@ -16,70 +20,68 @@ export default function AddImageForm({
   onAdd: (a: Attachment) => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const handleFile = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file || !file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
+
+      // 같은 파일 재선택 가능하게 먼저 초기화
+      e.target.value = "";
+
+      setIsCompressing(true);
+      try {
+        const { dataUrl, name, size } = await compressImageFile(file);
         onAdd({
           type: "image",
-          name: file.name,
+          name,
           dataUrl,
-          size: file.size,
+          size,
         });
-      };
-      reader.readAsDataURL(file);
-      e.target.value = "";
+      } catch (err) {
+        console.error("Image compression failed:", err);
+      } finally {
+        setIsCompressing(false);
+      }
     },
     [onAdd],
   );
 
   return (
-    <Form>
-      <Title>사진 첨부</Title>
+    <>
       <HiddenInput
         ref={inputRef}
         type="file"
         accept="image/*"
         onChange={handleFile}
       />
-      <SelectButton type="button" onClick={() => inputRef.current?.click()}>
-        이미지 선택
-      </SelectButton>
-      <HelperText>
-        JPG, PNG, GIF, WebP 등 (자동 저장·Export JSON에 포함)
-      </HelperText>
-    </Form>
+      <CenterColumn width="100%" gridGap="12px">
+        <SelectButton
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={isCompressing}
+          aria-busy={isCompressing}
+        >
+          {isCompressing ? "압축 중..." : "이미지 선택"}
+        </SelectButton>
+
+        <Font typo="caption_s" color="neutral_500">
+          JPG, PNG, GIF, WebP 등
+        </Font>
+      </CenterColumn>
+    </>
   );
 }
-
-const Form = styled(Div)`
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid ${colors.alpha_light_10};
-`;
-
-const Title = styled(Div).attrs({ typo: "label_s" })`
-  margin-bottom: 8px;
-`;
 
 const HiddenInput = styled(Input)`
   display: none;
 `;
 
-const SelectButton = styled(Button).attrs({ typo: "button_3" })`
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid ${colors.alpha_light_10};
-  background: #0b1220;
-  color: ${colors.alpha_light_90};
+const SelectButton = styled(Button)`
   width: 100%;
-`;
-
-const HelperText = styled(Div).attrs({ typo: "caption_s" })`
-  color: ${colors.alpha_light_50};
-  margin-top: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: ${colors.neutral_800};
+  color: ${colors.neutral_0};
 `;

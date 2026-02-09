@@ -26,8 +26,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setProfileSetupOpen(false);
   };
 
-  const isWideScreen = pathname === "/";
-  const noFooterScreen = pathname === "/" || isAuthPage;
+  const isWideScreen = pathname === "/" || pathname.startsWith("/workflow");
+  const noFooterScreen =
+    pathname === "/" || isAuthPage || pathname.startsWith("/workflow");
+  const isWorkflowPage = pathname.startsWith("/workflow");
 
   if (pathname.startsWith("/study")) {
     return (
@@ -51,8 +53,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Header userInfo={userInfo} />
         </PageContainer>
       </HeaderWrapper>
-      <Content $isWideScreen={isWideScreen}>
-        <PageContainer>{children}</PageContainer>
+      <Content $isWideScreen={isWideScreen} $fillViewport={isWorkflowPage}>
+        <ContentContainer
+          $isWideScreen={isWideScreen}
+          $fillViewport={isWorkflowPage}
+        >
+          {children}
+        </ContentContainer>
       </Content>
       {!noFooterScreen && (
         <FooterWrapper>
@@ -79,13 +86,17 @@ const LayoutRoot = styled(Column)`
   overflow-y: auto;
 `;
 
-const Content = styled.main<{ $isWideScreen: boolean }>`
-  flex: 1 0 auto;
+const Content = styled.main<{
+  $isWideScreen: boolean;
+  $fillViewport?: boolean;
+}>`
+  flex: ${({ $fillViewport }) => ($fillViewport ? "1 1 0" : "1 0 auto")};
   display: flex;
   width: 100%;
+  min-height: ${({ $fillViewport }) => ($fillViewport ? "0" : "800px")};
   background-color: ${colors.neutral_1100};
   min-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
-  min-height: 800px;
+  overflow: ${({ $fillViewport }) => ($fillViewport ? "hidden" : "visible")};
 `;
 
 const PageContainer = styled.div`
@@ -93,6 +104,26 @@ const PageContainer = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
+`;
+
+const ContentContainer = styled.div<{
+  $isWideScreen: boolean;
+  $fillViewport?: boolean;
+}>`
+  width: 100%;
+  max-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
+  min-width: 1280px;
+  margin: 0 auto;
+  padding: ${({ $isWideScreen }) => ($isWideScreen ? "0" : "0 24px")};
+  ${({ $fillViewport }) =>
+    $fillViewport &&
+    `
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  `}
 `;
 
 const HeaderWrapper = styled.header`
