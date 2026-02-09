@@ -12,28 +12,36 @@ export default function Login() {
   const { values, errors, isSubmitDisabled, handleChange, handleSubmit } =
     useLoginForm();
 
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isSubmitDisabled) handleSubmit();
+  };
+
   return (
     <CenterColumn width="100%" height="100%">
-      <CenterColumn width="480px" gridGap="24px">
-        <Font typo="title_1" color="neutral_0">
-          로그인
-        </Font>
-        <LoginInfo values={values} errors={errors} onChange={handleChange} />
-        <Button
-          width="100%"
-          bg={isSubmitDisabled ? colors.neutral_700 : colors.blue_700}
-          p="12px 8px"
-          alignItems="center"
-          borderRadius="8px"
-          disabled={isSubmitDisabled}
-          onClick={handleSubmit}
-        >
-          <Font typo="button_1" color="neutral_0">
+      <form onSubmit={onFormSubmit} style={{ display: "contents" }}>
+        <CenterColumn width="480px" gridGap="24px">
+          <Font typo="title_1" color="neutral_0">
             로그인
           </Font>
-        </Button>
-        <NoAccount />
-      </CenterColumn>
+          <LoginInfo values={values} errors={errors} onChange={handleChange} />
+          <Button
+            type="submit"
+            width="100%"
+            bg={isSubmitDisabled ? colors.neutral_700 : colors.blue_700}
+            p="12px 8px"
+            alignItems="center"
+            borderRadius="8px"
+            disabled={isSubmitDisabled}
+            onClick={handleSubmit}
+          >
+            <Font typo="button_1" color="neutral_0">
+              로그인
+            </Font>
+          </Button>
+          <NoAccount />
+        </CenterColumn>
+      </form>
     </CenterColumn>
   );
 }

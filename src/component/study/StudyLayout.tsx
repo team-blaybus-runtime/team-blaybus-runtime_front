@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
@@ -35,9 +34,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
 
   const [sideBarContent, setSideBarContent] = useState<
     "memo" | "aiChat" | "quiz"
-  >(
-    "aiChat",
-  );
+  >("aiChat");
   const [activeTab, setActiveTab] = useState<StudyTab>("단일 부품");
   const [isRenaming, setIsRenaming] = useState(false);
   const [customName, setCustomName] = useState("");
@@ -48,7 +45,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   const productType = history?.ProductTypeDesc ?? "";
 
   const aiChat = useStudyAIChat({
-    productType: productType || id,
+    productType: (productType ?? "").replace(/\s+/g, "_"),
     chatHistoryId: Number(id) || 1,
   });
   const { exportPdf, isExporting } = useStudyPdfExport({
@@ -92,7 +89,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         productTypeDesc: history.ProductTypeDesc,
         title: trimmed,
         viewInfo,
-      }).catch(() => { });
+      }).catch(() => {});
     }
     setCustomName("");
     setIsRenaming(false);
@@ -112,12 +109,12 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         const h = history;
         if (!h) return;
         const viewInfo = buildViewInfo(h.viewInfo);
-        setHistory((prev) => prev ? { ...prev, viewInfo } : prev);
+        setHistory((prev) => (prev ? { ...prev, viewInfo } : prev));
         saveUserStudyHistory({
           productTypeDesc: h.ProductTypeDesc,
           title: h.title,
           viewInfo,
-        }).catch(() => { });
+        }).catch(() => {});
       }, 3000);
     });
     return () => {
@@ -207,13 +204,10 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
             ) : sideBarContent === "memo" ? (
               <StudyMemo
                 memos={memoData ?? []}
-                productType={productType || id}
+                productType={(productType ?? "").replace(/\s+/g, "_") || id}
               />
             ) : (
-              <StudyQuiz
-                objectId={id}
-                objectName={productType || id}
-              />
+              <StudyQuiz objectId={id} objectName={productType} />
             )}
           </ContentRow>
         </MainContent>

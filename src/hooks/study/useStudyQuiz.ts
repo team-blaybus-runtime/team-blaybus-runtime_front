@@ -19,7 +19,11 @@ function shuffleArray<T>(items: T[]) {
   return result;
 }
 
-function pickRandomItems(items: string[], count: number, exclude: string[] = []) {
+function pickRandomItems(
+  items: string[],
+  count: number,
+  exclude: string[] = [],
+) {
   const pool = items.filter((item) => !exclude.includes(item));
   const result: string[] = [];
   while (result.length < count && pool.length > 0) {
@@ -80,8 +84,8 @@ function generateQuestions(
   return generated;
 }
 
-export function useStudyQuiz(objectId: string) {
-  const quizData = getStudyQuizData(objectId);
+export function useStudyQuiz(objectName: string) {
+  const quizData = getStudyQuizData(objectName.toLowerCase());
   const [seed, setSeed] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResult, setShowResult] = useState(false);
@@ -96,8 +100,11 @@ export function useStudyQuiz(objectId: string) {
     return shuffled.slice(0, Math.min(VISIBLE_QUESTIONS, shuffled.length));
   }, [allComponents, quizData, seed]);
 
-  const answeredCount = questions.filter((q) => answers[q.id] !== undefined).length;
-  const isAllAnswered = questions.length > 0 && answeredCount === questions.length;
+  const answeredCount = questions.filter(
+    (q) => answers[q.id] !== undefined,
+  ).length;
+  const isAllAnswered =
+    questions.length > 0 && answeredCount === questions.length;
   const score = questions.reduce(
     (sum, q) => sum + (answers[q.id] === q.answerIndex ? 1 : 0),
     0,

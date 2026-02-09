@@ -67,7 +67,7 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       },
     ],
   },
-  "machine-vice": {
+  "machine vice": {
     title: "Machine Vice",
     components: [
       "Fuhrung",
@@ -151,12 +151,17 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       {
         id: "sus-q5",
         question: "BASE 부품의 역할로 가장 알맞은 것은?",
-        options: ["구조 지지 및 기준점 제공", "블레이드 회전", "유압 생성", "클램핑"],
+        options: [
+          "구조 지지 및 기준점 제공",
+          "블레이드 회전",
+          "유압 생성",
+          "클램핑",
+        ],
         answerIndex: 0,
       },
     ],
   },
-  "robot-arm": {
+  "robot arm": {
     title: "Robot Arm",
     components: [
       "Base",
@@ -184,19 +189,34 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       {
         id: "ra-q3",
         question: "End Effector Mount의 역할로 알맞은 것은?",
-        options: ["도구 장착을 위한 끝단 연결부", "구동 스프링", "체결용 너트", "기어 회전"],
+        options: [
+          "도구 장착을 위한 끝단 연결부",
+          "구동 스프링",
+          "체결용 너트",
+          "기어 회전",
+        ],
         answerIndex: 0,
       },
       {
         id: "ra-q4",
         question: "Shoulder Joint가 담당하는 기능은?",
-        options: ["팔을 들어 올리고 자세를 결정", "그리핑 동작", "체결 유지", "회전축 고정"],
+        options: [
+          "팔을 들어 올리고 자세를 결정",
+          "그리핑 동작",
+          "체결 유지",
+          "회전축 고정",
+        ],
         answerIndex: 0,
       },
       {
         id: "ra-q5",
         question: "로봇 암 구성품 목록에 포함되지 않는 것은?",
-        options: ["Piston Ring", "Forearm Link", "Wrist Joint", "Upper Arm Link"],
+        options: [
+          "Piston Ring",
+          "Forearm Link",
+          "Wrist Joint",
+          "Upper Arm Link",
+        ],
         answerIndex: 0,
       },
       {
@@ -207,7 +227,7 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       },
     ],
   },
-  "robot-gripper": {
+  "robot gripper": {
     title: "Robot Gripper",
     components: [
       "Base Gear",
@@ -247,12 +267,17 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       {
         id: "rg-q5",
         question: "Pin 부품의 용도는?",
-        options: ["회전/연결 축 역할", "스프링 압축", "블레이드 회전", "유압 생성"],
+        options: [
+          "회전/연결 축 역할",
+          "스프링 압축",
+          "블레이드 회전",
+          "유압 생성",
+        ],
         answerIndex: 0,
       },
     ],
   },
-  "leaf-spring": {
+  "leaf spring": {
     title: "Leaf Spring",
     components: [
       "Clamp-Center",
@@ -281,13 +306,23 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       {
         id: "ls-q3",
         question: "차체 지지와 관련된 부품은?",
-        options: ["Support-Chassis", "Piston Ring", "Wrist Joint", "Spannbacke"],
+        options: [
+          "Support-Chassis",
+          "Piston Ring",
+          "Wrist Joint",
+          "Spannbacke",
+        ],
         answerIndex: 0,
       },
       {
         id: "ls-q4",
         question: "판스프링 구성품 목록에 포함되지 않는 것은?",
-        options: ["Impellar Blade", "Support-Rubber", "Clamp-Primary", "Support"],
+        options: [
+          "Impellar Blade",
+          "Support-Rubber",
+          "Clamp-Primary",
+          "Support",
+        ],
         answerIndex: 0,
       },
       {
@@ -298,7 +333,7 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       },
     ],
   },
-  "v4-engine": {
+  "v4 engine": {
     title: "V4 Engine",
     components: [
       "Piston",
@@ -331,27 +366,42 @@ const STUDY_QUIZ_DATA: Record<string, StudyQuizData> = {
       {
         id: "v4-q4",
         question: "피스톤 링의 주요 목적은?",
-        options: ["기밀 유지 및 압축 효율 향상", "구동축 회전", "그리핑", "지지 구조 제공"],
+        options: [
+          "기밀 유지 및 압축 효율 향상",
+          "구동축 회전",
+          "그리핑",
+          "지지 구조 제공",
+        ],
         answerIndex: 0,
       },
       {
         id: "v4-q5",
         question: "V4 엔진 구성품 목록에 포함되지 않는 것은?",
-        options: ["Base Mounting bracket", "Piston Pin", "Connecting Rod", "Connecting Rod Cap"],
+        options: [
+          "Base Mounting bracket",
+          "Piston Pin",
+          "Connecting Rod",
+          "Connecting Rod Cap",
+        ],
         answerIndex: 0,
       },
       {
         id: "v4-q6",
         question: "Piston Pin의 역할로 알맞은 것은?",
-        options: ["피스톤과 커넥팅 로드 연결", "회전 기어 구동", "클램핑", "베이스 지지"],
+        options: [
+          "피스톤과 커넥팅 로드 연결",
+          "회전 기어 구동",
+          "클램핑",
+          "베이스 지지",
+        ],
         answerIndex: 0,
       },
     ],
   },
 };
 
-export function getStudyQuizData(objectId: string): StudyQuizData | null {
-  return STUDY_QUIZ_DATA[objectId] ?? null;
+export function getStudyQuizData(objectName: string): StudyQuizData | null {
+  return STUDY_QUIZ_DATA[objectName.toLowerCase()] ?? null;
 }
 
 export function getAllQuizComponents(): string[] {

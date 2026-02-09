@@ -24,7 +24,7 @@ export default function StudyQuiz({ objectId, objectName }: StudyQuizProps) {
     handleSelect,
     handleRetry,
     handleGrade,
-  } = useStudyQuiz(objectId);
+  } = useStudyQuiz(objectName ?? "");
 
   if (!quizData) {
     return (
