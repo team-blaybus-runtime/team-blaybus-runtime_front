@@ -1,4 +1,6 @@
 import type React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import styled from "styled-components";
 import { Column, Row } from "@/styles/base/BaseComponents";
 import { Font } from "@/styles/typo/typography";
@@ -38,9 +40,11 @@ export default function MessageList({
 function UserMessage({ message }: MessageItemProps) {
   return (
     <UserBubble>
-      <Font typo="body_2" color="#d4d4d4" style={{ lineHeight: "1.8" }}>
-        {message.content}
-      </Font>
+      <MarkdownBody $variant="user">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {message.content}
+        </ReactMarkdown>
+      </MarkdownBody>
     </UserBubble>
   );
 }
@@ -48,9 +52,11 @@ function UserMessage({ message }: MessageItemProps) {
 function AIMessageBubble({ message }: MessageItemProps) {
   return (
     <AIMessage>
-      <Font typo="body_2" color="#d4d4d4" style={{ lineHeight: "1.8" }}>
-        {message.content}
-      </Font>
+      <MarkdownBody>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {message.content}
+        </ReactMarkdown>
+      </MarkdownBody>
     </AIMessage>
   );
 }
@@ -87,6 +93,41 @@ const UserBubble = styled(Row)`
 const AIMessage = styled(Column)`
   padding: 0 24px;
   width: 100%;
+`;
+
+const MarkdownBody = styled.div<{ $variant?: "user" | "ai" }>`
+  color: #d4d4d4;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  p {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  code {
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  pre {
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    overflow-x: auto;
+  }
 `;
 
 const ThinkingRow = styled(Row)`

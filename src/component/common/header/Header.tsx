@@ -58,11 +58,19 @@ export default function Header({ userInfo }: { userInfo?: UserInfo }) {
         {!userInfo ? (
           <LoginBtn />
         ) : (
-          <>
+          <Row gridGap="4px" alignItems="center">
+            <Img
+              src="/icons/common/mypageIcon.svg"
+              alt="info"
+              width="36px"
+              height="36px"
+              onClick={() => router.push("/mypage")}
+              style={{ cursor: "pointer" }}
+            />
             <Font
               typo="button_2"
               color="neutral_200"
-              width="69px"
+              width="auto"
               onClick={() => router.push("/mypage")}
               style={{
                 cursor: "pointer",
@@ -72,7 +80,7 @@ export default function Header({ userInfo }: { userInfo?: UserInfo }) {
             >
               {userInfo?.nickname}
             </Font>
-          </>
+          </Row>
         )}
       </Row>
     </CenterRow>
