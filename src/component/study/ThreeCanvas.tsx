@@ -197,7 +197,9 @@ export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCa
     (e: WheelEvent) => {
       if (e.shiftKey) {
         e.preventDefault();
-        const delta = e.deltaY > 0 ? -0.05 : 0.05;
+        const raw = e.deltaY || e.deltaX;
+        if (raw === 0) return;
+        const delta = raw > 0 ? -0.05 : 0.05;
         const newLevel = Math.max(0, Math.min(1, explodeLevel + delta));
         setExplodeLevel(newLevel);
       }
