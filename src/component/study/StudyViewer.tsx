@@ -69,7 +69,7 @@ const StudyViewer = ({
     if (!productType) return;
     fetchEngineeringParts(productType)
       .then(setParts)
-      .catch(() => {});
+      .catch(() => { });
   }, [productType]);
 
   // API 응답 → 3D 뷰어용 컴포넌트 변환 (조립도 레이아웃 있으면 매칭)
@@ -91,11 +91,11 @@ const StudyViewer = ({
             ],
             exploded: ([
               layout.assembled[0] * scale +
-                (layout.exploded[0] - layout.assembled[0]) * explodeScale,
+              (layout.exploded[0] - layout.assembled[0]) * explodeScale,
               layout.assembled[1] * scale +
-                (layout.exploded[1] - layout.assembled[1]) * explodeScale,
+              (layout.exploded[1] - layout.assembled[1]) * explodeScale,
               layout.assembled[2] * scale +
-                (layout.exploded[2] - layout.assembled[2]) * explodeScale,
+              (layout.exploded[2] - layout.assembled[2]) * explodeScale,
             ] as [number, number, number]),
           },
         }),
@@ -106,14 +106,7 @@ const StudyViewer = ({
   const assemblyInstances = useMemo(() => {
     const key = normalizeProductType(productType);
     if (
-      key === "suspension" ||
-      key === "서스펜션" ||
-      key === "robotgripper" ||
-      key === "robot gripper" ||
-      key === "로봇집게" ||
-      key === "v4engine" ||
-      key === "v4_engine" ||
-      key === "v4 engine"
+      false
     ) {
       // Suspension/V4는 GLB 원점 기준 조립을 우선 사용
       return undefined;

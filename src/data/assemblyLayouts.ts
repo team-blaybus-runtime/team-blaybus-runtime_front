@@ -53,6 +53,70 @@ export const ASSEMBLY_LAYOUTS: Record<string, ProductAssemblyLayout> = {
       exploded: [0, 1.0, 0],
     },
   },
+  Robot_Arm: {
+    Base: {
+      assembled: [0, 0, 0],
+      exploded: [0, -0.3, 0],
+    },
+    "Base Joint": {
+      assembled: [0, 0.43, 0.28],
+      exploded: [0, 0.1, 0.5],
+    },
+    "Shoulder Joint": {
+      assembled: [0, 0.1, 0],
+      exploded: [0, 0.5, 0],
+    },
+    "Upper Arm Link": {
+      assembled: [0, 0.26, 0.15],
+      exploded: [0, 0.9, 0.3],
+    },
+    "Elbow Joint": {
+      assembled: [0, 0.5, -0.2],
+      exploded: [0, 1.3, -0.4],
+    },
+    "Forearm Link": {
+      assembled: [0, 0.47, 0.24],
+      exploded: [0, 1.7, 0.5],
+    },
+    "Wrist Joint": {
+      assembled: [0, 0.5, 0.1],
+      exploded: [0, 2.1, 0.2],
+    },
+    "End Effector Mount": {
+      assembled: [0, 0.5, 0.1],
+      exploded: [0, 2.5, 0.2],
+    },
+  },
+  V4_Engine: {
+    Crankshaft: {
+      assembled: [0, 0.05, 0.3],
+      exploded: [0, -0.3, 0],
+    },
+    "Connecting Rod": {
+      assembled: [0.019, 0.25, 0.1435],
+      exploded: [0, 0.3, 0.25],
+    },
+    "Connecting Rod Cap": {
+      assembled: [0.04, 0.05, 0.1435],
+      exploded: [0, 0.15, 0.25],
+    },
+    Piston: {
+      assembled: [0.022, 0.223, 0.1435],
+      exploded: [0, 0.45, 0.25],
+    },
+    "Piston Pin": {
+      assembled: [0.018, 0.25, 0.184],
+      exploded: [0, 0.6, 0.25],
+    },
+    "Piston Ring": {
+      assembled: [0.022, 0.223, 0.1435],
+      exploded: [0, 0.45, 0.25],
+    },
+    "Conrod Bolt": {
+      assembled: [-0.045, -0.018, 0.008],
+      exploded: [0, -0.1, 0.1],
+    },
+  },
   서스펜션: {
     "Spring Adjustment Nut": {
       assembled: [0, 0.12, 0],
@@ -101,12 +165,16 @@ export const ASSEMBLY_LAYOUTS: Record<string, ProductAssemblyLayout> = {
 export const ASSEMBLY_LAYOUT_SCALE: Record<string, number> = {
   Suspension: 1,
   서스펜션: 1,
+  V4_Engine: 1,
+  Robot_Arm: 1,
 };
 
 /** 분해 거리만 키우고 싶을 때 사용 */
 export const ASSEMBLY_EXPLODE_SCALE: Record<string, number> = {
   Suspension: 300,
   서스펜션: 300,
+  V4_Engine: 1,
+  Robot_Arm: 1,
 };
 
 /** 조립도 전체 회전 (참고 이미지 각도 보정) */
