@@ -86,7 +86,7 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
             ...params,
             label: "",
             type: "smoothstep",
-            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.5 },
+            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 3 },
           },
           eds,
         ),
@@ -135,7 +135,6 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
   }, [workflow.id, setNodes, setEdges]);
 
   return (
-    // <ReactFlowProvider>
     <CanvasLayout width="100%" height="100%" bg="alpha_dark_80">
       <CanvasArea>
         <ToolbarWrapper>
@@ -155,7 +154,7 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           onConnect={onConnect}
           defaultEdgeOptions={{
             type: "smoothstep",
-            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.5 },
+            style: { stroke: "rgba(255,255,255,0.4)", strokeWidth: 3 },
           }}
           deleteKeyCode={["Backspace", "Delete"]}
           onNodeClick={(_, node) => {
@@ -173,9 +172,10 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           onMoveEnd={(_, vp) => setViewport(vp)}
           defaultViewport={viewport}
           fitView
+          fitViewOptions={{ maxZoom: 0.65, padding: 0.15 }}
         >
           <Background gap={18} size={3} color={colors.alpha_light_10} />
-          <MiniMap zoomable pannable />
+          <MiniMap zoomable pannable style={{ width: 120, height: 90 }} />
           <Controls />
         </ReactFlow>
       </CanvasArea>
@@ -190,9 +190,10 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
           setSelectedEdgeId(null);
         }}
+        onSave={handleSave}
+        isSaving={updateMutation.isPending}
       />
     </CanvasLayout>
-    // </ReactFlowProvider>
   );
 }
 

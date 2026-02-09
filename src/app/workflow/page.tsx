@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import styled from "styled-components";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ReactFlowProvider } from "@xyflow/react";
 import WorkflowList from "@/component/workflow/WorkflowList";
 import WorkflowCanvas from "@/component/workflow/WorkflowCanvas";
@@ -14,22 +15,35 @@ import { Div } from "@/styles/base/BaseStyledTags";
 import colors from "@/styles/constant/colors";
 import type { Workflow } from "@/apis/workflow";
 
+function getInitialSelectedId(searchParams: ReturnType<typeof useSearchParams>) {
+  const id = searchParams.get("id");
+  if (id == null) return null;
+  const num = parseInt(id, 10);
+  return Number.isNaN(num) ? null : num;
+}
+
 export default function WorkflowPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: workflows = [], isLoading } = useFetchWorkflowsQuery();
   const createMutation = useCreateWorkflowMutation();
   const deleteMutation = useDeleteWorkflowMutation();
 
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(
-    null,
+    () => getInitialSelectedId(searchParams),
   );
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const selectedWorkflow = workflows.find((w) => w.id === selectedWorkflowId);
 
-  const handleSelect = useCallback((workflow: Workflow) => {
-    setSelectedWorkflowId(workflow.id);
-  }, []);
+  const handleSelect = useCallback(
+    (workflow: Workflow) => {
+      setSelectedWorkflowId(workflow.id);
+      router.replace(`/workflow?id=${workflow.id}`, { scroll: false });
+    },
+    [router],
+  );
 
   const handleOpenCreateModal = useCallback(() => {
     setCreateModalOpen(true);
@@ -44,11 +58,12 @@ export default function WorkflowPage() {
           onSuccess: (data) => {
             setCreateModalOpen(false);
             setSelectedWorkflowId(data.id);
+            router.replace(`/workflow?id=${data.id}`, { scroll: false });
           },
         },
       );
     },
-    [createMutation],
+    [createMutation, router],
   );
 
   const handleDelete = useCallback(
@@ -60,6 +75,7 @@ export default function WorkflowPage() {
           onSuccess: () => {
             if (selectedWorkflowId === workflowId) {
               setSelectedWorkflowId(null);
+              router.replace("/workflow", { scroll: false });
             }
           },
           onSettled: () => {
@@ -68,7 +84,7 @@ export default function WorkflowPage() {
         },
       );
     },
-    [deleteMutation, selectedWorkflowId],
+    [deleteMutation, router, selectedWorkflowId],
   );
 
   return (

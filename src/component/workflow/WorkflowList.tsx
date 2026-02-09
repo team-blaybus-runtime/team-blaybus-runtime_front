@@ -29,14 +29,10 @@ export default function WorkflowList({
   return (
     <ListLayout>
       <ListHeader>
-        <Font typo="title_4" color="alpha_light_90">
+        <Font typo="title_3" color="alpha_light_90">
           워크플로우
         </Font>
-        <CreateButton
-          type="button"
-          onClick={onCreate}
-          disabled={isCreating}
-        >
+        <CreateButton type="button" onClick={onCreate} disabled={isCreating}>
           + 새 워크플로우
         </CreateButton>
       </ListHeader>
@@ -130,11 +126,7 @@ const ListItem = styled(Div)<{ $selected: boolean }>`
   margin: 0 8px 4px;
   border-radius: 10px;
   cursor: pointer;
-  background: ${(p) =>
-    p.$selected ? colors.alpha_light_10 : "transparent"};
-  &:hover {
-    background: ${colors.alpha_light_05};
-  }
+  background: ${(p) => (p.$selected ? colors.alpha_light_10 : "transparent")};
 `;
 
 const ItemTitle = styled.span`

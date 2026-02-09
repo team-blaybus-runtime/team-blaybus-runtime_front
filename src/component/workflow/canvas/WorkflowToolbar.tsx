@@ -1,5 +1,5 @@
 /**
- * 워크플로우 툴바: 노드 추가와 JSON 내보내기/가져오기를 제공합니다.
+ * 워크플로우 툴바: 노드 추가, 저장하기(강조)
  */
 
 import styled from "styled-components";
@@ -20,7 +20,7 @@ export default function WorkflowToolbar({
 }: WorkflowToolbarProps) {
   return (
     <CenterRow
-      gridGap="8px"
+      gridGap="10px"
       p="10px"
       borderRadius="12px"
       border="1px solid"
@@ -30,9 +30,9 @@ export default function WorkflowToolbar({
       <ToolbarButton type="button" onClick={onAddNode}>
         + 노드
       </ToolbarButton>
-      <ToolbarButton type="button" onClick={onSave} disabled={isSaving}>
+      <SaveButton type="button" onClick={onSave} disabled={isSaving}>
         {isSaving ? "저장 중..." : "저장하기"}
-      </ToolbarButton>
+      </SaveButton>
     </CenterRow>
   );
 }
@@ -45,6 +45,23 @@ const ToolbarButton = styled(Button).attrs({ typo: "button_3" })`
   color: ${colors.alpha_light_90};
   &:disabled {
     opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const SaveButton = styled(Button).attrs({ typo: "button_3" })`
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: ${colors.blue_600};
+  color: ${colors.white};
+  font-weight: 600;
+  &:hover:not(:disabled) {
+    background: ${colors.blue_500};
+    filter: brightness(1.05);
+  }
+  &:disabled {
+    opacity: 0.7;
     cursor: not-allowed;
   }
 `;

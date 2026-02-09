@@ -29,6 +29,8 @@ type WorkflowInspectorProps = {
   onUpdateNode: (patch: Partial<WorkflowNodeData>) => void;
   onUpdateEdge: (patch: Partial<Edge>) => void;
   onDeleteEdge: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 };
 
 export default function WorkflowInspector({
@@ -37,6 +39,8 @@ export default function WorkflowInspector({
   onUpdateNode,
   onUpdateEdge,
   onDeleteEdge,
+  onSave,
+  isSaving = false,
 }: WorkflowInspectorProps) {
   const attachments = selectedNode?.data.attachments ?? [];
   const imageAttachments = attachments.filter(
@@ -72,140 +76,156 @@ export default function WorkflowInspector({
     onUpdateNode({ attachments: next });
   };
 
-  return (
-    <Panel bg="neutral_1000" p="20px" gridGap="24px">
-      <Font typo="title_3" color="neutral_0">
-        Inspector
-      </Font>
+  const showSaveInPanel = selectedNode && !selectedEdge && onSave;
 
-      {!selectedNode && !selectedEdge ? (
-        <Font typo="label_s" color="neutral_500">
-          노드/선을 선택하면 편집할 수 있어요.
+  return (
+    <Panel>
+      <ScrollContent>
+        <Font typo="title_3" color="neutral_0">
+          Inspector
         </Font>
-      ) : selectedEdge ? (
-        <Column width="100%" gridGap="14px">
+
+        {!selectedNode && !selectedEdge ? (
           <Font typo="label_s" color="neutral_500">
-            선 라벨
+            노드/선을 선택하면 편집할 수 있어요.
           </Font>
-          <StyledInput
-            value={(selectedEdge.label as string) ?? ""}
-            onChange={(e) => onUpdateEdge({ label: e.target.value })}
-            placeholder="예: 다음 단계"
-          />
-          <DangerButton type="button" onClick={onDeleteEdge}>
-            선 삭제
-          </DangerButton>
-        </Column>
-      ) : (
-        <Column width="100%" gridGap="26px">
-          <Section>
+        ) : selectedEdge ? (
+          <Column width="100%" gridGap="14px">
             <Font typo="label_s" color="neutral_500">
-              제목
+              선 라벨
             </Font>
             <StyledInput
-              value={selectedNode?.data.title ?? ""}
-              onChange={(e) => onUpdateNode({ title: e.target.value })}
-              placeholder="새 노드"
+              value={(selectedEdge.label as string) ?? ""}
+              onChange={(e) => onUpdateEdge({ label: e.target.value })}
+              placeholder="예: 다음 단계"
             />
-          </Section>
+            <DangerButton type="button" onClick={onDeleteEdge}>
+              선 삭제
+            </DangerButton>
+          </Column>
+        ) : (
+          <Column width="100%" gridGap="20px">
+            <Section>
+              <Font typo="label_s" color="neutral_500">
+                제목
+              </Font>
+              <StyledInput
+                value={selectedNode?.data.title ?? ""}
+                onChange={(e) => onUpdateNode({ title: e.target.value })}
+                placeholder="새 노드"
+              />
+            </Section>
 
-          <Section>
-            <Font typo="label_s" color="neutral_500">
-              내용
-            </Font>
-            <StyledTextarea
-              value={selectedNode?.data.content ?? ""}
-              onChange={(e) => onUpdateNode({ content: e.target.value })}
-              placeholder="내용을 입력하세요."
-              rows={7}
-            />
-          </Section>
+            <Section>
+              <Font typo="label_s" color="neutral_500">
+                내용
+              </Font>
+              <StyledTextarea
+                value={selectedNode?.data.content ?? ""}
+                onChange={(e) => onUpdateNode({ content: e.target.value })}
+                placeholder="내용을 입력하세요."
+                rows={7}
+              />
+            </Section>
 
-          <Section>
-            <Font typo="label_s" color="neutral_0">
-              이미지
-            </Font>
-            <CardStack>
-              <Column width="100%" gridGap="15px">
-                {imageAttachments.length > 0 && (
-                  <Card>
-                    <Column width="100%" gridGap="12px">
-                      {imageAttachments.map((a, idx) => (
-                        <AttachmentItem key={`img-${idx}`}>
-                          <ImagePreview src={a.dataUrl} alt={a.name} />
-                          <MetaText>
-                            {a.name}
-                            {typeof a.size === "number"
-                              ? ` (${(a.size / 1024).toFixed(1)}KB)`
-                              : ""}
-                          </MetaText>
-                          <FullWidthButton
-                            type="button"
-                            onClick={() => removeImageAt(idx)}
-                          >
-                            제거
-                          </FullWidthButton>
-                        </AttachmentItem>
-                      ))}
-                    </Column>
-                  </Card>
-                )}
-              </Column>
-              <Card>
-                <AddImageForm
-                  onAdd={(img) => {
-                    const next = [
-                      ...(selectedNode?.data.attachments ?? []),
-                      img,
-                    ];
-                    onUpdateNode({ attachments: next });
-                  }}
-                />
-              </Card>
-            </CardStack>
-          </Section>
+            <Section>
+              <Font typo="label_s" color="neutral_0">
+                이미지
+              </Font>
+              <CardStack>
+                <Column width="100%" gridGap="15px">
+                  {imageAttachments.length > 0 && (
+                    <Card>
+                      <Column width="100%" gridGap="12px">
+                        {imageAttachments.map((a, idx) => (
+                          <AttachmentItem key={`img-${idx}`}>
+                            <ImagePreview src={a.dataUrl} alt={a.name} />
+                            <MetaText>
+                              {a.name}
+                              {typeof a.size === "number"
+                                ? ` (${(a.size / 1024).toFixed(1)}KB)`
+                                : ""}
+                            </MetaText>
+                            <FullWidthButton
+                              type="button"
+                              onClick={() => removeImageAt(idx)}
+                            >
+                              제거
+                            </FullWidthButton>
+                          </AttachmentItem>
+                        ))}
+                      </Column>
+                    </Card>
+                  )}
+                </Column>
+                <Card>
+                  <AddImageForm
+                    onAdd={(img) => {
+                      const next = [
+                        ...(selectedNode?.data.attachments ?? []),
+                        img,
+                      ];
+                      onUpdateNode({ attachments: next });
+                    }}
+                  />
+                </Card>
+              </CardStack>
+            </Section>
 
-          <Section>
-            <Font typo="label_s" color="neutral_500">
-              링크
-            </Font>
-            <CardStack>
-              <Column width="100%" gridGap="15px">
-                {linkAttachments.length > 0 && (
-                  <Card>
-                    <Column width="100%" gridGap="12px">
-                      {linkAttachments.map((a, idx) => (
-                        <LinkItem key={`link-${idx}`}>
-                          <Font typo="caption_s" color="neutral_500" p="14px">
-                            {a.title ? `${a.title} · ` : ""}
-                            {a.url}
-                          </Font>
-                          <FullWidthButton
-                            type="button"
-                            onClick={() => removeLinkAt(idx)}
-                          >
-                            제거
-                          </FullWidthButton>
-                        </LinkItem>
-                      ))}
-                    </Column>
-                  </Card>
-                )}
-              </Column>
-              <Card>
-                <AddLinkForm
-                  onAdd={(link) => {
-                    const next = [
-                      ...(selectedNode?.data.attachments ?? []),
-                      link,
-                    ];
-                    onUpdateNode({ attachments: next });
-                  }}
-                />
-              </Card>
-            </CardStack>
-          </Section>
-        </Column>
+            <Section>
+              <Font typo="label_s" color="neutral_0">
+                링크
+              </Font>
+              <CardStack>
+                <Column width="100%" gridGap="15px">
+                  {linkAttachments.length > 0 && (
+                    <Card>
+                      <Column width="100%" gridGap="12px">
+                        {linkAttachments.map((a, idx) => (
+                          <LinkItem key={`link-${idx}`}>
+                            <Font typo="caption_s" color="neutral_500" p="14px">
+                              {a.title ? `${a.title} · ` : ""}
+                              {a.url}
+                            </Font>
+                            <FullWidthButton
+                              type="button"
+                              onClick={() => removeLinkAt(idx)}
+                            >
+                              제거
+                            </FullWidthButton>
+                          </LinkItem>
+                        ))}
+                      </Column>
+                    </Card>
+                  )}
+                </Column>
+                <Card>
+                  <AddLinkForm
+                    onAdd={(link) => {
+                      const next = [
+                        ...(selectedNode?.data.attachments ?? []),
+                        link,
+                      ];
+                      onUpdateNode({ attachments: next });
+                    }}
+                  />
+                </Card>
+              </CardStack>
+            </Section>
+          </Column>
+        )}
+      </ScrollContent>
+
+      {showSaveInPanel && (
+        <SaveFooter>
+          <InspectorSaveButton
+            type="button"
+            onClick={onSave}
+            disabled={isSaving}
+          >
+            {isSaving ? "저장 중..." : "저장하기"}
+          </InspectorSaveButton>
+        </SaveFooter>
       )}
     </Panel>
   );
@@ -215,9 +235,44 @@ const Panel = styled(Column)`
   width: 360px;
   min-width: 360px;
   max-height: 100vh;
+  overflow: hidden;
+  overscroll-behavior-y: contain;
+`;
+
+const ScrollContent = styled(Column)`
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  overscroll-behavior-y: contain;
+  padding: 20px;
+  gap: 24px;
+`;
+
+const SaveFooter = styled.div`
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-top: 1px solid ${BORDER};
+  background: ${SIDEBAR_BG_BOTTOM};
+`;
+
+const InspectorSaveButton = styled(Button)`
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  border: none;
+  background: ${colors.blue_600};
+  color: ${colors.white};
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    background: ${colors.blue_500};
+    filter: brightness(1.05);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 `;
 
 const Section = styled(Column)`
