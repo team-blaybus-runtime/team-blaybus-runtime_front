@@ -24,7 +24,7 @@ import WorkflowInspector from "./inspectorPanel/WorkflowInspector";
 import WorkflowToolbar from "./canvas/WorkflowToolbar";
 import type { WorkflowNode, WorkflowNodeData } from "@/type/workflowTypes";
 import type { Workflow } from "@/apis/workflow";
-import { flowToNodeInfo, nodeInfoToFlow } from "./utils/workflowConversion";
+import { flowToNodeInfo, nodeInfoToFlow } from "../../utils/workflowConversion";
 import { useUpdateWorkflowMutation } from "@/queries/workflow/useUpdateWorkflowMutation";
 import colors from "@/styles/constant/colors";
 

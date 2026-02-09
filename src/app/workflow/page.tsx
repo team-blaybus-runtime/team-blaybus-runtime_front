@@ -7,7 +7,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import WorkflowList from "@/component/workflow/WorkflowList";
 import WorkflowCanvas from "@/component/workflow/WorkflowCanvas";
 import CreateWorkflowModal from "@/component/workflow/CreateWorkflowModal";
-import { getDefaultNodeInfo } from "@/component/workflow/utils/workflowConversion";
+import { getDefaultNodeInfo } from "@/utils/workflowConversion";
 import { useFetchWorkflowsQuery } from "@/queries/workflow/useFetchWorkflowsQuery";
 import { useCreateWorkflowMutation } from "@/queries/workflow/useCreateWorkflowMutation";
 import { useDeleteWorkflowMutation } from "@/queries/workflow/useDeleteWorkflowMutation";
@@ -15,7 +15,9 @@ import { Div } from "@/styles/base/BaseStyledTags";
 import colors from "@/styles/constant/colors";
 import type { Workflow } from "@/apis/workflow";
 
-function getInitialSelectedId(searchParams: ReturnType<typeof useSearchParams>) {
+function getInitialSelectedId(
+  searchParams: ReturnType<typeof useSearchParams>,
+) {
   const id = searchParams.get("id");
   if (id == null) return null;
   const num = parseInt(id, 10);
