@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -24,7 +24,7 @@ function getInitialSelectedId(
   return Number.isNaN(num) ? null : num;
 }
 
-export default function WorkflowPage() {
+function WorkflowPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: workflows = [], isLoading } = useFetchWorkflowsQuery();
@@ -122,6 +122,31 @@ export default function WorkflowPage() {
         </ReactFlowProvider>
       </PageLayout>
     </ScrollWrapper>
+  );
+}
+
+export default function WorkflowPage() {
+  return (
+    <Suspense fallback={<WorkflowPageFallback />}>
+      <WorkflowPageContent />
+    </Suspense>
+  );
+}
+
+function WorkflowPageFallback() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        color: colors.alpha_light_50,
+        fontSize: 14,
+      }}
+    >
+      로딩 중...
+    </div>
   );
 }
 
