@@ -10,7 +10,7 @@ import styled from "styled-components";
 import colors from "@/styles/constant/colors";
 import { Button, Input } from "@/styles/base/BaseStyledTags";
 import type { Attachment } from "@/type/workflowTypes";
-import { compressImageFile } from "@/component/workflow/utils/imageCompression";
+import { compressImageFile } from "@/utils/imageCompression";
 import { Font } from "@/styles/typo/typography";
 import { CenterColumn } from "@/styles/base/BaseComponents";
 
