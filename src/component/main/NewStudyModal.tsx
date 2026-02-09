@@ -104,7 +104,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
     if (!selectedDomain) return;
     const displayName = toDisplayName(selectedDomain);
     try {
-      await saveUserStudyHistory({
+      const created = await saveUserStudyHistory({
         productType: selectedDomain,
         title: `${displayName} 구조 학습`,
         viewInfo: {
@@ -121,11 +121,13 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
         },
       });
       onCreated?.();
+      onClose();
+      router.push(`/study/${created.userStudyHisId}`);
+      return;
     } catch {
       // API 실패해도 페이지 이동은 허용
     }
     onClose();
-    router.push(`/study/${toObjectId(selectedDomain)}`);
   };
 
   return (
