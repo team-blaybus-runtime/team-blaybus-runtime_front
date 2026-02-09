@@ -15,6 +15,7 @@ import {
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/study";
+import { StudyTab } from "@/component/study/StudyTabBar";
 
 /** GLB 로드 실패 시 해당 파트만 건너뛰는 에러 바운더리 */
 class PartErrorBoundary extends Component<
@@ -42,6 +43,7 @@ class PartErrorBoundary extends Component<
 
 interface AssemblyViewerProps {
   components: StudyComponent[];
+  activeTab?: StudyTab;
 }
 
 interface PartData {
@@ -205,7 +207,7 @@ function PartTransformHandler({
   );
 }
 
-export default function AssemblyViewer({ components }: AssemblyViewerProps) {
+export default function AssemblyViewer({ components, activeTab }: AssemblyViewerProps) {
   const groupRef = useRef<Group>(null);
   const { explodeLevel, setIsLoading, hiddenParts } = useModelStore();
   const { activeTool, transformMode, selectedPartIndex, setSelectedPartIndex, resetTransformFlag } = useEditStore();
@@ -363,8 +365,12 @@ export default function AssemblyViewer({ components }: AssemblyViewerProps) {
               <ComponentModel
                 glbUrl={comp.glbUrl}
                 index={i}
-                isSelected={selectedPartIndex === i}
-                isVisible={!hiddenParts.has(i)}
+                isSelected={activeTab !== "단일 부품" && selectedPartIndex === i}
+                isVisible={
+                  activeTab === "단일 부품"
+                    ? selectedPartIndex === null || selectedPartIndex === i
+                    : !hiddenParts.has(i)
+                }
                 onSelect={handlePartSelect}
                 registerRef={registerRef}
               />

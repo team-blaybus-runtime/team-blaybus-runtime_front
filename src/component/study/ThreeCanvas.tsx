@@ -19,6 +19,7 @@ import { useModelStore } from "@/store/useModelStore";
 import { useEditStore } from "@/store/useEditStore";
 import { useSimulatorStore } from "@/store/useSimulatorStore";
 import { StudyComponent, ViewInfo } from "@/apis/study";
+import { StudyTab } from "@/component/study/StudyTabBar";
 
 function LoadingFallback() {
   return (
@@ -179,9 +180,12 @@ function BoundsContent({
 interface ThreeCanvasProps {
   components: StudyComponent[];
   viewInfo?: ViewInfo;
+  productType?: string;
+  activeTab?: StudyTab;
+  assemblyInstances?: any[];
 }
 
-export default function ThreeCanvas({ components, viewInfo }: ThreeCanvasProps) {
+export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCanvasProps) {
   const { bloom, ao, lighting } = useRenderStore();
   const { isTransforming, explodeLevel, setExplodeLevel } = useModelStore();
   const activeTool = useEditStore((s) => s.activeTool);
@@ -235,7 +239,7 @@ export default function ThreeCanvas({ components, viewInfo }: ThreeCanvasProps) 
           {components.length > 0 && (
             <Bounds fit={!viewInfo?.camera} clip margin={1.5}>
               <BoundsContent boundsApi={boundsApiRef}>
-                <AssemblyViewer components={components} />
+                <AssemblyViewer components={components} activeTab={activeTab} />
               </BoundsContent>
             </Bounds>
           )}

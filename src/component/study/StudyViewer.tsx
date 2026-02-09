@@ -66,7 +66,7 @@ const StudyViewer = ({
 
   return (
     <ViewerContainer ref={viewerRef}>
-      <ThreeCanvas components={components} viewInfo={viewInfo} />
+      <ThreeCanvas components={components} viewInfo={viewInfo} activeTab={activeTab} />
 
       {/* 단일 부품 탭: 오른쪽 모달 */}
       {activeTab === "단일 부품" && (
