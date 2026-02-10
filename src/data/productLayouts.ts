@@ -203,3 +203,26 @@ export const EXPLODE_OFFSET_BY_PRODUCT: Record<string, number> = {
 };
 
 export const INSTANCE_SCALE_BY_PRODUCT: Record<string, number> = {};
+
+/* ─── 조립도 전체 회전 ─── */
+
+const normalizeKey = (value: string): string =>
+  value.trim().toLowerCase().replace(/[\s-_]/g, "");
+
+const ASSEMBLY_GROUP_ROTATION: Record<string, [number, number, number]> = {
+  suspension: [0, 0, -0.6],
+  leafspring: [0, 0, -0.45],
+  v4engine: [-0.3, 0, 0],
+};
+
+export function getAssemblyGroupRotation(
+  productType: string,
+): [number, number, number] | undefined {
+  const direct = ASSEMBLY_GROUP_ROTATION[productType];
+  if (direct) return direct;
+  const target = normalizeKey(productType);
+  const key = Object.keys(ASSEMBLY_GROUP_ROTATION).find(
+    (k) => normalizeKey(k) === target,
+  );
+  return key ? ASSEMBLY_GROUP_ROTATION[key] : undefined;
+}

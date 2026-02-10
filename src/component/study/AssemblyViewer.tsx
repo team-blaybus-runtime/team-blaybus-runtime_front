@@ -24,7 +24,7 @@ import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/study";
 import { StudyTab } from "@/component/study/StudyTabBar";
-import { getAssemblyGroupRotation } from "@/data/assemblyLayouts";
+import { getAssemblyGroupRotation } from "@/data/productLayouts";
 import type { AssemblyInstance } from "@/data/assemblyInstances";
 import { getExplodeOffset } from "@/data/assemblyInstances";
 
@@ -318,7 +318,7 @@ export default function AssemblyViewer({
     }));
   const explodeOffset = productType ? getExplodeOffset(productType) : 0.2;
 
-  // explode 데이터 초기화 (assemblyLayout/instances 있으면 해당 위치 적용)
+  // explode 데이터 초기화
   useEffect(() => {
     isInitialized.current = false;
     if (!groupRef.current) return;
@@ -336,8 +336,6 @@ export default function AssemblyViewer({
       const instanceCount = renderInstances.length;
       group.children.forEach((child, i) => {
         const instance = renderInstances[i];
-        const comp = instance?.component;
-        const layout = comp?.assemblyLayout;
 
         let originalPos: Vector3;
         let direction: Vector3;
@@ -379,43 +377,6 @@ export default function AssemblyViewer({
               instance.transform.rotation[2],
             );
           }
-        } else if (layout) {
-          const childBox = new Box3().setFromObject(child);
-          const childSize = new Vector3();
-          childBox.getSize(childSize);
-          originalPos = new Vector3(
-            layout.assembled[0],
-            layout.assembled[1],
-            layout.assembled[2],
-          );
-          layoutPosition = new Vector3(
-            layout.exploded[0],
-            layout.exploded[1],
-            layout.exploded[2],
-          );
-          direction = layoutPosition.clone().sub(originalPos);
-          const deltaLength = direction.length();
-          const isSuspension =
-            productType?.toLowerCase().replace(/[\s-_]/g, "") === "suspension" ||
-            productType?.replace(/[\s-_]/g, "") === "서스펜션";
-          const minExplode = Math.max(
-            childSize.length() * (isSuspension ? 2.5 : 0.6),
-            isSuspension ? 1.0 : 0.2,
-          );
-          if (deltaLength < 0.001) {
-            direction = new Vector3(0, 1, 0);
-            layoutPosition = originalPos
-              .clone()
-              .add(direction.clone().multiplyScalar(minExplode));
-          } else if (deltaLength < minExplode) {
-            direction.normalize();
-            layoutPosition = originalPos
-              .clone()
-              .add(direction.clone().multiplyScalar(minExplode));
-          } else {
-            direction.normalize();
-          }
-          child.position.copy(originalPos);
         } else {
           const childBox = new Box3().setFromObject(child);
           const childCenter = new Vector3();

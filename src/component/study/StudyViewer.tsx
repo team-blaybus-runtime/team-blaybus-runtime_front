@@ -14,11 +14,6 @@ import SimulatorSettingsPanel, {
 } from "@/component/study/SimulatorSettingsPanel";
 import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineering";
 import { ViewInfo } from "@/apis/study";
-import {
-  getPartAssemblyLayout,
-  getAssemblyLayoutScale,
-  getAssemblyExplodeScale,
-} from "@/data/assemblyLayouts";
 import { getAssemblyInstances } from "@/data/assemblyInstances";
 import { StudyTab } from "@/component/study/StudyTabBar";
 import { useEditStore } from "@/store/useEditStore";
@@ -72,36 +67,14 @@ const StudyViewer = ({
       .catch(() => { });
   }, [productType]);
 
-  // API 응답 → 3D 뷰어용 컴포넌트 변환 (조립도 레이아웃 있으면 매칭)
+  // API 응답 → 3D 뷰어용 컴포넌트 변환
   const components = useMemo(() => {
-    const scale = getAssemblyLayoutScale(productType);
-    const explodeScale = getAssemblyExplodeScale(productType);
-    return parts.map((part, i) => {
-      const layout = getPartAssemblyLayout(productType, part.partName);
-      return {
-        componentId: `part-${i}`,
-        componentName: part.partName,
-        glbUrl: part.assetUrl,
-        ...(layout && {
-          assemblyLayout: {
-            assembled: layout.assembled.map((v) => v * scale) as [
-              number,
-              number,
-              number,
-            ],
-            exploded: ([
-              layout.assembled[0] * scale +
-              (layout.exploded[0] - layout.assembled[0]) * explodeScale,
-              layout.assembled[1] * scale +
-              (layout.exploded[1] - layout.assembled[1]) * explodeScale,
-              layout.assembled[2] * scale +
-              (layout.exploded[2] - layout.assembled[2]) * explodeScale,
-            ] as [number, number, number]),
-          },
-        }),
-      };
-    });
-  }, [parts, productType]);
+    return parts.map((part, i) => ({
+      componentId: `part-${i}`,
+      componentName: part.partName,
+      glbUrl: part.assetUrl,
+    }));
+  }, [parts]);
 
   const assemblyInstances = useMemo(() => {
     return getAssemblyInstances(productType, components);

@@ -34,20 +34,12 @@ export interface UserStudyHistory {
   productImageUrl: string;
 }
 
-/** 부품별 조립도용 조립/분해 위치 (제품 레이아웃 config에서 매칭) */
-export interface AssemblyLayoutPart {
-  assembled: [number, number, number];
-  exploded: [number, number, number];
-}
-
 export interface StudyComponent {
   componentId: string;
   componentName: string;
   glbUrl: string;
   thumbnailUrl?: string;
   description?: string;
-  /** 조립도 전용: 이 부품의 배치/분해 설정 (있으면 조립도 슬라이더에 반영) */
-  assemblyLayout?: AssemblyLayoutPart;
 }
 
 // ===== API 요청 타입 =====
