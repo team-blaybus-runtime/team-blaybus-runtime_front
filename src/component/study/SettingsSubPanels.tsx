@@ -105,9 +105,9 @@ export function MeshListPanel({ components }: MeshListPanelProps) {
 
       <MeshList>
         {components.map((comp, i) => {
-          const hidden = hiddenParts.has(i);
+          const hidden = hiddenParts.has(comp.componentId);
           return (
-            <MeshItem key={comp.componentId} onClick={() => togglePartVisibility(i)}>
+            <MeshItem key={comp.componentId} onClick={() => togglePartVisibility(comp.componentId)}>
               <EyeIcon visible={!hidden} />
               <Font typo="caption_m" color={hidden ? colors.neutral_700 : colors.neutral_0}>
                 {comp.componentName}
