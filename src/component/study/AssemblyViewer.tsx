@@ -539,12 +539,8 @@ export default function AssemblyViewer({
               <ComponentModel
                 glbUrl={instance.component.glbUrl}
                 index={i}
-                isSelected={activeTab !== "단일 부품" && selectedPartIndex === i}
-                isVisible={
-                  activeTab === "단일 부품"
-                    ? selectedPartIndex === null || selectedPartIndex === i
-                    : !hiddenParts.has(instance.component.componentId)
-                }
+                isSelected={selectedPartIndex === i}
+                isVisible={!hiddenParts.has(instance.component.componentId)}
                 onSelect={handlePartSelect}
                 registerRef={registerRef}
               />
