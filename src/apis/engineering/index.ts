@@ -4,6 +4,7 @@ import { Api } from "@/apis/baseApi";
 const HIDDEN_PARTS: Record<string, string[]> = {
   v4engine: ["conrodbolt"],
   machinevice: ["guiderail", "pressuresleeve", "visebody"],
+  suspension: ["locknut"],
 };
 
 const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");

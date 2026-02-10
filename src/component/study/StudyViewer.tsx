@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, memo } from "react";
+import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import type { RefObject } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
-import { Column } from "@/styles/base/BaseComponents";
+import { Column, Row } from "@/styles/base/BaseComponents";
+import colors from "@/styles/constant/colors";
 import StudyContentModal from "@/component/study/StudyContentModal";
 import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
@@ -53,11 +54,9 @@ const StudyViewer = ({
     }
   }, [activeTab, resetEditState]);
 
-  // 조립도 탭 기본은 조립 상태(0)로 시작 (제품/부품 변경 시에도 리셋)
+  // 탭 변경 시 분해도 초기화 (조립도 진입/이탈 모두)
   useEffect(() => {
-    if (activeTab === "조립도") {
-      setExplodeLevel(0);
-    }
+    setExplodeLevel(0);
   }, [activeTab, productType, parts.length, setExplodeLevel]);
 
   useEffect(() => {
@@ -126,9 +125,56 @@ const StudyViewer = ({
           <SimulatorControls />
         </OverlayBottom>
       )}
+
+      {/* 우측 하단 조작 도움말 */}
+      <OverlayBottomRight>
+        <ViewerHelpTooltip />
+      </OverlayBottomRight>
     </ViewerContainer>
   );
 };
+
+function ViewerHelpTooltip() {
+  const [open, setOpen] = useState(false);
+  const toggle = useCallback(() => setOpen((v) => !v), []);
+
+  return (
+    <HelpWrapper>
+      {open && (
+        <HelpPanel>
+          <HelpRow>
+            <Kbd>LMB</Kbd><span>드래그</span>
+            <HelpDesc>시야 회전</HelpDesc>
+          </HelpRow>
+          <HelpRow>
+            <Kbd>Shift</Kbd><span>+</span><Kbd>LMB</Kbd><span>드래그</span>
+            <HelpDesc>위치 이동 (팬)</HelpDesc>
+          </HelpRow>
+          <HelpRow>
+            <Kbd>RMB</Kbd><span>드래그</span>
+            <HelpDesc>위치 이동 (팬)</HelpDesc>
+          </HelpRow>
+          <HelpRow>
+            <Kbd>MMB</Kbd><span>드래그</span>
+            <HelpDesc>시야 회전</HelpDesc>
+          </HelpRow>
+          <HelpDivider />
+          <HelpRow>
+            <Kbd>Wheel</Kbd>
+            <HelpDesc>줌 인 / 아웃</HelpDesc>
+          </HelpRow>
+          <HelpRow>
+            <Kbd>Shift</Kbd><span>+</span><Kbd>Wheel</Kbd>
+            <HelpDesc>분해도 조절</HelpDesc>
+          </HelpRow>
+        </HelpPanel>
+      )}
+      <HelpButton onClick={toggle} title="조작법 도움말">
+        ?
+      </HelpButton>
+    </HelpWrapper>
+  );
+}
 
 export default memo(StudyViewer);
 
@@ -181,4 +227,96 @@ const OverlayBottom = styled(Column)`
   & > * {
     pointer-events: auto;
   }
+`;
+
+const OverlayBottomRight = styled(Column)`
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  pointer-events: none;
+  z-index: 1;
+  align-items: flex-end;
+
+  & > * {
+    pointer-events: auto;
+  }
+`;
+
+/* ─── Help Tooltip ─── */
+
+const HelpWrapper = styled(Column)`
+  align-items: flex-end;
+  gap: 8px;
+`;
+
+const HelpButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid ${colors.neutral_700};
+  background: ${colors.neutral_1000};
+  color: ${colors.neutral_400};
+  font-family: "Pretendard", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    opacity: 1;
+    border-color: ${colors.neutral_500};
+    color: ${colors.neutral_0};
+  }
+`;
+
+const HelpPanel = styled(Column)`
+  background: ${colors.neutral_1000};
+  border: 1px solid ${colors.neutral_800};
+  border-radius: 12px;
+  padding: 14px 16px;
+  gap: 8px;
+  min-width: 240px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+`;
+
+const HelpRow = styled(Row)`
+  align-items: center;
+  gap: 6px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 12px;
+  color: ${colors.neutral_500};
+  white-space: nowrap;
+`;
+
+const HelpDesc = styled.span`
+  margin-left: auto;
+  color: ${colors.neutral_300};
+  font-weight: 500;
+`;
+
+const Kbd = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  min-width: 22px;
+  height: 20px;
+  background: ${colors.neutral_900};
+  border: 1px solid ${colors.neutral_700};
+  border-radius: 4px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: ${colors.neutral_200};
+  line-height: 1;
+`;
+
+const HelpDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: ${colors.neutral_800};
 `;
