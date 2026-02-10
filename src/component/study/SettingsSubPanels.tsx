@@ -7,6 +7,7 @@ import { Font } from "@/styles/typo/typography";
 import colors from "@/styles/constant/colors";
 import { useRenderStore } from "@/store/useRenderStore";
 import { useModelStore } from "@/store/useModelStore";
+import { useEditStore } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/study";
 
 /* ─── 쉐이더 설정 ─── */
@@ -95,6 +96,7 @@ interface MeshListPanelProps {
 export function MeshListPanel({ components }: MeshListPanelProps) {
   const { hiddenParts, togglePartVisibility, setAllPartsVisible } =
     useModelStore();
+  const { selectedComponentId, setSelectedComponentId } = useEditStore();
 
   return (
     <PanelContainer>
@@ -104,12 +106,35 @@ export function MeshListPanel({ components }: MeshListPanelProps) {
       </Row>
 
       <MeshList>
-        {components.map((comp, i) => {
+        {components.map((comp) => {
           const hidden = hiddenParts.has(comp.componentId);
+          const selected = selectedComponentId === comp.componentId;
           return (
-            <MeshItem key={comp.componentId} onClick={() => togglePartVisibility(comp.componentId)}>
-              <EyeIcon visible={!hidden} />
-              <Font typo="caption_m" color={hidden ? colors.neutral_700 : colors.neutral_0}>
+            <MeshItem
+              key={comp.componentId}
+              $selected={selected}
+              onClick={() =>
+                setSelectedComponentId(selected ? null : comp.componentId)
+              }
+            >
+              <EyeIconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePartVisibility(comp.componentId);
+                }}
+              >
+                <EyeIcon visible={!hidden} />
+              </EyeIconButton>
+              <Font
+                typo="caption_m"
+                color={
+                  hidden
+                    ? colors.neutral_700
+                    : selected
+                      ? colors.blue_400
+                      : colors.neutral_0
+                }
+              >
                 {comp.componentName}
               </Font>
             </MeshItem>
@@ -336,15 +361,34 @@ const MeshList = styled(Column)`
   width: 100%;
 `;
 
-const MeshItem = styled(Row)`
+const MeshItem = styled(Row)<{ $selected?: boolean }>`
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
   border-radius: 6px;
   cursor: pointer;
+  background-color: ${({ $selected }) =>
+    $selected ? "rgba(59, 130, 246, 0.15)" : "transparent"};
 
   &:hover {
-    background-color: ${colors.neutral_900};
+    background-color: ${({ $selected }) =>
+      $selected ? "rgba(59, 130, 246, 0.25)" : colors.neutral_900};
+  }
+`;
+
+const EyeIconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: ${colors.neutral_800};
   }
 `;
 

@@ -17,7 +17,7 @@ export default function StudyContentModal({
   objectName,
   parts,
 }: StudyContentModalProps) {
-  const { selectedPartIndex, setSelectedPartIndex } = useEditStore();
+  const { selectedComponentId, setSelectedComponentId } = useEditStore();
 
   return (
     <ModalContainer>
@@ -28,21 +28,27 @@ export default function StudyContentModal({
       </ModalHeader>
 
       <ThumbnailGrid>
-        {parts.map((part, i) => (
-          <ThumbnailCard
-            key={part.partName}
-            $selected={selectedPartIndex === i}
-            onClick={() => setSelectedPartIndex(selectedPartIndex === i ? null : i)}
-          >
-            <PartImage
-              src={part.imageUrl}
-              alt={part.partName}
-              width={80}
-              height={80}
-              unoptimized
-            />
-          </ThumbnailCard>
-        ))}
+        {parts.map((part, i) => {
+          const componentId = `part-${i}`;
+          const selected = selectedComponentId === componentId;
+          return (
+            <ThumbnailCard
+              key={part.partName}
+              $selected={selected}
+              onClick={() =>
+                setSelectedComponentId(selected ? null : componentId)
+              }
+            >
+              <PartImage
+                src={part.imageUrl}
+                alt={part.partName}
+                width={80}
+                height={80}
+                unoptimized
+              />
+            </ThumbnailCard>
+          );
+        })}
       </ThumbnailGrid>
 
       <Divider />

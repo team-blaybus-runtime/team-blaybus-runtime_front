@@ -68,7 +68,7 @@ const V4_ENGINE_LAYOUT: LayoutMap = {
     { position: [0.04, 0.05, 0.1435], rotation: [0, 0, Math.PI / 30], explodedPosition: [0, 0.15, 0.25] },
     { position: [-0.046, 0.05, 0.031], rotation: [0, 0, -Math.PI / 30], explodedPosition: [0, 0.15, 0.1] },
     { position: [-0.046, 0.05, -0.0835], rotation: [0, 0, -Math.PI / 30], explodedPosition: [0, 0.15, -0.1] },
-    { position: [0.04, 0.05, -0.1985], rotation: [0, 0, Math.PI / 30], explodedPosition: [0, 0.15, -0.25] },
+    // { position: [0.04, 0.05, -0.1985], rotation: [0, 0, Math.PI / 30], explodedPosition: [0, 0.15, -0.25] },
   ],
   connectingrod: [
     { position: [0.019, 0.25, 0.1435], rotation: [0, 0, Math.PI / 30], explodedPosition: [0, 0.3, 0.25] },

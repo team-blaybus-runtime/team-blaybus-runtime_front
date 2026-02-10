@@ -25,6 +25,9 @@ interface EditState {
   selectedPartIndex: number | null;
   setSelectedPartIndex: (index: number | null) => void;
 
+  selectedComponentId: string | null;
+  setSelectedComponentId: (id: string | null) => void;
+
   // 오브젝트 변환 히스토리 (undo/redo)
   history: HistoryEntry[];
   future: HistoryEntry[];
@@ -74,6 +77,9 @@ export const useEditStore = create<EditState>((set, get) => ({
   selectedPartIndex: null,
   setSelectedPartIndex: (index) => set({ selectedPartIndex: index }),
 
+  selectedComponentId: null,
+  setSelectedComponentId: (id) => set({ selectedComponentId: id, selectedPartIndex: null }),
+
   history: [],
   future: [],
   pushHistory: (entry) =>
@@ -113,6 +119,7 @@ export const useEditStore = create<EditState>((set, get) => ({
       activeTool: "select",
       transformMode: "translate",
       selectedPartIndex: null,
+      selectedComponentId: null,
       zoomAction: null,
       focusAction: false,
       history: [],
