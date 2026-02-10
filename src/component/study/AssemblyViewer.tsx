@@ -18,6 +18,7 @@ import {
   Mesh,
   MeshStandardMaterial,
   Color,
+  Quaternion,
 } from "three";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
@@ -365,7 +366,10 @@ export default function AssemblyViewer({
             direction.normalize();
           }
           child.position.copy(originalPos);
-          if (instance.transform.rotation) {
+          if (instance.transform.quaternion) {
+            const q = instance.transform.quaternion;
+            child.quaternion.set(q[0], q[1], q[2], q[3]).normalize();
+          } else if (instance.transform.rotation) {
             child.rotation.set(
               instance.transform.rotation[0],
               instance.transform.rotation[1],

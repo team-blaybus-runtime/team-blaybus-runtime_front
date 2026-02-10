@@ -5,6 +5,8 @@ export type AssemblyRotation = [number, number, number];
 export interface AssemblyTransform {
   position: AssemblyPosition;
   rotation?: AssemblyRotation;
+  /** Three.js 좌표계 기준 쿼터니언 [x, y, z, w] — rotation보다 우선 적용 */
+  quaternion?: [number, number, number, number];
   explodedPosition?: AssemblyPosition;
 }
 
@@ -191,22 +193,41 @@ const V4_ENGINE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> 
   ],
 };
 
+// 블렌더(Z-up) → Three.js(Y-up)
+// position: [x, y, z] → [x, z, -y]
+// quaternion: blender [w,x,y,z] → threejs [x, z, -y, w]
 const ROBOT_GRIPPER_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
-  // 조립도2 정면 뷰 기준 배치
-  baseplate: { position: [0, 0.1, 0], rotation: [0, 0, 0] },
-  basemountingbracket: { position: [0, 0.12, 0], rotation: [0, 0, 0] },
-  basegear: { position: [0, 0.08, 0], rotation: [0, 0, 0] },
-  gearlink1: { position: [-0.055, 0.025, 0], rotation: [0, 0, 0] }, // 빨강 기어
-  gearlink2: { position: [0.055, 0.025, 0], rotation: [0, 0, 0] }, // 노랑 기어
+  baseplate: { position: [0, -0.0025, 0], quaternion: [0, 0.701, 0.701, 0] },
+  basemountingbracket: { position: [-0.01, 0.003, -0.006], quaternion: [0.014, -0.716, -0.014, 0.698] },
+  basegear: { position: [-0.007, -0.005, 0.018], quaternion: [0.076, 0.075, 0.708, 0.698] },
+  gearlink1: { position: [-0.014, 0, 0.038], quaternion: [-0.707, 0.680, -0.146, 0.129] },
+  gearlink2: { position: [0.014, 0.003, 0.038], quaternion: [-0.635, 0.331, -0.337, -0.627] },
+  // 대칭 쌍 (x 부호 반전)
   link: [
-    { position: [-0.02, -0.02, 0], rotation: [0, 0, 0] },
-    { position: [0.02, -0.02, 0], rotation: [0, 0, 0] },
+    { position: [0.012, 0, 0.072], quaternion: [0.146, 0.155, 0.669, 0.712] },
+    { position: [-0.012, 0, 0.072], quaternion: [-0.146, -0.155, 0.669, 0.712] },
   ],
   gripper: [
-    { position: [-0.03, -0.12, 0], rotation: [0, 0, 0] },
-    { position: [0.03, -0.12, 0], rotation: [0, Math.PI, 0] },
+    { position: [-0.014, -0.003, 0.083], quaternion: [0.564, -0.408, 0.377, 0.611] },
+    { position: [0.014, -0.003, 0.083], quaternion: [-0.395, -0.584, -0.591, 0.392] },
   ],
-  pin: { position: [0, 0, 0], rotation: [0, 0, 0] },
+  pin: [
+    // gripper 영역 (z ≈ 0.085)
+    { position: [0.018, -0.001, 0.085], quaternion: [0, 0, 0.701, 0.713] },
+    { position: [-0.018, -0.001, 0.085], quaternion: [0, 0, 0.701, 0.713] },
+    // link 영역 (z ≈ 0.065)
+    { position: [0.027, -0.001, 0.065], quaternion: [0, 0, 0.701, 0.713] },
+    { position: [-0.027, -0.001, 0.065], quaternion: [0, 0, 0.701, 0.713] },
+    // 중간 영역 (z ≈ 0.057)
+    { position: [0.005, 0, 0.057], quaternion: [0, 0, 0.701, 0.713] },
+    { position: [-0.005, 0, 0.057], quaternion: [0, 0, 0.701, 0.713] },
+    // gear link 영역 (z ≈ 0.038)
+    { position: [0.014, -0.002, 0.038], quaternion: [0, 0, 0.701, 0.713] },
+    { position: [-0.014, -0.002, 0.038], quaternion: [0, 0, 0.701, 0.713] },
+    // base 영역 (z ≈ 0.003)
+    { position: [0.006, -0.001, 0.003], quaternion: [0, 0, 0.701, 0.713] },
+    { position: [-0.006, -0.001, 0.003], quaternion: [0, 0, 0.701, 0.713] },
+  ],
 };
 
 const ROBOT_ARM_LAYOUT: Record<string, AssemblyTransform> = {
@@ -234,17 +255,23 @@ const LEAF_SPRING_LAYOUT: Record<string, AssemblyTransform> = {
   supportchassisrigid: { position: [0, 0, 0] },
 };
 
-const MACHINE_VICE_LAYOUT: Record<string, AssemblyTransform> = {
+// 블렌더(Z-up) → Three.js(Y-up)
+// position: [x, y, z] → [x, z, -y]
+// quaternion: blender [w,x,y,z] → threejs [x, z, -y, w]
+const MACHINE_VICE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   visebody: { position: [0, 0, 0] },
-  baseplate: { position: [0, -0.08, 0] },
-  fixedjaw: { position: [0, 0.1, 0.2] },
-  movablejaw: { position: [0, 0.1, -0.2] },
-  trapezoidalspindle: { position: [0, 0.05, -0.4] },
-  guidehousing: { position: [0, 0.02, 0] },
-  guiderail: { position: [0, 0.02, -0.1] },
-  spindlehousing: { position: [0, 0.03, -0.15] },
-  clampjaw: { position: [0, 0.12, 0.25] },
-  pressuresleeve: { position: [0, 0.06, -0.3] },
+  guidehousing: { position: [-0.002, 0, 0], quaternion: [0.705507, 0, 0, 0.708703] },
+  fixedjaw: { position: [0, 0, 0] },
+  movablejaw: { position: [0.0822, 0.0349, 0.0636], quaternion: [0, 0.711771, 0, 0.702411] },
+  spindlehousing: { position: [0.1374, 0, 0.0448], quaternion: [0, 0.70116, 0, 0.713004] },
+  clampjaw: [
+    { position: [0.0379, 0.0345, -0.0112], quaternion: [0, -0.701184, 0, 0.71298] },
+    { position: [-0.011, 0.0343, 0.0656], quaternion: [0, 0.705922, 0, 0.708289] },
+  ],
+  guiderail: { position: [0, 0, 0] },
+  trapezoidalspindle: { position: [0.215, 0.0437, 0.0286], quaternion: [-0.01357, 0.701748, -0.011102, 0.712209] },
+  baseplate: { position: [0.1577, 0, 0.0648], quaternion: [0.00292, -0.708697, 0.705501, 0.002934] },
+  pressuresleeve: { position: [0, 0, 0] },
 };
 
 const PRODUCT_LAYOUTS: Record<
@@ -328,11 +355,14 @@ const NAME_ALIASES: Record<string, Record<string, string>> = {
   robotgripper: {
     baseplate: "baseplate",
     basemountingbracket: "basemountingbracket",
+    mountingbracket: "basemountingbracket",
     basegear: "basegear",
     gearlink1: "gearlink1",
     gearlink2: "gearlink2",
     linkarm: "link",
+    link: "link",
     gripperjaw: "gripper",
+    gripper: "gripper",
     pin: "pin",
   },
   robotarm: {
@@ -360,15 +390,24 @@ const NAME_ALIASES: Record<string, Record<string, string>> = {
   machinevice: {
     visebody: "visebody",
     baseplate: "baseplate",
+    grundplatte: "baseplate",
     fixedjaw: "fixedjaw",
+    festebacke: "fixedjaw",
     movablejaw: "movablejaw",
+    losebacke: "movablejaw",
     trapezoidalspindle: "trapezoidalspindle",
+    trapezspindel: "trapezoidalspindle",
     guidehousing: "guidehousing",
+    fuhrung: "guidehousing",
     guiderail: "guiderail",
+    fuhrungschiene: "guiderail",
     spindlehousing: "spindlehousing",
+    spindelsockel: "spindlehousing",
     clampingjaw: "clampjaw",
     clampjaw: "clampjaw",
+    spannbacke: "clampjaw",
     pressuresleeve: "pressuresleeve",
+    druckhulse: "pressuresleeve",
   },
 };
 
