@@ -67,8 +67,8 @@ interface PartData {
   layoutPosition?: Vector3;
 }
 
-// 선택 하이라이트 — 강하게
-const HIGHLIGHT_EMISSIVE = new Color("#3399FF");
+// 선택 하이라이트
+const HIGHLIGHT_EMISSIVE = new Color("#66BBFF");
 const DEFAULT_EMISSIVE = new Color("#000000");
 
 const S3_HOST =
@@ -136,7 +136,7 @@ function ComponentModel({
         child.material.emissive = isSelected
           ? HIGHLIGHT_EMISSIVE
           : DEFAULT_EMISSIVE;
-        child.material.emissiveIntensity = isSelected ? 1.0 : 0;
+        child.material.emissiveIntensity = isSelected ? 1.5 : 0;
       }
     });
   }, [isSelected, centeredScene]);
@@ -164,7 +164,7 @@ function ComponentModel({
         <group
           ref={innerRefCallback}
           onClick={handleClick}
-          scale={isSelected ? 1.03 : 1}
+          scale={isSelected ? 1.05 : 1}
         >
           <primitive object={centeredScene} />
         </group>
@@ -250,11 +250,14 @@ export default function AssemblyViewer({
     transformMode,
     selectedPartIndex,
     setSelectedPartIndex,
+    selectedComponentId,
+    setSelectedComponentId,
     resetTransformFlag,
   } = useEditStore();
   const partsRef = useRef<PartData[]>([]);
   const centerRef = useRef<Vector3>(new Vector3());
   const isInitialized = useRef(false);
+  const earlyPositionApplied = useRef(false);
 
   // inner group refs (TransformControls 대상)
   const innerRefs = useRef<Map<number, Group>>(new Map());
@@ -285,22 +288,6 @@ export default function AssemblyViewer({
     });
   }, [resetTransformFlag]);
 
-  // 클릭 핸들러 — select, translate, rotate 모드에서 파트 선택
-  const handlePartSelect = useCallback(
-    (index: number) => {
-      if (activeTool === "select" || activeTool === "transform") {
-        setSelectedPartIndex(selectedPartIndex === index ? null : index);
-      }
-    },
-    [activeTool, selectedPartIndex, setSelectedPartIndex],
-  );
-
-  const handleMissClick = useCallback(() => {
-    if (activeTool === "select" || activeTool === "transform") {
-      setSelectedPartIndex(null);
-    }
-  }, [activeTool, setSelectedPartIndex]);
-
   // GLB preload
   useEffect(() => {
     components.forEach((comp) => {
@@ -316,11 +303,41 @@ export default function AssemblyViewer({
       transform: undefined,
       instanceIndex: index,
     }));
+
+  // 클릭 핸들러 — select, translate, rotate 모드에서 파트 선택 (컴포넌트 단위)
+  const handlePartSelect = useCallback(
+    (index: number) => {
+      if (activeTool === "select" || activeTool === "transform") {
+        const componentId =
+          renderInstances[index]?.component.componentId ?? null;
+        if (selectedComponentId === componentId) {
+          setSelectedComponentId(null);
+        } else {
+          setSelectedComponentId(componentId);
+          setSelectedPartIndex(index);
+        }
+      }
+    },
+    [
+      activeTool,
+      selectedComponentId,
+      setSelectedComponentId,
+      setSelectedPartIndex,
+      renderInstances,
+    ],
+  );
+
+  const handleMissClick = useCallback(() => {
+    if (activeTool === "select" || activeTool === "transform") {
+      setSelectedComponentId(null);
+    }
+  }, [activeTool, setSelectedComponentId]);
   const explodeOffset = productType ? getExplodeOffset(productType) : 0.2;
 
   // explode 데이터 초기화
   useEffect(() => {
     isInitialized.current = false;
+    earlyPositionApplied.current = false;
     if (!groupRef.current) return;
 
     const timer = setTimeout(() => {
@@ -452,7 +469,33 @@ export default function AssemblyViewer({
 
   // Explode 애니메이션 — outer group만 이동 (inner group의 유저 변환과 충돌 없음)
   useFrame(() => {
-    if (!isInitialized.current) return;
+    if (!isInitialized.current) {
+      // 초기화 전에 transform 데이터로 위치 즉시 적용 (깜빡임 방지)
+      if (!earlyPositionApplied.current && groupRef.current) {
+        const group = groupRef.current;
+        if (group.children.length > 0) {
+          group.children.forEach((child, i) => {
+            const instance = renderInstances[i];
+            if (instance?.transform?.position) {
+              const pos = instance.transform.position;
+              child.position.set(pos[0], pos[1], pos[2]);
+              if (instance.transform.quaternion) {
+                const q = instance.transform.quaternion;
+                child.quaternion.set(q[0], q[1], q[2], q[3]).normalize();
+              } else if (instance.transform.rotation) {
+                child.rotation.set(
+                  instance.transform.rotation[0],
+                  instance.transform.rotation[1],
+                  instance.transform.rotation[2],
+                );
+              }
+            }
+          });
+          earlyPositionApplied.current = true;
+        }
+      }
+      return;
+    }
 
     const explodeDistance = 2.0;
 
@@ -500,7 +543,10 @@ export default function AssemblyViewer({
               <ComponentModel
                 glbUrl={instance.component.glbUrl}
                 index={i}
-                isSelected={selectedPartIndex === i}
+                isSelected={
+                  selectedComponentId !== null &&
+                  selectedComponentId === instance.component.componentId
+                }
                 isVisible={!hiddenParts.has(instance.component.componentId)}
                 onSelect={handlePartSelect}
                 registerRef={registerRef}

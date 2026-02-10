@@ -17,7 +17,7 @@ export default function StudyContentModal({
   objectName,
   parts,
 }: StudyContentModalProps) {
-  const { selectedPartIndex, setSelectedPartIndex } = useEditStore();
+  const { selectedComponentId, setSelectedComponentId } = useEditStore();
 
   return (
     <ModalContainer>
@@ -28,21 +28,27 @@ export default function StudyContentModal({
       </ModalHeader>
 
       <ThumbnailGrid>
-        {parts.map((part, i) => (
-          <ThumbnailCard
-            key={part.partName}
-            $selected={selectedPartIndex === i}
-            onClick={() => setSelectedPartIndex(selectedPartIndex === i ? null : i)}
-          >
-            <PartImage
-              src={part.imageUrl}
-              alt={part.partName}
-              width={80}
-              height={80}
-              unoptimized
-            />
-          </ThumbnailCard>
-        ))}
+        {parts.map((part, i) => {
+          const componentId = `part-${i}`;
+          const selected = selectedComponentId === componentId;
+          return (
+            <ThumbnailCard
+              key={part.partName}
+              $selected={selected}
+              onClick={() =>
+                setSelectedComponentId(selected ? null : componentId)
+              }
+            >
+              <PartImage
+                src={part.imageUrl}
+                alt={part.partName}
+                width={80}
+                height={80}
+                unoptimized
+              />
+            </ThumbnailCard>
+          );
+        })}
       </ThumbnailGrid>
 
       <Divider />
@@ -102,7 +108,10 @@ const ThumbnailCard = styled.div<{ $selected?: boolean }>`
   overflow: hidden;
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${colors.blue_700}` : "none")};
+  box-shadow: ${({ $selected }) =>
+    $selected
+      ? `0 0 0 2px ${colors.blue_500}, 0 0 12px rgba(59, 130, 246, 0.5)`
+      : "none"};
 
   &:hover {
     background-color: ${colors.neutral_800};

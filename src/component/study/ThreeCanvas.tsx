@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef, useEffect, useCallback } from "react";
+import { Suspense, useRef, useEffect, useCallback, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -206,10 +206,31 @@ export default function ThreeCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
   const boundsApiRef = useRef<any>(null);
+  const [shiftHeld, setShiftHeld] = useState(false);
+  const [pointerOver, setPointerOver] = useState(true);
+
+  // Shift 키 추적 + 포커스 이탈 시 초기화
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift") setShiftHeld(true);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Shift") setShiftHeld(false);
+    };
+    const onBlur = () => setShiftHeld(false);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
-      if (e.shiftKey) {
+      if (e.shiftKey && activeTab === "조립도") {
         e.preventDefault();
         const raw = e.deltaY || e.deltaX;
         if (raw === 0) return;
@@ -218,7 +239,7 @@ export default function ThreeCanvas({
         setExplodeLevel(newLevel);
       }
     },
-    [explodeLevel, setExplodeLevel],
+    [explodeLevel, setExplodeLevel, activeTab],
   );
 
   useEffect(() => {
@@ -229,11 +250,24 @@ export default function ThreeCanvas({
     return () => container.removeEventListener("wheel", handleWheel);
   }, [handleWheel]);
 
+  // 탭 변경 시 진행 중인 드래그 중단 + 상태 초기화
+  useEffect(() => {
+    const canvas = containerRef.current?.querySelector("canvas");
+    if (canvas) {
+      canvas.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+    }
+    setShiftHeld(false);
+  }, [activeTab]);
+
   // 도구별 OrbitControls 설정
   const isPan = activeTool === "pan";
 
   return (
-    <CanvasContainer ref={containerRef}>
+    <CanvasContainer
+      ref={containerRef}
+      onPointerEnter={() => setPointerOver(true)}
+      onPointerLeave={() => setPointerOver(false)}
+    >
       <Canvas
         shadows
         camera={{ position: [3, 2, 3], fov: 45 }}
@@ -292,13 +326,13 @@ export default function ThreeCanvas({
 
         <OrbitControls
           ref={controlsRef}
-          enabled={!isTransforming}
+          enabled={!isTransforming && pointerOver}
           enablePan={true}
-          enableZoom={true}
+          enableZoom={!(shiftHeld && activeTab === "조립도")}
           enableRotate={!isPan}
           mouseButtons={{
             LEFT: isPan ? MOUSE.PAN : MOUSE.ROTATE,
-            MIDDLE: MOUSE.DOLLY,
+            MIDDLE: MOUSE.PAN,
             RIGHT: isPan ? MOUSE.ROTATE : MOUSE.PAN,
           }}
           minDistance={0.1}
