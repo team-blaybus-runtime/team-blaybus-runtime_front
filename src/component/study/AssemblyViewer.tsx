@@ -67,8 +67,8 @@ interface PartData {
   layoutPosition?: Vector3;
 }
 
-// 선택 하이라이트 — 강하게
-const HIGHLIGHT_EMISSIVE = new Color("#3399FF");
+// 선택 하이라이트
+const HIGHLIGHT_EMISSIVE = new Color("#66BBFF");
 const DEFAULT_EMISSIVE = new Color("#000000");
 
 const S3_HOST =
@@ -136,7 +136,7 @@ function ComponentModel({
         child.material.emissive = isSelected
           ? HIGHLIGHT_EMISSIVE
           : DEFAULT_EMISSIVE;
-        child.material.emissiveIntensity = isSelected ? 1.0 : 0;
+        child.material.emissiveIntensity = isSelected ? 1.5 : 0;
       }
     });
   }, [isSelected, centeredScene]);
@@ -164,7 +164,7 @@ function ComponentModel({
         <group
           ref={innerRefCallback}
           onClick={handleClick}
-          scale={isSelected ? 1.03 : 1}
+          scale={isSelected ? 1.05 : 1}
         >
           <primitive object={centeredScene} />
         </group>

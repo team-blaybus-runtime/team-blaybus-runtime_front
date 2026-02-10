@@ -368,11 +368,13 @@ const MeshItem = styled(Row)<{ $selected?: boolean }>`
   border-radius: 6px;
   cursor: pointer;
   background-color: ${({ $selected }) =>
-    $selected ? "rgba(59, 130, 246, 0.15)" : "transparent"};
+    $selected ? "rgba(59, 130, 246, 0.2)" : "transparent"};
+  box-shadow: ${({ $selected }) =>
+    $selected ? `inset 0 0 0 1.5px ${colors.blue_500}` : "none"};
 
   &:hover {
     background-color: ${({ $selected }) =>
-      $selected ? "rgba(59, 130, 246, 0.25)" : colors.neutral_900};
+      $selected ? "rgba(59, 130, 246, 0.3)" : colors.neutral_900};
   }
 `;
 

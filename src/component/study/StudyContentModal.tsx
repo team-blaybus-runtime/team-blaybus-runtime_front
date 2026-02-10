@@ -108,7 +108,10 @@ const ThumbnailCard = styled.div<{ $selected?: boolean }>`
   overflow: hidden;
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${colors.blue_700}` : "none")};
+  box-shadow: ${({ $selected }) =>
+    $selected
+      ? `0 0 0 2px ${colors.blue_500}, 0 0 12px rgba(59, 130, 246, 0.5)`
+      : "none"};
 
   &:hover {
     background-color: ${colors.neutral_800};
