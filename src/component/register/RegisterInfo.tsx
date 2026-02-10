@@ -26,7 +26,7 @@ export default function RegisterInfo({
       />
       <FormInput
         label="패스워드"
-        placeholder="영문, 숫자를 조합한 6자 이상"
+        placeholder="영문, 숫자를 조합한 8자 이상"
         type="password"
         name="password"
         value={values.password}
