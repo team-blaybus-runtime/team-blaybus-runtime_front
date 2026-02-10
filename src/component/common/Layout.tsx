@@ -49,21 +49,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <LayoutRoot>
       <HeaderWrapper>
-        <PageContainer>
+        <PageContainer $isWideScreen={isWideScreen}>
           <Header userInfo={userInfo} />
         </PageContainer>
       </HeaderWrapper>
       <Content $isWideScreen={isWideScreen} $fillViewport={isWorkflowPage}>
         <ContentContainer
           $isWideScreen={isWideScreen}
-          $fillViewport={isWorkflowPage}
         >
           {children}
         </ContentContainer>
       </Content>
       {!noFooterScreen && (
         <FooterWrapper>
-          <PageContainer>
+          <PageContainer $isWideScreen={isWideScreen}>
             <Footer />
           </PageContainer>
         </FooterWrapper>
@@ -95,28 +94,28 @@ const Content = styled.main<{
   width: 100%;
   min-height: ${({ $fillViewport }) => ($fillViewport ? "0" : "800px")};
   background-color: ${colors.neutral_1100};
-  min-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
+  min-width: 1280px;
   overflow: ${({ $fillViewport }) => ($fillViewport ? "hidden" : "visible")};
 `;
 
-const PageContainer = styled.div`
+const PageContainer = styled.div<{ $isWideScreen: boolean }>`
   width: 100%;
-  max-width: 1280px;
+  max-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")} ;
   margin: 0 auto;
+  background-color: ${colors.neutral_1100};
   padding: 0 24px;
 `;
 
 const ContentContainer = styled.div<{
   $isWideScreen: boolean;
-  $fillViewport?: boolean;
 }>`
   width: 100%;
   max-width: ${({ $isWideScreen }) => ($isWideScreen ? "100vw" : "1280px")};
   min-width: 1280px;
   margin: 0 auto;
   padding: ${({ $isWideScreen }) => ($isWideScreen ? "0" : "0 24px")};
-  ${({ $fillViewport }) =>
-    $fillViewport &&
+  ${({ $isWideScreen }) =>
+    $isWideScreen &&
     `
     min-height: 0;
     flex: 1;

@@ -222,6 +222,7 @@ const LayoutRoot = styled(Column)`
   height: 100dvh;
   background-color: #000000;
   overflow: hidden;
+  min-width: 1280px;
 `;
 
 const Section = styled(Row)`
