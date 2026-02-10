@@ -332,7 +332,7 @@ export default function ThreeCanvas({
           enableRotate={!isPan}
           mouseButtons={{
             LEFT: isPan ? MOUSE.PAN : MOUSE.ROTATE,
-            MIDDLE: MOUSE.ROTATE,
+            MIDDLE: MOUSE.PAN,
             RIGHT: isPan ? MOUSE.ROTATE : MOUSE.PAN,
           }}
           minDistance={0.1}

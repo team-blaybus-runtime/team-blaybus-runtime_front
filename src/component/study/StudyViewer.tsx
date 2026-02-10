@@ -143,29 +143,25 @@ function ViewerHelpTooltip() {
       {open && (
         <HelpPanel>
           <HelpRow>
-            <Kbd>LMB</Kbd><span>드래그</span>
+            <Kbd>좌클릭</Kbd><span>드래그</span>
             <HelpDesc>시야 회전</HelpDesc>
           </HelpRow>
           <HelpRow>
-            <Kbd>Shift</Kbd><span>+</span><Kbd>LMB</Kbd><span>드래그</span>
-            <HelpDesc>위치 이동 (팬)</HelpDesc>
+            <Kbd>휠클릭</Kbd><span>드래그</span>
+            <HelpDesc>위치 이동</HelpDesc>
           </HelpRow>
           <HelpRow>
-            <Kbd>RMB</Kbd><span>드래그</span>
-            <HelpDesc>위치 이동 (팬)</HelpDesc>
-          </HelpRow>
-          <HelpRow>
-            <Kbd>MMB</Kbd><span>드래그</span>
-            <HelpDesc>시야 회전</HelpDesc>
+            <Kbd>우클릭</Kbd><span>드래그</span>
+            <HelpDesc>위치 이동</HelpDesc>
           </HelpRow>
           <HelpDivider />
           <HelpRow>
-            <Kbd>Wheel</Kbd>
+            <Kbd>휠</Kbd><span>스크롤</span>
             <HelpDesc>줌 인 / 아웃</HelpDesc>
           </HelpRow>
           <HelpRow>
-            <Kbd>Shift</Kbd><span>+</span><Kbd>Wheel</Kbd>
-            <HelpDesc>분해도 조절</HelpDesc>
+            <Kbd>Shift</Kbd><span>+</span><Kbd>휠</Kbd>
+            <HelpDesc>분해도 조절 (조립도)</HelpDesc>
           </HelpRow>
         </HelpPanel>
       )}
