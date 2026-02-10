@@ -35,7 +35,7 @@ const DEG180 = Math.PI;
 
 const DRONE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   mainframe: { position: [0, 0, -0.1], rotation: [1.6, DEG180, 0] },
-  mainframemir: { position: [0, 0, -0.1], rotation: [1.6, DEG180, 0] },
+  mainframemirror: { position: [0, 0, -0.1], rotation: [1.6, DEG180, 0] },
   beaterdisc: { position: [0.0001, -0.0048, 0.0638], rotation: [0, 4.7, 11] },
   armgear: [
     { position: [0.088, -0.015, 0.082], rotation: [0, 0, 0] },
@@ -49,13 +49,13 @@ const DRONE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
     { position: [-0.088, -0.02, -0.113], rotation: [0, Math.PI, 0] },
     { position: [0.088, -0.02, -0.113], rotation: [0, (Math.PI / 2) * 3, 0] },
   ],
-  impellarblade: [
+  impellerblade: [
     { position: [0.088, 0, 0.082], rotation: [0, Math.PI / 3, 0] },
     { position: [-0.088, 0, 0.081], rotation: [0, Math.PI / 3, 0] },
     { position: [-0.1, 0, -0.121], rotation: [0, Math.PI / 3, 0] },
     { position: [0.1, 0, -0.12], rotation: [0, Math.PI / 3, 0] },
   ],
-  leg: [
+  landingleg: [
     { position: [0.087, -0.004, 0.082], rotation: [0, 10.1, 0] },
     { position: [-0.088, -0.004, 0.08], rotation: [0, 2.43, 0] },
     { position: [0.1, -0.001, -0.12], rotation: [0, 11.45, 0] },
@@ -76,11 +76,11 @@ const DRONE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
 };
 
 const SUSPENSION_LAYOUT: Record<string, AssemblyTransform> = {
-  base: { position: [0, 0, 0], explodedPosition: [0, 0, 0] },
-  rod: { position: [0, 0.1, 0], explodedPosition: [0, 0.4, 0] },
-  spring: { position: [0, 0.005, 0], explodedPosition: [0, 0.8, 0] },
-  nut: { position: [0, 0.1, 0], explodedPosition: [0, 1.2, 0] },
-  nit: { position: [0, 0.06, 0], explodedPosition: [0, 1.0, 0] },
+  uppermount: { position: [0, 0, 0], explodedPosition: [0, 0, 0] },
+  damperrod: { position: [0, 0.1, 0], explodedPosition: [0, 0.4, 0] },
+  coilspring: { position: [0, 0.005, 0], explodedPosition: [0, 0.8, 0] },
+  springadjustmentnut: { position: [0, 0.1, 0], explodedPosition: [0, 1.2, 0] },
+  locknut: { position: [0, 0.06, 0], explodedPosition: [0, 1.0, 0] },
 };
 
 const V4_ENGINE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> =
@@ -198,16 +198,16 @@ const V4_ENGINE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> 
 // quaternion: blender [w,x,y,z] → threejs [x, z, -y, w]
 const ROBOT_GRIPPER_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   baseplate: { position: [0, -0.0025, 0], quaternion: [0, 0.701, 0.701, 0] },
-  basemountingbracket: { position: [-0.01, 0.003, -0.006], quaternion: [0.014, -0.716, -0.014, 0.698] },
+  mountingbracket: { position: [-0.01, 0.003, -0.006], quaternion: [0.014, -0.716, -0.014, 0.698] },
   basegear: { position: [-0.007, -0.005, 0.018], quaternion: [0.076, 0.075, 0.708, 0.698] },
   gearlink1: { position: [-0.014, 0, 0.038], quaternion: [-0.707, 0.680, -0.146, 0.129] },
   gearlink2: { position: [0.014, 0.003, 0.038], quaternion: [-0.635, 0.331, -0.337, -0.627] },
   // 대칭 쌍 (x 부호 반전)
-  link: [
+  linkarm: [
     { position: [0.012, 0, 0.072], quaternion: [0.146, 0.155, 0.669, 0.712] },
     { position: [-0.012, 0, 0.072], quaternion: [-0.146, -0.155, 0.669, 0.712] },
   ],
-  gripper: [
+  gripperjaw: [
     { position: [-0.014, -0.003, 0.083], quaternion: [0.564, -0.408, 0.377, 0.611] },
     { position: [0.014, -0.003, 0.083], quaternion: [-0.395, -0.584, -0.591, 0.392] },
   ],
@@ -267,7 +267,7 @@ const MACHINE_VICE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[
   fixedjaw: { position: [-0.0275, -0.001, 0.0651], quaternion: [0, 0.709721, 0, 0.704483] },
   movablejaw: { position: [0.0822, 0.0349, 0.0636], quaternion: [0, 0.711771, 0, 0.702411] },
   spindlehousing: { position: [0.1374, 0, 0.0448], quaternion: [0, 0.70116, 0, 0.713004] },
-  clampjaw: [
+  clampingjaw: [
     { position: [0.0379, 0.0345, -0.0112], quaternion: [0, -0.701184, 0, 0.71298] },
     { position: [-0.011, 0.0343, 0.0656], quaternion: [0, 0.705922, 0, 0.708289] },
   ],
@@ -325,99 +325,8 @@ function scaleTransform(
 }
 
 
-const NAME_ALIASES: Record<string, Record<string, string>> = {
-  suspension: {
-    springadjustmentnut: "nut",
-    locknut: "nit",
-    uppermount: "base",
-    coilspring: "spring",
-    damperrod: "rod",
-  },
-  drone: {
-    "mainframe(mirror)": "mainframemir",
-    mainframemirror: "mainframemir",
-    mainframe: "mainframe",
-    beaterdisc: "beaterdisc",
-    armgear: "armgear",
-    gearing: "gearing",
-    impellerblade: "impellarblade",
-    impellarblade: "impellarblade",
-    landingleg: "leg",
-    nut: "nut",
-    screw: "screw",
-  },
-  v4engine: {
-    crankshaft: "crankshaft",
-    connectingrodcap: "connectingrodcap",
-    connectingrod: "connectingrod",
-    piston: "piston",
-    pistonpin: "pistonpin",
-    pistonring: "pistonring",
-    conrodbolt: "conrodbolt",
-  },
-  robotgripper: {
-    baseplate: "baseplate",
-    basemountingbracket: "basemountingbracket",
-    mountingbracket: "basemountingbracket",
-    basegear: "basegear",
-    gearlink1: "gearlink1",
-    gearlink2: "gearlink2",
-    linkarm: "link",
-    link: "link",
-    gripperjaw: "gripper",
-    gripper: "gripper",
-    pin: "pin",
-  },
-  robotarm: {
-    base: "base",
-    basejoint: "endeffectorinterface",
-    shoulderjoint: "shoulderjoint",
-    upperarmlink: "upperarmlink",
-    elbowjoint: "elbowjoint",
-    forearmlink: "forearmlink",
-    wristjoint: "wristjoint",
-    endeffectorinterface: "endeffectorinterface",
-    gripper: "gripper",
-  },
-  leafspring: {
-    leaflayer: "leaflayer",
-    support: "support",
-    clampprimary: "clampprimary",
-    clampsecondary: "clampsecondary",
-    clampcenter: "clampcenter",
-    supportrubber: "supportrubber",
-    supportrubber60mm: "supportrubber60mm",
-    supportchassis: "supportchassis",
-    supportchassisrigid: "supportchassisrigid",
-  },
-  machinevice: {
-    visebody: "visebody",
-    baseplate: "baseplate",
-    grundplatte: "baseplate",
-    fixedjaw: "fixedjaw",
-    festebacke: "fixedjaw",
-    movablejaw: "movablejaw",
-    losebacke: "movablejaw",
-    trapezoidalspindle: "trapezoidalspindle",
-    trapezspindel: "trapezoidalspindle",
-    guidehousing: "guidehousing",
-    fuhrung: "guidehousing",
-    guiderail: "guiderail",
-    fuhrungschiene: "guiderail",
-    spindlehousing: "spindlehousing",
-    spindelsockel: "spindlehousing",
-    clampingjaw: "clampjaw",
-    clampjaw: "clampjaw",
-    spannbacke: "clampjaw",
-    pressuresleeve: "pressuresleeve",
-    druckhulse: "pressuresleeve",
-  },
-};
-
-function resolveLayoutKey(productKey: string, name: string): string {
-  const normalized = normalizeKey(name);
-  const aliasMap = NAME_ALIASES[productKey];
-  return aliasMap?.[normalized] ?? normalized;
+function resolveLayoutKey(name: string): string {
+  return normalizeKey(name);
 }
 
 export function getAssemblyInstances(
@@ -429,7 +338,7 @@ export function getAssemblyInstances(
   const instanceScale = INSTANCE_SCALE_BY_PRODUCT[productKey] ?? 1;
 
   return components.flatMap((component, index) => {
-    const nameKey = resolveLayoutKey(productKey, component.componentName);
+    const nameKey = resolveLayoutKey(component.componentName);
     const transform = layoutMap[nameKey];
 
     if (Array.isArray(transform)) {
