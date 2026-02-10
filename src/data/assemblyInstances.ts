@@ -261,7 +261,7 @@ const LEAF_SPRING_LAYOUT: Record<string, AssemblyTransform> = {
 const MACHINE_VICE_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   visebody: { position: [0, 0, 0] },
   guidehousing: { position: [-0.002, 0, 0], quaternion: [0.705507, 0, 0, 0.708703] },
-  fixedjaw: { position: [0, 0, 0] },
+  fixedjaw: { position: [-0.0275, -0.001, 0.0651], quaternion: [0, 0.709721, 0, 0.704483] },
   movablejaw: { position: [0.0822, 0.0349, 0.0636], quaternion: [0, 0.711771, 0, 0.702411] },
   spindlehousing: { position: [0.1374, 0, 0.0448], quaternion: [0, 0.70116, 0, 0.713004] },
   clampjaw: [
