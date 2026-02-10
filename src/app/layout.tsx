@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/seoImg.png",
-        width: 1200,
-        height: 630,
+        width: 960,
+        height: 537,
         alt: "simvex runtime preview",
       },
     ],
