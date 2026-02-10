@@ -230,15 +230,18 @@ const ROBOT_GRIPPER_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform
   ],
 };
 
-const ROBOT_ARM_LAYOUT: Record<string, AssemblyTransform> = {
+const ROBOT_ARM_LAYOUT: Record<string, AssemblyTransform | AssemblyTransform[]> = {
   base: { position: [0, 0, 0] },
-  basejoint: { position: [0, 0.43, 0.28], rotation: [Math.PI / 4, 0, 0] },
   shoulderjoint: { position: [0, 0.1, 0] },
   upperarmlink: { position: [0, 0.26, 0.15], rotation: [-1, Math.PI, -Math.PI / 2] },
   elbowjoint: { position: [0, 0.5, -0.2] },
-  forearmlink: { position: [0, 0.47, 0.24], rotation: [-Math.PI / 4, 0, 0] },
-  wristjoint: { position: [0, 0.5, 0.1] },
-  endeffectormount: { position: [0, 0.5, 0.1] },
+  forearmlink: { position: [0, 0.5, 0.1], explodedPosition: [0, 1.2, 0.5] },
+  wristjoint: { position: [0, 0.47, 0.24], rotation: [-Math.PI / 4, 0, 0], explodedPosition: [0, 1.5, 1.0] },
+  endeffectorinterface: { position: [0, 0.43, 0.28], rotation: [Math.PI / 4, 0, 0], explodedPosition: [0, 1.8, 1.4] },
+  gripper: [
+    { position: [-0.045, 0.35, 0.34], rotation: [-Math.PI / 4, 0, -0.5] },
+    { position: [0.045, 0.36, 0.35], rotation: [-Math.PI / 4, -Math.PI, -0.5] },
+  ],
 };
 
 const LEAF_SPRING_LAYOUT: Record<string, AssemblyTransform> = {
@@ -367,14 +370,14 @@ const NAME_ALIASES: Record<string, Record<string, string>> = {
   },
   robotarm: {
     base: "base",
-    basejoint: "basejoint",
+    basejoint: "endeffectorinterface",
     shoulderjoint: "shoulderjoint",
     upperarmlink: "upperarmlink",
     elbowjoint: "elbowjoint",
     forearmlink: "forearmlink",
     wristjoint: "wristjoint",
-    endeffectormount: "endeffectormount",
-    gripper: "endeffectormount",
+    endeffectorinterface: "endeffectorinterface",
+    gripper: "gripper",
   },
   leafspring: {
     leaflayer: "leaflayer",
