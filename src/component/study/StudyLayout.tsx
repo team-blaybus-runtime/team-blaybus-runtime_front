@@ -30,7 +30,6 @@ interface StudyLayoutProps {
 
 export default function StudyLayout({ id }: StudyLayoutProps) {
   const [history, setHistory] = useState<UserStudyHistory | null>(null);
-  const { data: memoData } = useFetchUserMemosQuery(history?.ProductTypeDesc);
 
   const [sideBarContent, setSideBarContent] = useState<
     "memo" | "aiChat" | "quiz"
@@ -43,6 +42,8 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
 
   const title = history?.title ?? "";
   const productType = history?.ProductTypeDesc ?? "";
+
+  const { data: memoData } = useFetchUserMemosQuery((productType ?? "").replace(/\s+/g, "_"));
 
   const aiChat = useStudyAIChat({
     productType: (productType ?? "").replace(/\s+/g, "_"),
@@ -89,7 +90,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
         productTypeDesc: history.ProductTypeDesc,
         title: trimmed,
         viewInfo,
-      }).catch(() => {});
+      }).catch(() => { });
     }
     setCustomName("");
     setIsRenaming(false);
@@ -114,7 +115,7 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
           productTypeDesc: h.ProductTypeDesc,
           title: h.title,
           viewInfo,
-        }).catch(() => {});
+        }).catch(() => { });
       }, 3000);
     });
     return () => {
