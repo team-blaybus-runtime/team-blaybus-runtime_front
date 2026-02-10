@@ -113,8 +113,7 @@ const MarkdownBody = styled.div<{ $variant?: "user" | "ai" }>`
   }
 
   code {
-    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono",
-      "Courier New", monospace;
+    font-family: "Pretendard";
     font-size: 13px;
     background: rgba(255, 255, 255, 0.08);
     padding: 2px 4px;
