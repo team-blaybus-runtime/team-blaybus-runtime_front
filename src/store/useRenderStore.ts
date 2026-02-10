@@ -14,6 +14,11 @@ interface RenderSettings {
     keyLightIntensity: number;
     ambientIntensity: number;
   };
+  material: {
+    roughness: number;
+    metalness: number;
+    envMapIntensity: number;
+  };
 }
 
 interface CameraState {
@@ -28,6 +33,7 @@ interface RenderState extends RenderSettings {
   setBloom: (bloom: Partial<RenderSettings["bloom"]>) => void;
   setAO: (ao: Partial<RenderSettings["ao"]>) => void;
   setLighting: (lighting: Partial<RenderSettings["lighting"]>) => void;
+  setMaterial: (material: Partial<RenderSettings["material"]>) => void;
   reset: () => void;
 }
 
@@ -51,6 +57,11 @@ const defaultSettings: RenderSettings = {
     keyLightIntensity: 2.0,
     ambientIntensity: 0.2,
   },
+  material: {
+    roughness: 0.1,
+    metalness: 0.9,
+    envMapIntensity: 1.5,
+  },
 };
 
 export const useRenderStore = create<RenderState>((set) => ({
@@ -68,6 +79,10 @@ export const useRenderStore = create<RenderState>((set) => ({
   setLighting: (lighting) =>
     set((state) => ({
       lighting: { ...state.lighting, ...lighting },
+    })),
+  setMaterial: (material) =>
+    set((state) => ({
+      material: { ...state.material, ...material },
     })),
   reset: () => set({ ...defaultSettings, cameraState: defaultCameraState }),
 }));

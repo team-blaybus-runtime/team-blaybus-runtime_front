@@ -132,7 +132,7 @@ function ViewInfoRestore({
   controlsRef: React.RefObject<any>;
 }) {
   const { camera } = useThree();
-  const { setBloom, setAO, setLighting } = useRenderStore();
+  const { setBloom, setAO, setLighting, setMaterial } = useRenderStore();
   const restored = useRef(false);
 
   // 쉐이더 설정은 즉시 복원
@@ -141,7 +141,16 @@ function ViewInfoRestore({
     setBloom(viewInfo.renderSettings.bloom);
     setAO(viewInfo.renderSettings.ao);
     setLighting(viewInfo.renderSettings.lighting);
-  }, [viewInfo, setBloom, setAO, setLighting]);
+    if (viewInfo.renderSettings.material) {
+      setMaterial(viewInfo.renderSettings.material);
+    } else if (viewInfo.roughness != null) {
+      setMaterial({
+        roughness: viewInfo.roughness,
+        metalness: viewInfo.metalness,
+        envMapIntensity: viewInfo.envMapIntensity,
+      });
+    }
+  }, [viewInfo, setBloom, setAO, setLighting, setMaterial]);
 
   // 카메라는 Bounds fit 이후 복원해야 하므로 지연 실행
   useEffect(() => {

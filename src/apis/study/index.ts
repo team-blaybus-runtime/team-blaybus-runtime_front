@@ -22,6 +22,7 @@ export interface ViewInfo {
     bloom: { intensity: number; threshold: number; smoothing: number };
     ao: { radius: number; intensity: number };
     lighting: { keyLightIntensity: number; ambientIntensity: number };
+    material?: { roughness: number; metalness: number; envMapIntensity: number };
   };
 }
 

@@ -115,9 +115,9 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
           roughnessMultiplier: 1,
           metalnessMultiplier: 1,
           envMapMultiplier: 1,
-          roughness: 0.4,
-          metalness: 0.6,
-          envMapIntensity: 1,
+          roughness: 0.1,
+          metalness: 0.9,
+          envMapIntensity: 1.5,
           camera: {
             position: [3, 2, 3],
             target: [0, 0, 0],
@@ -127,6 +127,7 @@ export default function NewStudyModal({ open, onClose, onCreated }: NewStudyModa
             bloom: { intensity: 0.5, threshold: 0.8, smoothing: 0.9 },
             ao: { radius: 0.5, intensity: 1.5 },
             lighting: { keyLightIntensity: 2.0, ambientIntensity: 0.2 },
+            material: { roughness: 0.1, metalness: 0.9, envMapIntensity: 1.5 },
           },
         },
       });

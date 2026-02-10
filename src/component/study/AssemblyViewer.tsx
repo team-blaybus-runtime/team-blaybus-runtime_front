@@ -21,6 +21,7 @@ import {
   Quaternion,
 } from "three";
 import { useModelStore } from "@/store/useModelStore";
+import { useRenderStore } from "@/store/useRenderStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/study";
 import { StudyTab } from "@/component/study/StudyTabBar";
@@ -65,6 +66,8 @@ interface PartData {
   explodeDirection: Vector3;
   /** 조립도 전용: explodeLevel=1일 때의 목표 위치 (설정 있으면 보간) */
   layoutPosition?: Vector3;
+  /** 분해 시작 딜레이 (0~0.35) — 중심 가까운 파트가 먼저, 같은 방향은 시차 */
+  explodeDelay: number;
 }
 
 // 선택 하이라이트
@@ -97,6 +100,7 @@ function ComponentModel({
   registerRef: (index: number, el: Group | null) => void;
 }) {
   const { scene } = useGLTF(toProxyUrl(glbUrl));
+  const material = useRenderStore((s) => s.material);
 
   // 지오메트리를 원점에 센터링 + 원래 위치 offset 계산
   const { centeredScene, offset } = useMemo(() => {
@@ -108,9 +112,9 @@ function ComponentModel({
           color: originalMaterial.color,
           map: originalMaterial.map,
           normalMap: originalMaterial.normalMap,
-          roughness: 0.4,
-          metalness: 0.6,
-          envMapIntensity: 1.0,
+          roughness: material.roughness,
+          metalness: material.metalness,
+          envMapIntensity: material.envMapIntensity,
         });
         child.castShadow = true;
         child.receiveShadow = true;
@@ -125,6 +129,18 @@ function ComponentModel({
 
     return { centeredScene: clone, offset: center };
   }, [scene]);
+
+  // 재질 값 실시간 반영
+  useEffect(() => {
+    centeredScene.traverse((child: Object3D) => {
+      if (child instanceof Mesh && child.material instanceof MeshStandardMaterial) {
+        child.material.roughness = material.roughness;
+        child.material.metalness = material.metalness;
+        child.material.envMapIntensity = material.envMapIntensity;
+        child.material.needsUpdate = true;
+      }
+    });
+  }, [material, centeredScene]);
 
   // 선택 하이라이트
   useEffect(() => {
@@ -334,7 +350,7 @@ export default function AssemblyViewer({
   }, [activeTool, setSelectedComponentId]);
   const explodeOffset = productType ? getExplodeOffset(productType) : 0.2;
 
-  // explode 데이터 초기화
+  // explode 데이터 초기화 — 중심점 기준 방사형 + 인접 부품 분리력
   useEffect(() => {
     isInitialized.current = false;
     earlyPositionApplied.current = false;
@@ -348,41 +364,32 @@ export default function AssemblyViewer({
       box.getCenter(centerRef.current);
       const center = centerRef.current;
 
-      const parts: PartData[] = [];
+      // 모델 전체 크기 (분리 거리 스케일링용)
+      const modelSize = new Vector3();
+      box.getSize(modelSize);
+      const modelDiag = modelSize.length();
 
-      const instanceCount = renderInstances.length;
+      // ── Phase 1: 각 파트의 기본 데이터 수집 ──
+      interface PartSetup {
+        child: Object3D;
+        originalPos: Vector3;
+        childCenter: Vector3;
+        partRadius: number; // 파트 개별 바운딩 반경
+        autoExplode: boolean; // explodedPosition 없으면 자동 계산
+        layoutPosition?: Vector3;
+      }
+
+      const setups: PartSetup[] = [];
+
       group.children.forEach((child, i) => {
         const instance = renderInstances[i];
-
         let originalPos: Vector3;
-        let direction: Vector3;
         let layoutPosition: Vector3 | undefined;
+        let autoExplode = true;
 
         if (instance?.transform?.position) {
           const pos = instance.transform.position;
           originalPos = new Vector3(pos[0], pos[1], pos[2]);
-          if (instance.transform.explodedPosition) {
-            const epos = instance.transform.explodedPosition;
-            layoutPosition = new Vector3(epos[0], epos[1], epos[2]);
-            direction = layoutPosition.clone().sub(originalPos);
-          } else {
-            const outward = originalPos.clone().sub(center);
-            if (outward.length() < 0.001) {
-              const spread = i - (instanceCount - 1) / 2;
-              outward.set(spread, 0, 0);
-            } else {
-              outward.normalize();
-            }
-            layoutPosition = originalPos
-              .clone()
-              .add(outward.multiplyScalar(explodeOffset));
-            direction = layoutPosition.clone().sub(originalPos);
-          }
-          if (direction.length() < 0.001) {
-            direction = new Vector3(0, 0, 0);
-          } else {
-            direction.normalize();
-          }
           child.position.copy(originalPos);
           if (instance.transform.quaternion) {
             const q = instance.transform.quaternion;
@@ -394,38 +401,107 @@ export default function AssemblyViewer({
               instance.transform.rotation[2],
             );
           }
+          if (instance.transform.explodedPosition) {
+            const epos = instance.transform.explodedPosition;
+            layoutPosition = new Vector3(epos[0], epos[1], epos[2]);
+            autoExplode = false;
+          }
         } else {
-          const childBox = new Box3().setFromObject(child);
-          const childCenter = new Vector3();
-          childBox.getCenter(childCenter);
           originalPos = child.position.clone();
-          direction = childCenter.clone().sub(center);
-          if (direction.length() < 0.01) {
-            direction.set(
-              (Math.random() - 0.5) * 2,
-              (Math.random() - 0.5) * 2,
-              (Math.random() - 0.5) * 2,
-            );
-          }
-          direction.normalize();
         }
 
-        if (layoutPosition) {
-          const originDist = originalPos.distanceTo(center);
-          const targetDist = layoutPosition.distanceTo(center);
-          if (targetDist < originDist) {
-            const temp = originalPos;
-            originalPos = layoutPosition;
-            layoutPosition = temp;
+        const childBox = new Box3().setFromObject(child);
+        const childCenter = new Vector3();
+        childBox.getCenter(childCenter);
+        const partSize = new Vector3();
+        childBox.getSize(partSize);
+        const partRadius = partSize.length() / 2;
+
+        setups.push({ child, originalPos, childCenter, partRadius, autoExplode, layoutPosition });
+      });
+
+      // ── Phase 2: 피보나치 스피어로 고유 방향 보장 + 파트 크기 비례 거리 ──
+      const centroid = new Vector3();
+      setups.forEach((s) => centroid.add(s.originalPos));
+      centroid.divideScalar(setups.length || 1);
+
+      // 자동분해 파트만 추출 → 중심 거리순 정렬 (바깥 파트 = 낮은 rank)
+      const autoEntries = setups
+        .map((s, i) => ({ i, dist: s.originalPos.distanceTo(centroid) }))
+        .filter((_, i) => setups[i].autoExplode)
+        .sort((a, b) => b.dist - a.dist); // 바깥부터
+
+      // 피보나치 스피어: N개 점을 구 표면에 균등 분포
+      const golden = (1 + Math.sqrt(5)) / 2;
+      const totalAuto = autoEntries.length;
+      const directions = new Array<Vector3>(setups.length).fill(new Vector3());
+
+      autoEntries.forEach(({ i }, rank) => {
+        // 자연스러운 방향 (30%) + 피보나치 구형 분포 (70%) 블렌딩
+        const natural = setups[i].originalPos.clone().sub(centroid);
+        const hasNatural = natural.length() > 0.001;
+        if (hasNatural) natural.normalize();
+
+        const theta = (2 * Math.PI * rank) / golden;
+        const phi = Math.acos(1 - (2 * (rank + 0.5)) / totalAuto);
+        const sphere = new Vector3(
+          Math.sin(phi) * Math.cos(theta),
+          Math.cos(phi),
+          Math.sin(phi) * Math.sin(theta),
+        );
+
+        const dir = hasNatural
+          ? natural.multiplyScalar(0.3).add(sphere.multiplyScalar(0.7))
+          : sphere;
+        directions[i] = dir.normalize();
+      });
+
+      // ── Phase 3: 최종 PartData 생성 ──
+      const MAX_DELAY = 0.3;
+      let maxDistFromCentroid = 0;
+      setups.forEach((s) => {
+        const d = s.originalPos.distanceTo(centroid);
+        if (d > maxDistFromCentroid) maxDistFromCentroid = d;
+      });
+      if (maxDistFromCentroid < 0.001) maxDistFromCentroid = 1;
+
+      const parts: PartData[] = setups.map((setup, i) => {
+        // 명시적 explodedPosition → 그대로 사용
+        if (!setup.autoExplode && setup.layoutPosition) {
+          let op = setup.originalPos;
+          let lp = setup.layoutPosition;
+          if (lp.distanceTo(centroid) < op.distanceTo(centroid)) {
+            const tmp = op; op = lp; lp = tmp;
           }
+          const dir = lp.clone().sub(op);
+          const distRatio = 1 - op.distanceTo(centroid) / maxDistFromCentroid;
+          return {
+            object: setup.child,
+            originalPosition: op,
+            explodeDirection: dir.length() > 0.001 ? dir.normalize() : dir.set(0, 0, 0),
+            layoutPosition: lp,
+            explodeDelay: distRatio * MAX_DELAY * 0.5,
+          };
         }
 
-        parts.push({
-          object: child,
-          originalPosition: originalPos,
-          explodeDirection: direction,
-          layoutPosition,
-        });
+        // 분해 거리: 파트 지름 × 2 (자기 크기의 2배만큼 이동 → 명확한 분리)
+        const minDist = Math.max(explodeOffset, modelDiag * 0.1);
+        const explodeDist = minDist + setup.partRadius * 4;
+        const layoutPos = setup.originalPos.clone().add(
+          directions[i].clone().multiplyScalar(explodeDist),
+        );
+
+        // 딜레이: 바깥 파트 먼저
+        const distRatio = setup.originalPos.distanceTo(centroid) / maxDistFromCentroid;
+        const delay = (1 - distRatio) * MAX_DELAY * 0.7 + (i / setups.length) * MAX_DELAY * 0.3;
+
+        return {
+          object: setup.child,
+          originalPosition: setup.originalPos,
+          explodeDirection: directions[i],
+          layoutPosition: layoutPos,
+          explodeDelay: Math.min(delay, MAX_DELAY),
+        };
       });
 
       partsRef.current = parts;
@@ -434,7 +510,7 @@ export default function AssemblyViewer({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [components, renderInstances, setIsLoading]);
+  }, [components, renderInstances, setIsLoading, explodeOffset]);
 
   // undo/redo 구독 — inner group에 transform 복원
   useEffect(() => {
@@ -497,23 +573,18 @@ export default function AssemblyViewer({
       return;
     }
 
-    const explodeDistance = 2.0;
-
     partsRef.current.forEach((part) => {
-      let targetPosition: Vector3;
-      if (part.layoutPosition) {
-        targetPosition = part.originalPosition
-          .clone()
-          .lerp(part.layoutPosition, explodeLevel);
-      } else {
-        targetPosition = part.originalPosition
-          .clone()
-          .add(
-            part.explodeDirection
-              .clone()
-              .multiplyScalar(explodeLevel * explodeDistance),
+      // 딜레이 적용: 중심 파트부터 순차적으로 분해 시작
+      const d = part.explodeDelay;
+      const effective = d > 0
+        ? Math.max(0, Math.min(1, (explodeLevel - d) / (1 - d)))
+        : explodeLevel;
+
+      const targetPosition = part.layoutPosition
+        ? part.originalPosition.clone().lerp(part.layoutPosition, effective)
+        : part.originalPosition.clone().add(
+            part.explodeDirection.clone().multiplyScalar(effective * 2.0),
           );
-      }
 
       part.object.position.lerp(targetPosition, 0.1);
     });

@@ -73,11 +73,14 @@ export default function StudyLayout({ id }: StudyLayoutProps) {
   }, [displayName]);
 
   const buildViewInfo = useCallback((base: ViewInfo): ViewInfo => {
-    const { cameraState, bloom, ao, lighting } = useRenderStore.getState();
+    const { cameraState, bloom, ao, lighting, material } = useRenderStore.getState();
     return {
       ...base,
+      roughness: material.roughness,
+      metalness: material.metalness,
+      envMapIntensity: material.envMapIntensity,
       camera: cameraState,
-      renderSettings: { bloom, ao, lighting },
+      renderSettings: { bloom, ao, lighting, material },
     };
   }, []);
 

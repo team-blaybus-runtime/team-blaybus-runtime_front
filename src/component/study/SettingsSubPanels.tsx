@@ -13,7 +13,7 @@ import { StudyComponent } from "@/apis/study";
 /* ─── 쉐이더 설정 ─── */
 
 export function ShaderSettingsPanel() {
-  const { bloom, ao, lighting, setBloom, setAO, setLighting, reset } =
+  const { bloom, ao, lighting, material, setBloom, setAO, setLighting, setMaterial, reset } =
     useRenderStore();
 
   return (
@@ -62,6 +62,32 @@ export function ShaderSettingsPanel() {
         max={5}
         step={0.1}
         onChange={(v) => setAO({ intensity: v })}
+      />
+
+      <SectionLabel>재질</SectionLabel>
+      <SliderRow
+        label="거칠기"
+        value={material.roughness}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={(v) => setMaterial({ roughness: v })}
+      />
+      <SliderRow
+        label="금속성"
+        value={material.metalness}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={(v) => setMaterial({ metalness: v })}
+      />
+      <SliderRow
+        label="환경맵 강도"
+        value={material.envMapIntensity}
+        min={0}
+        max={3}
+        step={0.1}
+        onChange={(v) => setMaterial({ envMapIntensity: v })}
       />
 
       <SectionLabel>조명</SectionLabel>
