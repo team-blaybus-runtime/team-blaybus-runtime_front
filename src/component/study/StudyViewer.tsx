@@ -126,8 +126,8 @@ const StudyViewer = ({
         </OverlayBottom>
       )}
 
-      {/* 우측 하단 조작 도움말 */}
-      <OverlayBottomRight>
+      {/* 우측 하단 조작 도움말 (단일 부품 모달과 겹치면 왼쪽으로 이동) */}
+      <OverlayBottomRight $shiftLeft={activeTab === "단일 부품"}>
         <ViewerHelpTooltip />
       </OverlayBottomRight>
     </ViewerContainer>
@@ -135,7 +135,7 @@ const StudyViewer = ({
 };
 
 function ViewerHelpTooltip() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const toggle = useCallback(() => setOpen((v) => !v), []);
 
   return (
@@ -225,13 +225,14 @@ const OverlayBottom = styled(Column)`
   }
 `;
 
-const OverlayBottomRight = styled(Column)`
+const OverlayBottomRight = styled(Column)<{ $shiftLeft?: boolean }>`
   position: absolute;
   bottom: 12px;
-  right: 12px;
+  right: ${({ $shiftLeft }) => ($shiftLeft ? "470px" : "12px")};
   pointer-events: none;
   z-index: 1;
   align-items: flex-end;
+  transition: right 0.25s ease;
 
   & > * {
     pointer-events: auto;

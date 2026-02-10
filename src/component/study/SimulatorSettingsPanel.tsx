@@ -6,9 +6,9 @@ import colors from "@/styles/constant/colors";
 import { ShaderSettingsPanel, MeshListPanel, AssetUploadPanel } from "@/component/study/SettingsSubPanels";
 import { StudyComponent } from "@/apis/study";
 
-export type SimulatorPanel = "쉐이더 설정" | "메쉬 목록" | "에셋 업로드";
+export type SimulatorPanel = "쉐이더 설정" | "메쉬 목록" /* | "에셋 업로드" */;
 
-const PANELS: SimulatorPanel[] = ["쉐이더 설정", "메쉬 목록", "에셋 업로드"];
+const PANELS: SimulatorPanel[] = ["쉐이더 설정", "메쉬 목록" /* , "에셋 업로드" */];
 
 interface SimulatorSettingsPanelProps {
   activePanel: SimulatorPanel | null;
@@ -37,7 +37,7 @@ export default function SimulatorSettingsPanel({
 
       {activePanel === "쉐이더 설정" && <ShaderSettingsPanel />}
       {activePanel === "메쉬 목록" && <MeshListPanel components={components} />}
-      {activePanel === "에셋 업로드" && <AssetUploadPanel />}
+      {/* {activePanel === "에셋 업로드" && <AssetUploadPanel />} */}
     </Wrapper>
   );
 }
