@@ -9,16 +9,27 @@ import StudyContentModal from "@/component/study/StudyContentModal";
 import AssemblyControls from "@/component/study/AssemblyControls";
 import EditToolbar from "@/component/study/EditToolbar";
 import SimulatorControls from "@/component/study/SimulatorControls";
-import SimulatorSettingsPanel, { SimulatorPanel } from "@/component/study/SimulatorSettingsPanel";
+import SimulatorSettingsPanel, {
+  SimulatorPanel,
+} from "@/component/study/SimulatorSettingsPanel";
 import { EngineeringPart, fetchEngineeringParts } from "@/apis/engineering";
 import { ViewInfo } from "@/apis/study";
+import {
+  getPartAssemblyLayout,
+  getAssemblyLayoutScale,
+  getAssemblyExplodeScale,
+} from "@/data/assemblyLayouts";
+import { getAssemblyInstances } from "@/data/assemblyInstances";
 import { StudyTab } from "@/component/study/StudyTabBar";
 import { useEditStore } from "@/store/useEditStore";
+import { useModelStore } from "@/store/useModelStore";
 
-const ThreeCanvas = dynamic(
-  () => import("@/component/study/ThreeCanvas"),
-  { ssr: false }
-);
+const ThreeCanvas = dynamic(() => import("@/component/study/ThreeCanvas"), {
+  ssr: false,
+});
+
+const normalizeProductType = (value: string) =>
+  value.toLowerCase().replace(/[\s-_]/g, "");
 
 interface StudyViewerProps {
   productType: string;
@@ -38,6 +49,7 @@ const StudyViewer = ({
   const [parts, setParts] = useState<EngineeringPart[]>([]);
   const [simPanel, setSimPanel] = useState<SimulatorPanel | null>(null);
   const resetEditState = useEditStore((s) => s.resetEditState);
+  const setExplodeLevel = useModelStore((s) => s.setExplodeLevel);
 
   // 탭 변경 시 편집 상태 초기화
   useEffect(() => {
@@ -46,35 +58,69 @@ const StudyViewer = ({
     }
   }, [activeTab, resetEditState]);
 
+  // 조립도 탭 기본은 조립 상태(0)로 시작 (제품/부품 변경 시에도 리셋)
+  useEffect(() => {
+    if (activeTab === "조립도") {
+      setExplodeLevel(0);
+    }
+  }, [activeTab, productType, parts.length, setExplodeLevel]);
+
   useEffect(() => {
     if (!productType) return;
     fetchEngineeringParts(productType)
       .then(setParts)
-      .catch(() => {});
+      .catch(() => { });
   }, [productType]);
 
-  // API 응답 → 3D 뷰어용 컴포넌트 변환 (assetUrl = GLB URL)
-  const components = useMemo(
-    () =>
-      parts.map((part, i) => ({
+  // API 응답 → 3D 뷰어용 컴포넌트 변환 (조립도 레이아웃 있으면 매칭)
+  const components = useMemo(() => {
+    const scale = getAssemblyLayoutScale(productType);
+    const explodeScale = getAssemblyExplodeScale(productType);
+    return parts.map((part, i) => {
+      const layout = getPartAssemblyLayout(productType, part.partName);
+      return {
         componentId: `part-${i}`,
         componentName: part.partName,
         glbUrl: part.assetUrl,
-      })),
-    [parts]
-  );
+        ...(layout && {
+          assemblyLayout: {
+            assembled: layout.assembled.map((v) => v * scale) as [
+              number,
+              number,
+              number,
+            ],
+            exploded: ([
+              layout.assembled[0] * scale +
+              (layout.exploded[0] - layout.assembled[0]) * explodeScale,
+              layout.assembled[1] * scale +
+              (layout.exploded[1] - layout.assembled[1]) * explodeScale,
+              layout.assembled[2] * scale +
+              (layout.exploded[2] - layout.assembled[2]) * explodeScale,
+            ] as [number, number, number]),
+          },
+        }),
+      };
+    });
+  }, [parts, productType]);
+
+  const assemblyInstances = useMemo(() => {
+    return getAssemblyInstances(productType, components);
+  }, [productType, components]);
 
   return (
     <ViewerContainer ref={viewerRef}>
-      <ThreeCanvas components={components} viewInfo={viewInfo} activeTab={activeTab} />
+      <ThreeCanvas
+        components={components}
+        viewInfo={viewInfo}
+        productType={productType}
+        activeTab={activeTab}
+        assemblyInstances={assemblyInstances}
+      />
 
       {/* 단일 부품 탭: 오른쪽 모달 */}
       {activeTab === "단일 부품" && (
         <OverlayRight>
-          <StudyContentModal
-            objectName={objectName}
-            parts={parts}
-          />
+          <StudyContentModal objectName={objectName} parts={parts} />
         </OverlayRight>
       )}
 

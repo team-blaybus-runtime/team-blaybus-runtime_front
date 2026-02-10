@@ -1,6 +1,13 @@
 "use client";
 
-import React, { Component, useRef, useMemo, useEffect, useCallback, useState } from "react";
+import React, {
+  Component,
+  useRef,
+  useMemo,
+  useEffect,
+  useCallback,
+  useState,
+} from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
 import { useGLTF, Center, TransformControls } from "@react-three/drei";
 import {
@@ -11,11 +18,15 @@ import {
   Mesh,
   MeshStandardMaterial,
   Color,
+  Quaternion,
 } from "three";
 import { useModelStore } from "@/store/useModelStore";
 import { useEditStore, type TransformData } from "@/store/useEditStore";
 import { StudyComponent } from "@/apis/study";
 import { StudyTab } from "@/component/study/StudyTabBar";
+import { getAssemblyGroupRotation } from "@/data/assemblyLayouts";
+import type { AssemblyInstance } from "@/data/assemblyInstances";
+import { getExplodeOffset } from "@/data/assemblyInstances";
 
 /** GLB 로드 실패 시 해당 파트만 건너뛰는 에러 바운더리 */
 class PartErrorBoundary extends Component<
@@ -44,19 +55,24 @@ class PartErrorBoundary extends Component<
 interface AssemblyViewerProps {
   components: StudyComponent[];
   activeTab?: StudyTab;
+  productType?: string;
+  assemblyInstances?: AssemblyInstance[];
 }
 
 interface PartData {
   object: Object3D;
   originalPosition: Vector3;
   explodeDirection: Vector3;
+  /** 조립도 전용: explodeLevel=1일 때의 목표 위치 (설정 있으면 보간) */
+  layoutPosition?: Vector3;
 }
 
 // 선택 하이라이트 — 강하게
 const HIGHLIGHT_EMISSIVE = new Color("#3399FF");
 const DEFAULT_EMISSIVE = new Color("#000000");
 
-const S3_HOST = "https://blaybus-runtime-bucket.s3.ap-northeast-2.amazonaws.com";
+const S3_HOST =
+  "https://blaybus-runtime-bucket.s3.ap-northeast-2.amazonaws.com";
 
 function toProxyUrl(url: string) {
   if (url.startsWith(S3_HOST)) {
@@ -113,8 +129,13 @@ function ComponentModel({
   // 선택 하이라이트
   useEffect(() => {
     centeredScene.traverse((child: Object3D) => {
-      if (child instanceof Mesh && child.material instanceof MeshStandardMaterial) {
-        child.material.emissive = isSelected ? HIGHLIGHT_EMISSIVE : DEFAULT_EMISSIVE;
+      if (
+        child instanceof Mesh &&
+        child.material instanceof MeshStandardMaterial
+      ) {
+        child.material.emissive = isSelected
+          ? HIGHLIGHT_EMISSIVE
+          : DEFAULT_EMISSIVE;
         child.material.emissiveIntensity = isSelected ? 1.0 : 0;
       }
     });
@@ -125,14 +146,14 @@ function ComponentModel({
       e.stopPropagation();
       onSelect(index);
     },
-    [index, onSelect]
+    [index, onSelect],
   );
 
   const innerRefCallback = useCallback(
     (el: Group | null) => {
       registerRef(index, el);
     },
-    [registerRef, index]
+    [registerRef, index],
   );
 
   return (
@@ -177,7 +198,11 @@ function PartTransformHandler({
       if (event.value) {
         beforeRef.current = {
           position: partObject.position.toArray() as [number, number, number],
-          rotation: [partObject.rotation.x, partObject.rotation.y, partObject.rotation.z],
+          rotation: [
+            partObject.rotation.x,
+            partObject.rotation.y,
+            partObject.rotation.z,
+          ],
         };
       } else if (beforeRef.current) {
         pushHistory({
@@ -186,7 +211,11 @@ function PartTransformHandler({
           before: beforeRef.current,
           after: {
             position: partObject.position.toArray() as [number, number, number],
-            rotation: [partObject.rotation.x, partObject.rotation.y, partObject.rotation.z],
+            rotation: [
+              partObject.rotation.x,
+              partObject.rotation.y,
+              partObject.rotation.z,
+            ],
           },
         });
         beforeRef.current = null;
@@ -194,7 +223,8 @@ function PartTransformHandler({
     };
 
     controls.addEventListener("dragging-changed", onDraggingChanged);
-    return () => controls.removeEventListener("dragging-changed", onDraggingChanged);
+    return () =>
+      controls.removeEventListener("dragging-changed", onDraggingChanged);
   }, [partObject, partIndex, setIsTransforming, pushHistory]);
 
   return (
@@ -207,10 +237,21 @@ function PartTransformHandler({
   );
 }
 
-export default function AssemblyViewer({ components, activeTab }: AssemblyViewerProps) {
+export default function AssemblyViewer({
+  components,
+  activeTab,
+  productType,
+  assemblyInstances,
+}: AssemblyViewerProps) {
   const groupRef = useRef<Group>(null);
   const { explodeLevel, setIsLoading, hiddenParts } = useModelStore();
-  const { activeTool, transformMode, selectedPartIndex, setSelectedPartIndex, resetTransformFlag } = useEditStore();
+  const {
+    activeTool,
+    transformMode,
+    selectedPartIndex,
+    setSelectedPartIndex,
+    resetTransformFlag,
+  } = useEditStore();
   const partsRef = useRef<PartData[]>([]);
   const centerRef = useRef<Vector3>(new Vector3());
   const isInitialized = useRef(false);
@@ -251,7 +292,7 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
         setSelectedPartIndex(selectedPartIndex === index ? null : index);
       }
     },
-    [activeTool, selectedPartIndex, setSelectedPartIndex]
+    [activeTool, selectedPartIndex, setSelectedPartIndex],
   );
 
   const handleMissClick = useCallback(() => {
@@ -267,9 +308,20 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
     });
   }, [components]);
 
-  // explode 데이터 초기화
+  const renderInstances: AssemblyInstance[] =
+    assemblyInstances ??
+    components.map((component, index) => ({
+      key: component.componentId,
+      component,
+      transform: undefined,
+      instanceIndex: index,
+    }));
+  const explodeOffset = productType ? getExplodeOffset(productType) : 0.2;
+
+  // explode 데이터 초기화 (assemblyLayout/instances 있으면 해당 위치 적용)
   useEffect(() => {
-    if (!groupRef.current || isInitialized.current) return;
+    isInitialized.current = false;
+    if (!groupRef.current) return;
 
     const timer = setTimeout(() => {
       const group = groupRef.current;
@@ -277,30 +329,124 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
 
       const box = new Box3().setFromObject(group);
       box.getCenter(centerRef.current);
+      const center = centerRef.current;
 
       const parts: PartData[] = [];
 
-      group.children.forEach((child) => {
-        const childBox = new Box3().setFromObject(child);
-        const childCenter = new Vector3();
-        childBox.getCenter(childCenter);
+      const instanceCount = renderInstances.length;
+      group.children.forEach((child, i) => {
+        const instance = renderInstances[i];
+        const comp = instance?.component;
+        const layout = comp?.assemblyLayout;
 
-        const originalPos = child.position.clone();
-        const direction = childCenter.clone().sub(centerRef.current);
+        let originalPos: Vector3;
+        let direction: Vector3;
+        let layoutPosition: Vector3 | undefined;
 
-        if (direction.length() < 0.01) {
-          direction.set(
-            (Math.random() - 0.5) * 2,
-            (Math.random() - 0.5) * 2,
-            (Math.random() - 0.5) * 2
+        if (instance?.transform?.position) {
+          const pos = instance.transform.position;
+          originalPos = new Vector3(pos[0], pos[1], pos[2]);
+          if (instance.transform.explodedPosition) {
+            const epos = instance.transform.explodedPosition;
+            layoutPosition = new Vector3(epos[0], epos[1], epos[2]);
+            direction = layoutPosition.clone().sub(originalPos);
+          } else {
+            const outward = originalPos.clone().sub(center);
+            if (outward.length() < 0.001) {
+              const spread = i - (instanceCount - 1) / 2;
+              outward.set(spread, 0, 0);
+            } else {
+              outward.normalize();
+            }
+            layoutPosition = originalPos
+              .clone()
+              .add(outward.multiplyScalar(explodeOffset));
+            direction = layoutPosition.clone().sub(originalPos);
+          }
+          if (direction.length() < 0.001) {
+            direction = new Vector3(0, 0, 0);
+          } else {
+            direction.normalize();
+          }
+          child.position.copy(originalPos);
+          if (instance.transform.quaternion) {
+            const q = instance.transform.quaternion;
+            child.quaternion.set(q[0], q[1], q[2], q[3]).normalize();
+          } else if (instance.transform.rotation) {
+            child.rotation.set(
+              instance.transform.rotation[0],
+              instance.transform.rotation[1],
+              instance.transform.rotation[2],
+            );
+          }
+        } else if (layout) {
+          const childBox = new Box3().setFromObject(child);
+          const childSize = new Vector3();
+          childBox.getSize(childSize);
+          originalPos = new Vector3(
+            layout.assembled[0],
+            layout.assembled[1],
+            layout.assembled[2],
           );
+          layoutPosition = new Vector3(
+            layout.exploded[0],
+            layout.exploded[1],
+            layout.exploded[2],
+          );
+          direction = layoutPosition.clone().sub(originalPos);
+          const deltaLength = direction.length();
+          const isSuspension =
+            productType?.toLowerCase().replace(/[\s-_]/g, "") === "suspension" ||
+            productType?.replace(/[\s-_]/g, "") === "서스펜션";
+          const minExplode = Math.max(
+            childSize.length() * (isSuspension ? 2.5 : 0.6),
+            isSuspension ? 1.0 : 0.2,
+          );
+          if (deltaLength < 0.001) {
+            direction = new Vector3(0, 1, 0);
+            layoutPosition = originalPos
+              .clone()
+              .add(direction.clone().multiplyScalar(minExplode));
+          } else if (deltaLength < minExplode) {
+            direction.normalize();
+            layoutPosition = originalPos
+              .clone()
+              .add(direction.clone().multiplyScalar(minExplode));
+          } else {
+            direction.normalize();
+          }
+          child.position.copy(originalPos);
+        } else {
+          const childBox = new Box3().setFromObject(child);
+          const childCenter = new Vector3();
+          childBox.getCenter(childCenter);
+          originalPos = child.position.clone();
+          direction = childCenter.clone().sub(center);
+          if (direction.length() < 0.01) {
+            direction.set(
+              (Math.random() - 0.5) * 2,
+              (Math.random() - 0.5) * 2,
+              (Math.random() - 0.5) * 2,
+            );
+          }
+          direction.normalize();
         }
-        direction.normalize();
+
+        if (layoutPosition) {
+          const originDist = originalPos.distanceTo(center);
+          const targetDist = layoutPosition.distanceTo(center);
+          if (targetDist < originDist) {
+            const temp = originalPos;
+            originalPos = layoutPosition;
+            layoutPosition = temp;
+          }
+        }
 
         parts.push({
           object: child,
           originalPosition: originalPos,
           explodeDirection: direction,
+          layoutPosition,
         });
       });
 
@@ -310,13 +456,16 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [components, setIsLoading]);
+  }, [components, renderInstances, setIsLoading]);
 
   // undo/redo 구독 — inner group에 transform 복원
   useEffect(() => {
     const unsub = useEditStore.subscribe((state, prev) => {
       // Undo: history가 줄고 future가 늘었을 때
-      if (state.history.length < prev.history.length && state.future.length > prev.future.length) {
+      if (
+        state.history.length < prev.history.length &&
+        state.future.length > prev.future.length
+      ) {
         const entry = state.future[state.future.length - 1];
         const innerGroup = innerRefs.current.get(entry.partIndex);
         if (innerGroup) {
@@ -325,7 +474,10 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
         }
       }
       // Redo: future가 줄고 history가 늘었을 때
-      if (state.history.length > prev.history.length && state.future.length < prev.future.length) {
+      if (
+        state.history.length > prev.history.length &&
+        state.future.length < prev.future.length
+      ) {
         const entry = state.history[state.history.length - 1];
         const innerGroup = innerRefs.current.get(entry.partIndex);
         if (innerGroup) {
@@ -344,32 +496,54 @@ export default function AssemblyViewer({ components, activeTab }: AssemblyViewer
     const explodeDistance = 2.0;
 
     partsRef.current.forEach((part) => {
-      const targetPosition = part.originalPosition
-        .clone()
-        .add(
-          part.explodeDirection
-            .clone()
-            .multiplyScalar(explodeLevel * explodeDistance)
-        );
+      let targetPosition: Vector3;
+      if (part.layoutPosition) {
+        targetPosition = part.originalPosition
+          .clone()
+          .lerp(part.layoutPosition, explodeLevel);
+      } else {
+        targetPosition = part.originalPosition
+          .clone()
+          .add(
+            part.explodeDirection
+              .clone()
+              .multiplyScalar(explodeLevel * explodeDistance),
+          );
+      }
 
       part.object.position.lerp(targetPosition, 0.1);
     });
   });
 
+  const groupRotation = productType
+    ? getAssemblyGroupRotation(productType)
+    : undefined;
+
   return (
     <>
       <Center>
-        <group ref={groupRef} onPointerMissed={handleMissClick}>
-          {components.map((comp, i) => (
-            <PartErrorBoundary key={comp.componentId} partName={comp.componentName}>
+        <group
+          ref={groupRef}
+          onPointerMissed={handleMissClick}
+          rotation={
+            groupRotation
+              ? [groupRotation[0], groupRotation[1], groupRotation[2]]
+              : undefined
+          }
+        >
+          {renderInstances.map((instance, i) => (
+            <PartErrorBoundary
+              key={instance.key}
+              partName={instance.component.componentName}
+            >
               <ComponentModel
-                glbUrl={comp.glbUrl}
+                glbUrl={instance.component.glbUrl}
                 index={i}
                 isSelected={activeTab !== "단일 부품" && selectedPartIndex === i}
                 isVisible={
                   activeTab === "단일 부품"
                     ? selectedPartIndex === null || selectedPartIndex === i
-                    : !hiddenParts.has(i)
+                    : !hiddenParts.has(instance.component.componentId)
                 }
                 onSelect={handlePartSelect}
                 registerRef={registerRef}

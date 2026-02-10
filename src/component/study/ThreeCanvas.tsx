@@ -2,7 +2,13 @@
 
 import { Suspense, useRef, useEffect, useCallback } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows, Bounds, useBounds } from "@react-three/drei";
+import {
+  OrbitControls,
+  Environment,
+  ContactShadows,
+  Bounds,
+  useBounds,
+} from "@react-three/drei";
 import {
   EffectComposer,
   Bloom,
@@ -177,15 +183,23 @@ function BoundsContent({
   return <>{children}</>;
 }
 
+import type { AssemblyInstance } from "@/data/assemblyInstances";
+
 interface ThreeCanvasProps {
   components: StudyComponent[];
   viewInfo?: ViewInfo;
   productType?: string;
   activeTab?: StudyTab;
-  assemblyInstances?: any[];
+  assemblyInstances?: AssemblyInstance[];
 }
 
-export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCanvasProps) {
+export default function ThreeCanvas({
+  components,
+  viewInfo,
+  productType,
+  activeTab,
+  assemblyInstances,
+}: ThreeCanvasProps) {
   const { bloom, ao, lighting } = useRenderStore();
   const { isTransforming, explodeLevel, setExplodeLevel } = useModelStore();
   const activeTool = useEditStore((s) => s.activeTool);
@@ -204,7 +218,7 @@ export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCa
         setExplodeLevel(newLevel);
       }
     },
-    [explodeLevel, setExplodeLevel]
+    [explodeLevel, setExplodeLevel],
   );
 
   useEffect(() => {
@@ -241,7 +255,12 @@ export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCa
           {components.length > 0 && (
             <Bounds fit={!viewInfo?.camera} clip margin={1.5}>
               <BoundsContent boundsApi={boundsApiRef}>
-                <AssemblyViewer components={components} activeTab={activeTab} />
+                <AssemblyViewer
+                  components={components}
+                  activeTab={activeTab}
+                  productType={productType}
+                  assemblyInstances={assemblyInstances}
+                />
               </BoundsContent>
             </Bounds>
           )}
@@ -293,7 +312,7 @@ export default function ThreeCanvas({ components, viewInfo, activeTab }: ThreeCa
         <EditToolHandler controlsRef={controlsRef} boundsApi={boundsApiRef} />
         <CameraSync controlsRef={controlsRef} />
         <ViewInfoRestore viewInfo={viewInfo} controlsRef={controlsRef} />
-        <SimulatorSync />
+        {activeTab === "시뮬레이터" && <SimulatorSync />}
 
         <gridHelper
           args={[20, 20, "#27272a", "#1a1a1a"]}
