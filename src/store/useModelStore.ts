@@ -8,9 +8,9 @@ interface ModelState {
   isTransforming: boolean;
   setIsTransforming: (value: boolean) => void;
 
-  // 파트별 가시성
-  hiddenParts: Set<number>;
-  togglePartVisibility: (index: number) => void;
+  // 파트별 가시성 (componentId 기반 — 1:N 인스턴스도 함께 숨김)
+  hiddenParts: Set<string>;
+  togglePartVisibility: (id: string) => void;
   setAllPartsVisible: () => void;
 }
 
@@ -22,12 +22,12 @@ export const useModelStore = create<ModelState>((set) => ({
   isTransforming: false,
   setIsTransforming: (value: boolean) => set({ isTransforming: value }),
 
-  hiddenParts: new Set<number>(),
-  togglePartVisibility: (index) =>
+  hiddenParts: new Set<string>(),
+  togglePartVisibility: (id) =>
     set((s) => {
       const next = new Set(s.hiddenParts);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return { hiddenParts: next };
     }),
   setAllPartsVisible: () => set({ hiddenParts: new Set() }),

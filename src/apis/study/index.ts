@@ -82,6 +82,9 @@ export async function fetchUserStudyHistory(
 export async function saveUserStudyHistory(
   body: CreateStudyHistoryRequest,
 ): Promise<UserStudyHistory> {
-  const { data } = await Api.post<UserStudyHistory>("/user-study-histories", body);
+  const { data } = await Api.post<UserStudyHistory>(
+    "/user-study-histories",
+    body,
+  );
   return data;
 }
