@@ -8,7 +8,7 @@
 2D 도면/이론 중심 학습에서 발생하는 **구조 이해의 한계**를, 3D 인터랙션(탐색·분해/조립·시뮬레이션)과 **RAG 기반 AI 어시스턴트**, **메모/퀴즈/워크플로우/PDF 내보내기**로 연결해  **이해 → 정리 → 활용**의 학습 흐름을 끊기지 않게 지원합니다.
 ## 배포 주소
 - [https://balybus-runtime-front.vercel.app/](https://blaybus-runtime-front.vercel.app/)
-
+- [https://runtime-simvex.vercel.app](https://runtime-simvex.vercel.app/) (MSW)
 
 
 ## 핵심 기능 (Key Features)
